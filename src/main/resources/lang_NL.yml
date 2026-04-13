@@ -1,0 +1,13 @@
+prefix: "&8[&bLekkerAnimal&8] &7"
+
+help:
+  header: "&8&m----------------------------------------"
+  title: "&b&lLekkerAnimal &7- Help Menu"
+  line1: "&e/lekkeranimals &7- Open help menu"
+  line2: "&e/lekkeranimals reload &7- Reload plugin"
+  line3: "&e/lekkeranimals info &7- Plugin info"
+  footer: "&8&m----------------------------------------"
+
+general:
+  reload: "{prefix}&aPlugin herladen!"
+  no-permission: "{prefix}&cGeen permission."

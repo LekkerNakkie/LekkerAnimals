@@ -1,0 +1,28 @@
+name: LekkerAnimal
+version: 1.0
+main: me.lekkernakkie.lekkeranimal.LekkerAnimal
+api-version: '1.21'
+author: LekkerNakkie
+description: Bond, feed and take care of your animals.
+
+commands:
+  lekkeranimals:
+    description: Main command
+    usage: /lekkeranimals
+    aliases: [la, lekkeranimal]
+
+permissions:
+  lekkeranimal.admin:
+    default: op
+
+  lekkeranimal.command.help:
+    default: true
+
+  lekkeranimal.command.info:
+    default: true
+
+  lekkeranimal.command.reload:
+    default: op
+
+  lekkeranimal.command.givebonditem:
+    default: op

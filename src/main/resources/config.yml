@@ -1,0 +1,43 @@
+debug: false
+
+language-file: "Lang_NL.yml"
+
+database:
+  type: "SQLITE"
+
+  sqlite:
+    file: "data.db"
+
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "lekkeranimal"
+    username: "root"
+    password: ""
+    ssl: false
+    pool-size: 10
+
+main:
+  autosave-interval-seconds: 300
+  save-on-disable: true
+
+hunger:
+  enabled: true
+  task-interval-seconds: 60
+  warning-threshold-percent: 25
+  kill-on-zero: true
+
+leveling:
+  enabled: true
+  max-level: 50
+  base-xp: 100
+  xp-scale: 1.15
+
+bond:
+  enabled: true
+  max-bond: 100
+
+sounds:
+  feed: "ENTITY_PLAYER_LEVELUP"
+  levelup: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  death: "ENTITY_GENERIC_EXTINGUISH_FIRE"

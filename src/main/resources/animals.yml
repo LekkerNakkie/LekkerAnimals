@@ -1,0 +1,36 @@
+animals:
+  COW:
+    enabled: true
+    display-name: "&fCow"
+
+    bonding:
+      item: "GOLDEN_CARROT"
+      required-amount: 1
+
+    hunger:
+      max: 100
+      drain: 2
+
+    feeding:
+      WHEAT:
+        hunger: 20
+        xp: 5
+        bond: 2
+
+  PIG:
+    enabled: true
+    display-name: "&fPig"
+
+    bonding:
+      item: "GOLDEN_CARROT"
+      required-amount: 1
+
+    hunger:
+      max: 100
+      drain: 3
+
+    feeding:
+      CARROT:
+        hunger: 20
+        xp: 5
+        bond: 2

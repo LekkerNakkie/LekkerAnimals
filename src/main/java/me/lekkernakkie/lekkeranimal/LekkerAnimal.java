@@ -41,8 +41,15 @@ public class LekkerAnimal extends JavaPlugin {
             getCommand("lekkeranimals").setExecutor(new LekkerAnimalsCommand(this));
         }
 
-        getServer().getPluginManager().registerEvents(new AnimalInteractListener(this, bondManager, animalManager), this);
-        getServer().getPluginManager().registerEvents(new AnimalDeathListener(this, animalManager), this);
+        getServer().getPluginManager().registerEvents(
+                new AnimalInteractListener(this, bondManager, animalManager, levelManager),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new AnimalDeathListener(animalManager),
+                this
+        );
 
         hungerManager.start();
 

@@ -33,6 +33,8 @@ public class MainSettings {
 
     private final boolean bondEnabled;
     private final int maxBond;
+    private final int startBond;
+    private final int startLevel;
 
     public MainSettings(FileConfiguration config) {
         this.debug = config.getBoolean("debug", false);
@@ -64,6 +66,8 @@ public class MainSettings {
 
         this.bondEnabled = config.getBoolean("bond.enabled", true);
         this.maxBond = config.getInt("bond.max-bond", 100);
+        this.startBond = config.getInt("bond.start-bond", 10);
+        this.startLevel = config.getInt("bond.start-level", 1);
     }
 
     public boolean isDebug() {
@@ -156,5 +160,13 @@ public class MainSettings {
 
     public int getMaxBond() {
         return maxBond;
+    }
+
+    public int getStartBond() {
+        return startBond;
+    }
+
+    public int getStartLevel() {
+        return startLevel;
     }
 }

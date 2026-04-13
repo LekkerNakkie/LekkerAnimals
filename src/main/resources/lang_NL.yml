@@ -1,13 +1,27 @@
 prefix: "&8[&bLekkerAnimal&8] &7"
 
+general:
+  reload: "{prefix}&aDe plugin werd succesvol herladen."
+  no-permission: "{prefix}&cDaar edde gij het lef ni vur.."
+  already-owned: "{prefix}&cDit dier heeft al een eigenaar."
+
 help:
   header: "&8&m----------------------------------------"
   title: "&b&lLekkerAnimal &7- Help Menu"
-  line1: "&e/lekkeranimals &7- Open help menu"
-  line2: "&e/lekkeranimals reload &7- Reload plugin"
-  line3: "&e/lekkeranimals info &7- Plugin info"
+  line1: "&e/lekkeranimals &7- Open het help menu"
+  line2: "&e/lekkeranimals reload &7- Herlaad de plugin"
+  line3: "&e/lekkeranimals info &7- Toon plugin info"
   footer: "&8&m----------------------------------------"
 
-general:
-  reload: "{prefix}&aPlugin herladen!"
-  no-permission: "{prefix}&cGeen permission."
+info:
+  header: "&8&m----------------------------------------"
+  title: "&b&lLekkerAnimal &7- Plugin Info"
+  version: "&7Versie: &f{version}"
+  animals-loaded: "&7Animals loaded: &f{amount}"
+  bonded-animals: "&7Bonded animals in memory: &f{amount}"
+  footer: "&8&m----------------------------------------"
+
+bonding:
+  success: "{prefix}&aJe hebt dit dier succesvol gebond."
+  already-yours: "{prefix}&eDit dier is al van jou."
+  not-enough-items: "{prefix}&cJe hebt niet genoeg bond items vast."

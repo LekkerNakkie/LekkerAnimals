@@ -1,4 +1,7 @@
 package me.lekkernakkie.lekkeranimal.util;
 
-public class MessageUtil {
+public final class MessageUtil {
+
+    private MessageUtil() {
+    }
 }

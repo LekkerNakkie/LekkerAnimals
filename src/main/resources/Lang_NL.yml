@@ -25,3 +25,8 @@ bonding:
   success: "{prefix}&aJe hebt dit dier succesvol gebond."
   already-yours: "{prefix}&eDit dier is al van jou."
   not-enough-items: "{prefix}&cJe hebt niet genoeg bond items vast."
+
+feeding:
+  success: "{prefix}&aJe voedde je &e{animal}&a. Hunger: &e{hunger}&7/&e{max_hunger}"
+  full: "{prefix}&eDit dier heeft momenteel geen eten nodig."
+  invalid-food: "{prefix}&cDit dier wil dat voedsel niet eten."

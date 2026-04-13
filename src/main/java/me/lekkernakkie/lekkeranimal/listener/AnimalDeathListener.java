@@ -1,5 +1,6 @@
 package me.lekkernakkie.lekkeranimal.listener;
 
+import me.lekkernakkie.lekkeranimal.LekkerAnimal;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -20,6 +21,10 @@ public class AnimalDeathListener implements Listener {
 
         if (animalManager.isBonded(entity)) {
             animalManager.unregisterAnimal(entity.getUniqueId());
+
+            if (LekkerAnimal.getInstance().getHologramManager() != null) {
+                LekkerAnimal.getInstance().getHologramManager().remove(entity);
+            }
         }
     }
 }

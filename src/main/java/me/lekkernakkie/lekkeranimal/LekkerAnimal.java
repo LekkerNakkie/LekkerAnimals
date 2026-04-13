@@ -7,6 +7,7 @@ import me.lekkernakkie.lekkeranimal.listener.AnimalDeathListener;
 import me.lekkernakkie.lekkeranimal.listener.AnimalInteractListener;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import me.lekkernakkie.lekkeranimal.manager.BondManager;
+import me.lekkernakkie.lekkeranimal.manager.HologramManager;
 import me.lekkernakkie.lekkeranimal.manager.HungerManager;
 import me.lekkernakkie.lekkeranimal.manager.LevelManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -22,6 +23,7 @@ public class LekkerAnimal extends JavaPlugin {
     private BondManager bondManager;
     private HungerManager hungerManager;
     private LevelManager levelManager;
+    private HologramManager hologramManager;
 
     @Override
     public void onEnable() {
@@ -36,6 +38,7 @@ public class LekkerAnimal extends JavaPlugin {
         this.levelManager = new LevelManager(this);
         this.bondManager = new BondManager(this, animalManager);
         this.hungerManager = new HungerManager(this, animalManager);
+        this.hologramManager = new HologramManager(this, animalManager);
 
         if (getCommand("lekkeranimals") != null) {
             getCommand("lekkeranimals").setExecutor(new LekkerAnimalsCommand(this));
@@ -52,6 +55,7 @@ public class LekkerAnimal extends JavaPlugin {
         );
 
         hungerManager.start();
+        hologramManager.start();
 
         getLogger().info("LekkerAnimal enabled successfully.");
     }
@@ -60,6 +64,10 @@ public class LekkerAnimal extends JavaPlugin {
     public void onDisable() {
         if (hungerManager != null) {
             hungerManager.stop();
+        }
+
+        if (hologramManager != null) {
+            hologramManager.stop();
         }
 
         getLogger().info("LekkerAnimal disabled.");
@@ -91,5 +99,9 @@ public class LekkerAnimal extends JavaPlugin {
 
     public LevelManager getLevelManager() {
         return levelManager;
+    }
+
+    public HologramManager getHologramManager() {
+        return hologramManager;
     }
 }

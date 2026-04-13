@@ -34,3 +34,9 @@ animals:
         hunger: 20
         xp: 5
         bond: 2
+
+hologram:
+  enabled: true
+  update-interval-ticks: 10
+  show-distance: 12.0
+  format: "&b{animal} &8• &7Lvl &b{level} &8• &c❤ &b{hunger}&8/&7{max_hunger}"

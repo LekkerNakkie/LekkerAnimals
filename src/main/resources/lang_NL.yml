@@ -1,47 +1,47 @@
 prefix: "&8[&bLekkerAnimal&8] &7"
 
 general:
-  reload: "{prefix}&aDe plugin werd succesvol herladen."
-  no-permission: "{prefix}&cDaar edde gij het lef ni vur.."
-  already-owned: "{prefix}&cDit dier heeft al een eigenaar."
-  not-your-animal: "{prefix}&cDit dier is niet van jou."
-  animal-not-supported: "{prefix}&cDit dier wordt niet ondersteund."
+  reload: "{prefix}&7De plugin werd succesvol herladen."
+  no-permission: "{prefix}&7Daar edde gij het lef ni vur.."
+  already-owned: "{prefix}&bDit dier heeft al een eigenaar."
+  not-your-animal: "{prefix}&bDit dier is niet van jou."
+  animal-not-supported: "{prefix}&bDit dier kan je niet met bonden."
 
 help:
   header: "&8&m----------------------------------------"
-  title: "&b&lLekkerAnimal &7- Help Menu"
-  line1: "&e/lekkeranimals &7- Open het help menu"
-  line2: "&e/lekkeranimals reload &7- Herlaad de plugin"
-  line3: "&e/lekkeranimals info &7- Toon plugin info"
+  title: "&bLekkerAnimal &8- &fHelp Menu"
+  line1: "&f/lekkeranimals &8- &bOpen het help menu"
+  line2: "&f/lekkeranimals reload &8- &bHerlaad de plugin"
+  line3: "&f/lekkeranimals info &8- &bToon plugin info"
   footer: "&8&m----------------------------------------"
 
 info:
   header: "&8&m----------------------------------------"
-  title: "&b&lLekkerAnimal &7- Plugin Info"
-  version: "&7Versie: &f{version}"
-  animals-loaded: "&7Animals loaded: &f{amount}"
-  bonded-animals: "&7Bonded animals in memory: &f{amount}"
+  title: "&bLekkerAnimal &8- &fPlugin Info"
+  version: "&fVersie: &b{version}"
+  animals-loaded: "&fAnimals loaded: &b{amount}"
+  bonded-animals: "&fBonded animals in memory: &b{amount}"
   footer: "&8&m----------------------------------------"
 
 bonding:
-  success: "{prefix}&aJe hebt dit dier succesvol gebond."
-  already-yours: "{prefix}&eDit dier is al van jou."
-  not-enough-items: "{prefix}&cJe hebt niet genoeg bond items vast."
+  success: "{prefix}&7Je hebt dit dier succesvol gebond."
+  already-yours: "{prefix}&7Dit dier is al van jou."
+  not-enough-items: "{prefix}&7Je hebt niet genoeg bond items vast."
 
 feeding:
-  success: "{prefix}&aJe voedde je {animal}&a. Hunger: &e{hunger}&7/&e{max_hunger} &8| &b+{xp} XP"
-  full: "{prefix}&eDit dier heeft momenteel geen eten nodig."
-  invalid-food: "{prefix}&cDit dier wil dat voedsel niet eten."
-  no-food-in-inventory: "{prefix}&cJe hebt geen geldig voer in je inventory."
+  success: "{prefix}&7Je voedde je &b{animal}&7. Hunger: &f{hunger}&8/&b{max_hunger} &8| &b+{xp} XP"
+  full: "{prefix}&7Dit dier heeft momenteel geen eten nodig."
+  invalid-food: "{prefix}&7Dit dier wil dat voedsel niet eten."
+  no-food-in-inventory: "{prefix}&7Je hebt geen geldig voer in je inventory."
 
 hunger:
-  warning: "{prefix}&eJe {animal} &eheeft honger. Hunger: &c{hunger}&7/&e{max_hunger}"
-  starving-death: "{prefix}&cJe {animal} &cis gestorven van de honger."
+  warning: "{prefix}&7Je &b{animal} &7heeft honger. Hunger: &b{hunger}&8/&f{max_hunger}"
+  starving-death: "{prefix}&7Je &b{animal} &7is &cgestorven&7 van de honger."
 
 leveling:
-  level-up: "{prefix}&aJe {animal} &ais nu level &b{level}&a!"
-  max-level: "{prefix}&eDit dier heeft al het maximum level bereikt."
-  direct-upgrade-success: "{prefix}&aJe hebt je {animal} &adirect geupgrade naar level &b{level}&a!"
-  direct-upgrade-no-config: "{prefix}&cVoor het volgende level is geen direct upgrade item ingesteld."
-  direct-upgrade-wrong-item: "{prefix}&cJe hebt het verkeerde item vast voor deze level upgrade."
-  direct-upgrade-not-enough: "{prefix}&cJe hebt niet genoeg items voor deze level upgrade."
+  level-up: "{prefix}&7Je &b{animal}&7 is nu level &b{level}&7!"
+  max-level: "{prefix}&7Dit dier heeft al het maximum level bereikt."
+  direct-upgrade-success: "{prefix}&7Je hebt je &b{animal} &7direct geupgrade naar level &b{level}&7!"
+  direct-upgrade-no-config: "{prefix}&7Voor het volgende level is geen direct upgrade item ingesteld."
+  direct-upgrade-wrong-item: "{prefix}&7Je hebt het verkeerde item vast voor deze level upgrade."
+  direct-upgrade-not-enough: "{prefix}&7Je hebt niet genoeg items voor level &b{level}&7. Nodig: &b{required}&fx {item}&7."

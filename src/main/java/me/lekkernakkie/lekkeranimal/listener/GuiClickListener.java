@@ -1,7 +1,6 @@
 package me.lekkernakkie.lekkeranimal.listener;
 
 import me.lekkernakkie.lekkeranimal.LekkerAnimal;
-import me.lekkernakkie.lekkeranimal.config.GuiSettings;
 import me.lekkernakkie.lekkeranimal.config.LangSettings;
 import me.lekkernakkie.lekkeranimal.config.MainSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalData;
@@ -9,6 +8,7 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -62,15 +62,16 @@ public class GuiClickListener implements Listener {
             return;
         }
 
-        GuiSettings gui = plugin.getConfigManager().getGuiSettings();
         int rawSlot = event.getRawSlot();
+        int hungerSlot = plugin.getConfigManager().getGuiSettings().getHungerSlot();
+        int levelSlot = plugin.getConfigManager().getGuiSettings().getLevelSlot();
 
-        if (rawSlot == gui.getHungerSlot()) {
+        if (rawSlot == hungerSlot) {
             handleFeedClick(player, entity, data, profile);
             return;
         }
 
-        if (rawSlot == gui.getLevelSlot()) {
+        if (rawSlot == levelSlot) {
             handleLevelClick(player, entity, data, profile);
         }
     }
@@ -148,9 +149,23 @@ public class GuiClickListener implements Listener {
             return;
         }
 
+        int have = countMaterial(player, upgrade.getItem());
+        if (have < upgrade.getAmount()) {
+            int missing = upgrade.getAmount() - have;
+
+            lang.send(player, "leveling.direct-upgrade-not-enough", Map.of(
+                    "item", formatMaterial(upgrade.getItem()),
+                    "required", String.valueOf(upgrade.getAmount()),
+                    "have", String.valueOf(have),
+                    "missing", String.valueOf(missing),
+                    "level", String.valueOf(targetLevel)
+            ));
+            plugin.getGuiManager().refreshOpenAnimalGui(player, entity);
+            return;
+        }
+
         ItemStack upgradeStack = findFirstMatchingStack(player, upgrade.getItem(), upgrade.getAmount());
         if (upgradeStack == null) {
-            lang.send(player, "leveling.direct-upgrade-not-enough");
             plugin.getGuiManager().refreshOpenAnimalGui(player, entity);
             return;
         }
@@ -184,7 +199,7 @@ public class GuiClickListener implements Listener {
         return null;
     }
 
-    private ItemStack findFirstMatchingStack(Player player, org.bukkit.Material material, int amountNeeded) {
+    private ItemStack findFirstMatchingStack(Player player, Material material, int amountNeeded) {
         for (ItemStack item : player.getInventory().getContents()) {
             if (item == null || item.getType().isAir()) {
                 continue;
@@ -201,5 +216,38 @@ public class GuiClickListener implements Listener {
     private void consume(ItemStack item, int amount) {
         int newAmount = item.getAmount() - amount;
         item.setAmount(Math.max(newAmount, 0));
+    }
+
+    private int countMaterial(Player player, Material material) {
+        int amount = 0;
+
+        for (ItemStack stack : player.getInventory().getContents()) {
+            if (stack == null || stack.getType().isAir()) {
+                continue;
+            }
+
+            if (stack.getType() == material) {
+                amount += stack.getAmount();
+            }
+        }
+
+        return amount;
+    }
+
+    private String formatMaterial(Material material) {
+        String[] parts = material.name().toLowerCase().split("_");
+        StringBuilder builder = new StringBuilder();
+
+        for (String part : parts) {
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            builder.append(Character.toUpperCase(part.charAt(0)))
+                    .append(part.substring(1))
+                    .append(" ");
+        }
+
+        return builder.toString().trim();
     }
 }

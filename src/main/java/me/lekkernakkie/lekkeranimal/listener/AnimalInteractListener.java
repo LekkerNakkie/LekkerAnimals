@@ -12,6 +12,7 @@ import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import me.lekkernakkie.lekkeranimal.manager.BondManager;
 import me.lekkernakkie.lekkeranimal.manager.LevelManager;
 import me.lekkernakkie.lekkeranimal.util.ItemUtil;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -186,7 +187,17 @@ public class AnimalInteractListener implements Listener {
                 return true;
             }
             case NOT_ENOUGH_ITEMS -> {
-                lang.send(player, "leveling.direct-upgrade-not-enough");
+                int have = countMaterial(player, nextUpgrade.getItem());
+                int required = nextUpgrade.getAmount();
+                int missing = Math.max(0, required - have);
+
+                lang.send(player, "leveling.direct-upgrade-not-enough", Map.of(
+                        "item", formatMaterial(nextUpgrade.getItem()),
+                        "required", String.valueOf(required),
+                        "have", String.valueOf(have),
+                        "missing", String.valueOf(missing),
+                        "level", String.valueOf(targetLevel)
+                ));
                 event.setCancelled(true);
                 return true;
             }
@@ -250,5 +261,38 @@ public class AnimalInteractListener implements Listener {
     private void consumeOne(ItemStack item) {
         int newAmount = item.getAmount() - 1;
         item.setAmount(Math.max(newAmount, 0));
+    }
+
+    private int countMaterial(Player player, Material material) {
+        int amount = 0;
+
+        for (ItemStack stack : player.getInventory().getContents()) {
+            if (stack == null || stack.getType().isAir()) {
+                continue;
+            }
+
+            if (stack.getType() == material) {
+                amount += stack.getAmount();
+            }
+        }
+
+        return amount;
+    }
+
+    private String formatMaterial(Material material) {
+        String[] parts = material.name().toLowerCase().split("_");
+        StringBuilder builder = new StringBuilder();
+
+        for (String part : parts) {
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            builder.append(Character.toUpperCase(part.charAt(0)))
+                    .append(part.substring(1))
+                    .append(" ");
+        }
+
+        return builder.toString().trim();
     }
 }

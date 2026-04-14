@@ -1,15 +1,13 @@
 package me.lekkernakkie.lekkeranimal.manager;
 
 import me.lekkernakkie.lekkeranimal.LekkerAnimal;
-import me.lekkernakkie.lekkeranimal.config.LangSettings;
 import me.lekkernakkie.lekkeranimal.config.MainSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalData;
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
-import org.bukkit.Bukkit;
-import org.bukkit.Sound;
+import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-
-import java.util.Map;
+import org.bukkit.inventory.ItemStack;
 
 public class LevelManager {
 
@@ -19,38 +17,99 @@ public class LevelManager {
         this.plugin = plugin;
     }
 
-    public void addXp(AnimalData data, int amount) {
-        MainSettings settings = plugin.getConfigManager().getMainSettings();
-        if (!settings.isLevelingEnabled() || amount <= 0) {
-            return;
+    public int addXp(AnimalData data, AnimalProfile profile, int amount) {
+        if (amount <= 0 || data == null || profile == null) {
+            return 0;
+        }
+
+        if (data.getLevel() >= profile.getMaxLevel()) {
+            data.setXp(0);
+            return 0;
         }
 
         data.setXp(data.getXp() + amount);
 
-        while (data.getLevel() < settings.getMaxLevel() && data.getXp() >= getRequiredXpForNextLevel(data.getLevel(), settings)) {
-            data.setXp(data.getXp() - getRequiredXpForNextLevel(data.getLevel(), settings));
-            data.setLevel(data.getLevel() + 1);
+        int levelsGained = 0;
 
-            Player owner = Bukkit.getPlayer(data.getOwnerUuid());
-            AnimalProfile profile = plugin.getConfigManager().getAnimalsSettings().getProfile(data.getEntityType());
-            LangSettings lang = plugin.getConfigManager().getLangSettings();
+        while (data.getLevel() < profile.getMaxLevel()) {
+            int requiredXp = getRequiredXpForNextLevel(data.getLevel());
 
-            if (owner != null && owner.isOnline() && profile != null) {
-                lang.send(owner, "leveling.level-up", Map.of(
-                        "animal", profile.getDisplayName(),
-                        "level", String.valueOf(data.getLevel())
-                ));
-
-                try {
-                    Sound sound = Sound.valueOf(plugin.getConfig().getString("sounds.levelup", "ENTITY_EXPERIENCE_ORB_PICKUP"));
-                    owner.playSound(owner.getLocation(), sound, 1.0f, 1.0f);
-                } catch (IllegalArgumentException ignored) {
-                }
+            if (data.getXp() < requiredXp) {
+                break;
             }
+
+            data.setXp(data.getXp() - requiredXp);
+            data.setLevel(data.getLevel() + 1);
+            levelsGained++;
         }
+
+        if (data.getLevel() >= profile.getMaxLevel()) {
+            data.setXp(0);
+        }
+
+        return levelsGained;
     }
 
-    public int getRequiredXpForNextLevel(int currentLevel, MainSettings settings) {
-        return (int) Math.ceil(settings.getBaseXp() * Math.pow(settings.getXpScale(), Math.max(0, currentLevel - 1)));
+    public DirectUpgradeResult tryDirectUpgrade(Player player, Entity entity, ItemStack itemInHand) {
+        if (player == null || entity == null || itemInHand == null) {
+            return DirectUpgradeResult.NO_CONFIG;
+        }
+
+        AnimalData data = plugin.getAnimalManager().getAnimalData(entity);
+        if (data == null) {
+            return DirectUpgradeResult.NO_CONFIG;
+        }
+
+        AnimalProfile profile = plugin.getConfigManager().getAnimalsSettings().getProfile(entity.getType());
+        if (profile == null) {
+            return DirectUpgradeResult.NO_CONFIG;
+        }
+
+        if (data.getLevel() >= profile.getMaxLevel()) {
+            return DirectUpgradeResult.MAX_LEVEL;
+        }
+
+        int targetLevel = data.getLevel() + 1;
+        DirectLevelUpgrade upgrade = profile.getDirectLevelUpgrade(targetLevel);
+
+        if (upgrade == null) {
+            return DirectUpgradeResult.NO_CONFIG;
+        }
+
+        if (itemInHand.getType() != upgrade.getItem()) {
+            return DirectUpgradeResult.WRONG_ITEM;
+        }
+
+        if (itemInHand.getAmount() < upgrade.getAmount()) {
+            return DirectUpgradeResult.NOT_ENOUGH_ITEMS;
+        }
+
+        consume(itemInHand, upgrade.getAmount());
+
+        data.setLevel(targetLevel);
+        data.setXp(0);
+
+        return DirectUpgradeResult.SUCCESS;
+    }
+
+    public int getRequiredXpForNextLevel(int currentLevel) {
+        MainSettings settings = plugin.getConfigManager().getMainSettings();
+        double base = settings.getBaseXp();
+        double scale = settings.getXpScale();
+
+        return (int) Math.max(1, Math.round(base * Math.pow(scale, Math.max(0, currentLevel - 1))));
+    }
+
+    private void consume(ItemStack item, int amount) {
+        int newAmount = item.getAmount() - amount;
+        item.setAmount(Math.max(newAmount, 0));
+    }
+
+    public enum DirectUpgradeResult {
+        SUCCESS,
+        MAX_LEVEL,
+        NO_CONFIG,
+        WRONG_ITEM,
+        NOT_ENOUGH_ITEMS
     }
 }

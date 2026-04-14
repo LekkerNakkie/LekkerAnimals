@@ -1,3 +1,9 @@
+hologram:
+  enabled: true
+  update-interval-ticks: 10
+  show-distance: 12.0
+  format: "&b{animal} &8• &7Lvl &b{level} &8• &c❤ &b{hunger}&8/&7{max_hunger}"
+
 animals:
   COW:
     enabled: true
@@ -14,8 +20,25 @@ animals:
     feeding:
       WHEAT:
         hunger: 20
-        xp: 5
-        bond: 2
+        xp: 3
+        bond: 1
+      HAY_BLOCK:
+        hunger: 40
+        xp: 8
+        bond: 3
+
+    leveling:
+      max-level: 25
+      direct-upgrades:
+        2:
+          item: "GOLDEN_CARROT"
+          amount: 10
+        3:
+          item: "DIAMOND"
+          amount: 5
+        4:
+          item: "EMERALD"
+          amount: 8
 
   PIG:
     enabled: true
@@ -32,11 +55,123 @@ animals:
     feeding:
       CARROT:
         hunger: 20
-        xp: 5
-        bond: 2
+        xp: 3
+        bond: 1
+      POTATO:
+        hunger: 15
+        xp: 2
+        bond: 1
+      BEETROOT:
+        hunger: 15
+        xp: 2
+        bond: 1
 
-hologram:
-  enabled: true
-  update-interval-ticks: 10
-  show-distance: 12.0
-  format: "&b{animal} &8• &7Lvl &b{level} &8• &c❤ &b{hunger}&8/&7{max_hunger}"
+    leveling:
+      max-level: 25
+      direct-upgrades:
+        2:
+          item: "GOLDEN_CARROT"
+          amount: 10
+        3:
+          item: "DIAMOND"
+          amount: 5
+
+  SHEEP:
+    enabled: true
+    display-name: "&fSheep"
+
+    bonding:
+      item: "WHEAT"
+      required-amount: 1
+
+    hunger:
+      max: 90
+      drain: 2
+
+    feeding:
+      WHEAT:
+        hunger: 20
+        xp: 3
+        bond: 1
+
+    leveling:
+      max-level: 25
+      direct-upgrades:
+        2:
+          item: "GOLD_INGOT"
+          amount: 8
+        3:
+          item: "DIAMOND"
+          amount: 4
+
+  CHICKEN:
+    enabled: true
+    display-name: "&fChicken"
+
+    bonding:
+      item: "WHEAT_SEEDS"
+      required-amount: 1
+
+    hunger:
+      max: 75
+      drain: 2
+
+    feeding:
+      WHEAT_SEEDS:
+        hunger: 15
+        xp: 2
+        bond: 1
+      BEETROOT_SEEDS:
+        hunger: 12
+        xp: 2
+        bond: 1
+      MELON_SEEDS:
+        hunger: 12
+        xp: 2
+        bond: 1
+      PUMPKIN_SEEDS:
+        hunger: 12
+        xp: 2
+        bond: 1
+
+    leveling:
+      max-level: 25
+      direct-upgrades:
+        2:
+          item: "GOLD_NUGGET"
+          amount: 16
+        3:
+          item: "EMERALD"
+          amount: 3
+
+  RABBIT:
+    enabled: true
+    display-name: "&fRabbit"
+
+    bonding:
+      item: "GOLDEN_CARROT"
+      required-amount: 1
+
+    hunger:
+      max: 80
+      drain: 2
+
+    feeding:
+      CARROT:
+        hunger: 18
+        xp: 3
+        bond: 1
+      DANDELION:
+        hunger: 10
+        xp: 1
+        bond: 1
+
+    leveling:
+      max-level: 25
+      direct-upgrades:
+        2:
+          item: "GOLDEN_CARROT"
+          amount: 6
+        3:
+          item: "DIAMOND"
+          amount: 3

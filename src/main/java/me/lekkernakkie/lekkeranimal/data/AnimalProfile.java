@@ -15,7 +15,9 @@ public class AnimalProfile {
     private final int requiredBondAmount;
     private final int maxHunger;
     private final int hungerDrain;
-    private final Map<Material, FoodSettings> feedingFoods;
+    private final int maxLevel;
+    private final Map<Material, FeedingReward> feedingRewards;
+    private final Map<Integer, DirectLevelUpgrade> directLevelUpgrades;
 
     public AnimalProfile(EntityType entityType,
                          boolean enabled,
@@ -24,7 +26,9 @@ public class AnimalProfile {
                          int requiredBondAmount,
                          int maxHunger,
                          int hungerDrain,
-                         Map<Material, FoodSettings> feedingFoods) {
+                         int maxLevel,
+                         Map<Material, FeedingReward> feedingRewards,
+                         Map<Integer, DirectLevelUpgrade> directLevelUpgrades) {
         this.entityType = entityType;
         this.enabled = enabled;
         this.displayName = displayName;
@@ -32,7 +36,9 @@ public class AnimalProfile {
         this.requiredBondAmount = requiredBondAmount;
         this.maxHunger = maxHunger;
         this.hungerDrain = hungerDrain;
-        this.feedingFoods = feedingFoods;
+        this.maxLevel = maxLevel;
+        this.feedingRewards = feedingRewards;
+        this.directLevelUpgrades = directLevelUpgrades;
     }
 
     public EntityType getEntityType() {
@@ -63,35 +69,23 @@ public class AnimalProfile {
         return hungerDrain;
     }
 
-    public Map<Material, FoodSettings> getFeedingFoods() {
-        return Collections.unmodifiableMap(feedingFoods);
+    public int getMaxLevel() {
+        return maxLevel;
     }
 
-    public FoodSettings getFoodSettings(Material material) {
-        return feedingFoods.get(material);
+    public Map<Material, FeedingReward> getFeedingRewards() {
+        return Collections.unmodifiableMap(feedingRewards);
     }
 
-    public static class FoodSettings {
-        private final int hungerRestore;
-        private final int xpGain;
-        private final int bondGain;
+    public FeedingReward getFeedingReward(Material material) {
+        return feedingRewards.get(material);
+    }
 
-        public FoodSettings(int hungerRestore, int xpGain, int bondGain) {
-            this.hungerRestore = hungerRestore;
-            this.xpGain = xpGain;
-            this.bondGain = bondGain;
-        }
+    public Map<Integer, DirectLevelUpgrade> getDirectLevelUpgrades() {
+        return Collections.unmodifiableMap(directLevelUpgrades);
+    }
 
-        public int getHungerRestore() {
-            return hungerRestore;
-        }
-
-        public int getXpGain() {
-            return xpGain;
-        }
-
-        public int getBondGain() {
-            return bondGain;
-        }
+    public DirectLevelUpgrade getDirectLevelUpgrade(int targetLevel) {
+        return directLevelUpgrades.get(targetLevel);
     }
 }

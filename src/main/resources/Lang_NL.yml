@@ -4,6 +4,8 @@ general:
   reload: "{prefix}&aDe plugin werd succesvol herladen."
   no-permission: "{prefix}&cDaar edde gij het lef ni vur.."
   already-owned: "{prefix}&cDit dier heeft al een eigenaar."
+  not-your-animal: "{prefix}&cDit dier is niet van jou."
+  animal-not-supported: "{prefix}&cDit dier wordt niet ondersteund."
 
 help:
   header: "&8&m----------------------------------------"
@@ -27,6 +29,18 @@ bonding:
   not-enough-items: "{prefix}&cJe hebt niet genoeg bond items vast."
 
 feeding:
-  success: "{prefix}&aJe voedde je &e{animal}&a. Hunger: &e{hunger}&7/&e{max_hunger}"
+  success: "{prefix}&aJe voedde je {animal}&a. Hunger: &e{hunger}&7/&e{max_hunger} &8| &b+{xp} XP"
   full: "{prefix}&eDit dier heeft momenteel geen eten nodig."
   invalid-food: "{prefix}&cDit dier wil dat voedsel niet eten."
+
+hunger:
+  warning: "{prefix}&eJe {animal} &eheeft honger. Hunger: &c{hunger}&7/&e{max_hunger}"
+  starving-death: "{prefix}&cJe {animal} &cis gestorven van de honger."
+
+leveling:
+  level-up: "{prefix}&aJe {animal} &ais nu level &b{level}&a!"
+  max-level: "{prefix}&eDit dier heeft al het maximum level bereikt."
+  direct-upgrade-success: "{prefix}&aJe hebt je {animal} &adirect geupgrade naar level &b{level}&a!"
+  direct-upgrade-no-config: "{prefix}&cVoor het volgende level is geen direct upgrade item ingesteld."
+  direct-upgrade-wrong-item: "{prefix}&cJe hebt het verkeerde item vast voor deze level upgrade."
+  direct-upgrade-not-enough: "{prefix}&cJe hebt niet genoeg items voor deze level upgrade."

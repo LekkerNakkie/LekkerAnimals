@@ -13,7 +13,7 @@ public class LangSettings {
 
     public LangSettings(FileConfiguration config) {
         this.config = config;
-        this.prefix = color(config.getString("prefix", "&8[&bLekkerAnimal&8] &7"));
+        this.prefix = ColorUtil.colorize(config.getString("prefix", "&8[&bLekkerAnimal&8] &7"));
     }
 
     public String getRaw(String path) {
@@ -22,17 +22,19 @@ public class LangSettings {
 
     public String get(String path) {
         String value = config.getString(path, path);
-        return color(applyPrefix(value));
+        value = applyPrefix(value);
+        return ColorUtil.colorize(value);
     }
 
     public String get(String path, Map<String, String> placeholders) {
-        String value = get(path);
+        String value = config.getString(path, path);
+        value = applyPrefix(value);
 
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
             value = value.replace("{" + entry.getKey() + "}", entry.getValue());
         }
 
-        return value;
+        return ColorUtil.colorize(value);
     }
 
     public void send(CommandSender sender, String path) {
@@ -49,9 +51,5 @@ public class LangSettings {
 
     private String applyPrefix(String input) {
         return input.replace("{prefix}", prefix);
-    }
-
-    private String color(String input) {
-        return ColorUtil.colorize(input);
     }
 }

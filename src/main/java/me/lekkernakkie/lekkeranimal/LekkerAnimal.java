@@ -5,6 +5,7 @@ import me.lekkernakkie.lekkeranimal.config.ConfigManager;
 import me.lekkernakkie.lekkeranimal.data.DataManager;
 import me.lekkernakkie.lekkeranimal.listener.AnimalDeathListener;
 import me.lekkernakkie.lekkeranimal.listener.AnimalInteractListener;
+import me.lekkernakkie.lekkeranimal.listener.GuiClickListener;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import me.lekkernakkie.lekkeranimal.manager.BondManager;
 import me.lekkernakkie.lekkeranimal.manager.GuiManager;
@@ -57,6 +58,11 @@ public class LekkerAnimal extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(
                 new AnimalDeathListener(animalManager),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new GuiClickListener(this),
                 this
         );
 

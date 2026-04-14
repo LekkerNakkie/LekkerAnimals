@@ -32,6 +32,7 @@ feeding:
   success: "{prefix}&aJe voedde je {animal}&a. Hunger: &e{hunger}&7/&e{max_hunger} &8| &b+{xp} XP"
   full: "{prefix}&eDit dier heeft momenteel geen eten nodig."
   invalid-food: "{prefix}&cDit dier wil dat voedsel niet eten."
+  no-food-in-inventory: "{prefix}&cJe hebt geen geldig voer in je inventory."
 
 hunger:
   warning: "{prefix}&eJe {animal} &eheeft honger. Hunger: &c{hunger}&7/&e{max_hunger}"

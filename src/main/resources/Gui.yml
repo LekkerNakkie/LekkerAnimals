@@ -6,14 +6,14 @@ gui:
 
     filler:
       enabled: true
-      material: "GRAY_STAINED_GLASS_PANE"
+      material: "LIGHT_BLUE_STAINED_GLASS_PANE"
       name: " "
 
     items:
       owner:
         slot: 11
         material: "PLAYER_HEAD"
-        name: "&bOwner"
+        name: "&bEigenaar"
         lore:
           - "&7Eigenaar: &f{owner}"
           - "&7Type: &f{animal_type}"
@@ -21,11 +21,13 @@ gui:
       hunger:
         slot: 13
         material: "GOLDEN_CARROT"
-        name: "&cHunger"
+        name: "&cHonger"
         lore:
-          - "&7Hunger: &f{hunger}&8/&f{max_hunger}"
+          - "&7Honger: &f{hunger}&8/&f{max_hunger}"
           - "&7Status: {hunger_bar}"
           - "&7Percentage: &f{hunger_percent}%"
+          - ""
+          - "&eKlik om te voederen"
 
       level:
         slot: 15
@@ -35,17 +37,14 @@ gui:
           - "&7Level: &f{level}"
           - "&7XP: &f{xp}&8/&f{required_xp}"
           - "&7Progress: {xp_bar}"
-          - "&7Nog nodig: &f{xp_left}"
-
-      next-upgrade:
-        slot: 22
-        material: "ANVIL"
-        name: "&6Next Upgrade"
-        lore:
-          - "&7Volgend level: &f{next_level}"
+          - ""
+          - "&6Volgende upgrade:"
+          - "&7Level: &f{next_level}"
           - "&7Item: &f{next_upgrade_item}"
           - "&7Amount: &f{next_upgrade_amount}"
           - "&7Status: {next_upgrade_status}"
+          - ""
+          - "&eKlik om direct te upgraden"
 
 bars:
   hunger:

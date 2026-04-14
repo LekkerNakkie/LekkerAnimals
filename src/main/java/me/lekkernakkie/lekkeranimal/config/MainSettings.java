@@ -38,7 +38,7 @@ public class MainSettings {
 
     public MainSettings(FileConfiguration config) {
         this.debug = config.getBoolean("debug", false);
-        this.languageFile = config.getString("language-file", "Lang_NL.yml");
+        this.languageFile = config.getString("language-file", "lang_NL.yml");
 
         this.databaseType = config.getString("database.type", "SQLITE");
         this.sqliteFile = config.getString("database.sqlite.file", "data.db");

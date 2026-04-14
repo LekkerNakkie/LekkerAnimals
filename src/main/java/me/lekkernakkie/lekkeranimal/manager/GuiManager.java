@@ -5,11 +5,11 @@ import me.lekkernakkie.lekkeranimal.config.GuiSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalData;
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
+import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +27,7 @@ public class GuiManager {
         this.plugin = plugin;
     }
 
-    public void openAnimalInfo(Player player, Entity entity) {
+    public void openAnimalInfo(org.bukkit.entity.Player player, Entity entity) {
         if (player == null || entity == null) {
             return;
         }
@@ -51,7 +51,11 @@ public class GuiManager {
                 gui.getAnimalInfoTitle().replace("{animal}", profile.getDisplayName())
         );
 
-        Inventory inventory = Bukkit.createInventory(null, gui.getAnimalInfoRows() * 9, title);
+        Inventory inventory = Bukkit.createInventory(
+                new AnimalGuiHolder(entity.getUniqueId()),
+                gui.getAnimalInfoRows() * 9,
+                title
+        );
 
         if (gui.isFillerEnabled()) {
             ItemStack filler = createItem(gui.getFillerMaterial(), gui.getFillerName(), List.of());
@@ -63,9 +67,24 @@ public class GuiManager {
         inventory.setItem(gui.getOwnerSlot(), createOwnerItem(data, profile, gui));
         inventory.setItem(gui.getHungerSlot(), createHungerItem(data, profile, gui));
         inventory.setItem(gui.getLevelSlot(), createLevelItem(data, profile, gui));
-        inventory.setItem(gui.getNextUpgradeSlot(), createNextUpgradeItem(data, profile, gui));
 
         player.openInventory(inventory);
+    }
+
+    public void refreshOpenAnimalGui(org.bukkit.entity.Player player, Entity entity) {
+        if (player == null || entity == null) {
+            return;
+        }
+
+        if (!(player.getOpenInventory().getTopInventory().getHolder() instanceof AnimalGuiHolder holder)) {
+            return;
+        }
+
+        if (!holder.getEntityUuid().equals(entity.getUniqueId())) {
+            return;
+        }
+
+        openAnimalInfo(player, entity);
     }
 
     private ItemStack createOwnerItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
@@ -74,7 +93,8 @@ public class GuiManager {
         if (item.getType() == Material.PLAYER_HEAD && item.getItemMeta() instanceof SkullMeta skullMeta) {
             skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(data.getOwnerUuid()));
             skullMeta.setDisplayName(ColorUtil.colorize(gui.getOwnerName()));
-            skullMeta.setLore(colorizeList(applyPlaceholders(gui.getOwnerLore(),
+            skullMeta.setLore(colorizeList(applyPlaceholders(
+                    gui.getOwnerLore(),
                     "{owner}", data.getOwnerName(),
                     "{animal_type}", profile.getEntityType().name(),
                     "{animal}", profile.getDisplayName()
@@ -84,12 +104,16 @@ public class GuiManager {
             return item;
         }
 
-        return createItem(gui.getOwnerMaterial(), gui.getOwnerName(),
-                applyPlaceholders(gui.getOwnerLore(),
+        return createItem(
+                gui.getOwnerMaterial(),
+                gui.getOwnerName(),
+                applyPlaceholders(
+                        gui.getOwnerLore(),
                         "{owner}", data.getOwnerName(),
                         "{animal_type}", profile.getEntityType().name(),
                         "{animal}", profile.getDisplayName()
-                ));
+                )
+        );
     }
 
     private ItemStack createHungerItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
@@ -98,7 +122,8 @@ public class GuiManager {
         return createItem(
                 gui.getHungerMaterial(),
                 gui.getHungerName(),
-                applyPlaceholders(gui.getHungerLore(),
+                applyPlaceholders(
+                        gui.getHungerLore(),
                         "{hunger}", String.valueOf(data.getHunger()),
                         "{max_hunger}", String.valueOf(profile.getMaxHunger()),
                         "{hunger_percent}", String.valueOf(percent),
@@ -116,16 +141,35 @@ public class GuiManager {
 
     private ItemStack createLevelItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
         int requiredXp = plugin.getLevelManager().getRequiredXpForNextLevel(data.getLevel());
-        int xpLeft = Math.max(0, requiredXp - data.getXp());
+        int nextLevel = data.getLevel() + 1;
+        DirectLevelUpgrade upgrade = profile.getDirectLevelUpgrade(nextLevel);
+
+        String nextUpgradeItem;
+        String nextUpgradeAmount;
+        String nextUpgradeStatus;
+
+        if (data.getLevel() >= profile.getMaxLevel()) {
+            nextUpgradeItem = "MAX";
+            nextUpgradeAmount = "0";
+            nextUpgradeStatus = ColorUtil.colorize("&aMaximum level bereikt");
+        } else if (upgrade == null) {
+            nextUpgradeItem = "None";
+            nextUpgradeAmount = "0";
+            nextUpgradeStatus = ColorUtil.colorize("&cGeen directe upgrade ingesteld");
+        } else {
+            nextUpgradeItem = formatMaterial(upgrade.getItem());
+            nextUpgradeAmount = String.valueOf(upgrade.getAmount());
+            nextUpgradeStatus = ColorUtil.colorize("&eKlik om direct te upgraden");
+        }
 
         return createItem(
                 gui.getLevelMaterial(),
                 gui.getLevelName(),
-                applyPlaceholders(gui.getLevelLore(),
+                applyPlaceholders(
+                        gui.getLevelLore(),
                         "{level}", String.valueOf(data.getLevel()),
                         "{xp}", String.valueOf(data.getXp()),
                         "{required_xp}", String.valueOf(requiredXp),
-                        "{xp_left}", String.valueOf(xpLeft),
                         "{xp_bar}", createBar(
                                 data.getXp(),
                                 requiredXp,
@@ -133,41 +177,11 @@ public class GuiManager {
                                 gui.getXpBarFullColor(),
                                 gui.getXpBarEmptyColor(),
                                 gui.getXpBarSymbol()
-                        )
-                )
-        );
-    }
-
-    private ItemStack createNextUpgradeItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
-        int nextLevel = data.getLevel() + 1;
-        DirectLevelUpgrade upgrade = profile.getDirectLevelUpgrade(nextLevel);
-
-        String itemName;
-        String amount;
-        String status;
-
-        if (data.getLevel() >= profile.getMaxLevel()) {
-            itemName = "MAX";
-            amount = "0";
-            status = ColorUtil.colorize("&aMaximum level bereikt");
-        } else if (upgrade == null) {
-            itemName = "None";
-            amount = "0";
-            status = ColorUtil.colorize("&cGeen directe upgrade ingesteld");
-        } else {
-            itemName = formatMaterial(upgrade.getItem());
-            amount = String.valueOf(upgrade.getAmount());
-            status = ColorUtil.colorize("&eGeef dit item om direct te levelen");
-        }
-
-        return createItem(
-                gui.getNextUpgradeMaterial(),
-                gui.getNextUpgradeName(),
-                applyPlaceholders(gui.getNextUpgradeLore(),
+                        ),
                         "{next_level}", String.valueOf(nextLevel),
-                        "{next_upgrade_item}", itemName,
-                        "{next_upgrade_amount}", amount,
-                        "{next_upgrade_status}", status
+                        "{next_upgrade_item}", nextUpgradeItem,
+                        "{next_upgrade_amount}", nextUpgradeAmount,
+                        "{next_upgrade_status}", nextUpgradeStatus
                 )
         );
     }

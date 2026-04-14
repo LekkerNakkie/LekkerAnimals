@@ -3,14 +3,19 @@ package me.lekkernakkie.lekkeranimal.config;
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
+import me.lekkernakkie.lekkeranimal.data.HarvestDrop;
+import me.lekkernakkie.lekkeranimal.data.HarvestLevelProfile;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class AnimalsSettings {
 
@@ -43,7 +48,6 @@ public class AnimalsSettings {
 
             int maxHunger = config.getInt(basePath + ".hunger.max", 100);
             int hungerDrain = config.getInt(basePath + ".hunger.drain", 1);
-
             int maxLevel = config.getInt(basePath + ".leveling.max-level", 25);
 
             Material bondItem;
@@ -56,6 +60,10 @@ public class AnimalsSettings {
             Map<Material, FeedingReward> feedingRewards = loadFeedingRewards(basePath);
             Map<Integer, DirectLevelUpgrade> directUpgrades = loadDirectUpgrades(basePath);
 
+            boolean harvestingEnabled = config.getBoolean(basePath + ".harvesting.enabled", false);
+            long harvestCooldownSeconds = config.getLong(basePath + ".harvesting.cooldown-seconds", 1800L);
+            TreeMap<Integer, HarvestLevelProfile> harvestProfiles = loadHarvestProfiles(basePath);
+
             AnimalProfile profile = new AnimalProfile(
                     entityType,
                     enabled,
@@ -66,7 +74,10 @@ public class AnimalsSettings {
                     hungerDrain,
                     maxLevel,
                     feedingRewards,
-                    directUpgrades
+                    directUpgrades,
+                    harvestingEnabled,
+                    harvestCooldownSeconds,
+                    harvestProfiles
             );
 
             profiles.put(entityType, profile);
@@ -131,6 +142,52 @@ public class AnimalsSettings {
         }
 
         return upgrades;
+    }
+
+    private TreeMap<Integer, HarvestLevelProfile> loadHarvestProfiles(String basePath) {
+        TreeMap<Integer, HarvestLevelProfile> result = new TreeMap<>();
+
+        ConfigurationSection levelsSection = config.getConfigurationSection(basePath + ".harvesting.levels");
+        if (levelsSection == null) {
+            return result;
+        }
+
+        for (String levelKey : levelsSection.getKeys(false)) {
+            int level;
+            try {
+                level = Integer.parseInt(levelKey);
+            } catch (NumberFormatException ex) {
+                continue;
+            }
+
+            ConfigurationSection dropsSection = config.getConfigurationSection(basePath + ".harvesting.levels." + levelKey + ".drops");
+            if (dropsSection == null) {
+                continue;
+            }
+
+            List<HarvestDrop> drops = new ArrayList<>();
+
+            for (String dropKey : dropsSection.getKeys(false)) {
+                String path = basePath + ".harvesting.levels." + levelKey + ".drops." + dropKey;
+
+                Material material;
+                try {
+                    material = Material.valueOf(dropKey.toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                    continue;
+                }
+
+                int amount = config.getInt(path + ".amount", 1);
+                double chance = config.getDouble(path + ".chance", 100.0D);
+                String displayName = config.getString(path + ".name", "");
+
+                drops.add(new HarvestDrop(material, amount, chance, displayName));
+            }
+
+            result.put(level, new HarvestLevelProfile(level, drops));
+        }
+
+        return result;
     }
 
     public FileConfiguration getConfig() {

@@ -45,3 +45,8 @@ leveling:
   direct-upgrade-no-config: "{prefix}&7Voor het volgende level is geen direct upgrade item ingesteld."
   direct-upgrade-wrong-item: "{prefix}&7Je hebt het verkeerde item vast voor deze level upgrade."
   direct-upgrade-not-enough: "{prefix}&7Je hebt niet genoeg items voor level &b{level}&7. Nodig: &b{required}&fx {item}&7."
+harvesting:
+  success: "{prefix}&aJe hebt je {animal} &ageharvest."
+  not-ready: "{prefix}&eDit dier is nog niet klaar. Nog &f{time}&e."
+  disabled: "{prefix}&cHarvesting staat niet aan voor dit dier."
+  no-drops: "{prefix}&cEr zijn geen harvest drops ingesteld voor dit level."

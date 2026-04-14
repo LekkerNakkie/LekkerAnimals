@@ -48,7 +48,7 @@ public class AnimalRepository {
 
         String sql = """
                 SELECT id, entity_uuid, owner_uuid, owner_name, animal_type, level, xp, bond, hunger, max_hunger,
-                       world, x, y, z, created_at, updated_at
+                       world, x, y, z, created_at, updated_at, last_harvest_at
                 FROM bonded_animals
                 """;
 
@@ -74,7 +74,8 @@ public class AnimalRepository {
                             rs.getDouble("y"),
                             rs.getDouble("z"),
                             rs.getLong("created_at"),
-                            rs.getLong("updated_at")
+                            rs.getLong("updated_at"),
+                            rs.getLong("last_harvest_at")
                     );
                     data.setDirty(false);
                     animals.add(data);
@@ -90,7 +91,7 @@ public class AnimalRepository {
         String sql = """
                 UPDATE bonded_animals
                 SET owner_uuid = ?, owner_name = ?, animal_type = ?, level = ?, xp = ?, bond = ?, hunger = ?,
-                    max_hunger = ?, world = ?, x = ?, y = ?, z = ?, updated_at = ?
+                    max_hunger = ?, world = ?, x = ?, y = ?, z = ?, updated_at = ?, last_harvest_at = ?
                 WHERE entity_uuid = ?
                 """;
 
@@ -110,7 +111,8 @@ public class AnimalRepository {
             statement.setDouble(11, data.getY());
             statement.setDouble(12, data.getZ());
             statement.setLong(13, System.currentTimeMillis());
-            statement.setString(14, data.getEntityUuid().toString());
+            statement.setLong(14, data.getLastHarvestAt());
+            statement.setString(15, data.getEntityUuid().toString());
 
             return statement.executeUpdate();
         }
@@ -119,8 +121,8 @@ public class AnimalRepository {
     private void insert(AnimalData data) throws SQLException {
         String sql = """
                 INSERT INTO bonded_animals
-                (entity_uuid, owner_uuid, owner_name, animal_type, level, xp, bond, hunger, max_hunger, world, x, y, z, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (entity_uuid, owner_uuid, owner_name, animal_type, level, xp, bond, hunger, max_hunger, world, x, y, z, created_at, updated_at, last_harvest_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         long now = System.currentTimeMillis();
@@ -147,6 +149,7 @@ public class AnimalRepository {
             statement.setDouble(13, data.getZ());
             statement.setLong(14, data.getCreatedAt());
             statement.setLong(15, data.getUpdatedAt());
+            statement.setLong(16, data.getLastHarvestAt());
 
             statement.executeUpdate();
 

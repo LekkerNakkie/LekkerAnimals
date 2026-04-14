@@ -5,6 +5,7 @@ import org.bukkit.entity.EntityType;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class AnimalProfile {
 
@@ -19,6 +20,10 @@ public class AnimalProfile {
     private final Map<Material, FeedingReward> feedingRewards;
     private final Map<Integer, DirectLevelUpgrade> directLevelUpgrades;
 
+    private final boolean harvestingEnabled;
+    private final long harvestCooldownSeconds;
+    private final TreeMap<Integer, HarvestLevelProfile> harvestProfiles;
+
     public AnimalProfile(EntityType entityType,
                          boolean enabled,
                          String displayName,
@@ -28,7 +33,10 @@ public class AnimalProfile {
                          int hungerDrain,
                          int maxLevel,
                          Map<Material, FeedingReward> feedingRewards,
-                         Map<Integer, DirectLevelUpgrade> directLevelUpgrades) {
+                         Map<Integer, DirectLevelUpgrade> directLevelUpgrades,
+                         boolean harvestingEnabled,
+                         long harvestCooldownSeconds,
+                         TreeMap<Integer, HarvestLevelProfile> harvestProfiles) {
         this.entityType = entityType;
         this.enabled = enabled;
         this.displayName = displayName;
@@ -39,6 +47,9 @@ public class AnimalProfile {
         this.maxLevel = maxLevel;
         this.feedingRewards = feedingRewards;
         this.directLevelUpgrades = directLevelUpgrades;
+        this.harvestingEnabled = harvestingEnabled;
+        this.harvestCooldownSeconds = harvestCooldownSeconds;
+        this.harvestProfiles = harvestProfiles;
     }
 
     public EntityType getEntityType() {
@@ -87,5 +98,22 @@ public class AnimalProfile {
 
     public DirectLevelUpgrade getDirectLevelUpgrade(int targetLevel) {
         return directLevelUpgrades.get(targetLevel);
+    }
+
+    public boolean isHarvestingEnabled() {
+        return harvestingEnabled;
+    }
+
+    public long getHarvestCooldownSeconds() {
+        return harvestCooldownSeconds;
+    }
+
+    public Map<Integer, HarvestLevelProfile> getHarvestProfiles() {
+        return Collections.unmodifiableMap(harvestProfiles);
+    }
+
+    public HarvestLevelProfile getHarvestProfileForLevel(int currentLevel) {
+        Map.Entry<Integer, HarvestLevelProfile> entry = harvestProfiles.floorEntry(currentLevel);
+        return entry != null ? entry.getValue() : null;
     }
 }

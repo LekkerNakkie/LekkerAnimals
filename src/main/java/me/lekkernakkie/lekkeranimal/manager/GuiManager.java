@@ -67,6 +67,7 @@ public class GuiManager {
         inventory.setItem(gui.getOwnerSlot(), createOwnerItem(data, profile, gui));
         inventory.setItem(gui.getHungerSlot(), createHungerItem(data, profile, gui));
         inventory.setItem(gui.getLevelSlot(), createLevelItem(data, profile, gui));
+        inventory.setItem(gui.getHarvestSlot(), createHarvestItem(data, profile, gui));
 
         player.openInventory(inventory);
     }
@@ -185,6 +186,32 @@ public class GuiManager {
         );
     }
 
+    private ItemStack createHarvestItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
+        boolean ready = plugin.getHarvestManager().isReady(data, profile);
+        String status = ready
+                ? ColorUtil.colorize("&aKlaar om te harvesten")
+                : ColorUtil.colorize("&eNog niet klaar");
+
+        String timeLeft = ready
+                ? ColorUtil.colorize("&aNu")
+                : ColorUtil.colorize("&f" + plugin.getHarvestManager().formatTimeLeft(
+                plugin.getHarvestManager().getTimeLeftMillis(data, profile)
+        ));
+
+        String preview = plugin.getHarvestManager().getPreview(profile, data.getLevel());
+
+        return createItem(
+                gui.getHarvestMaterial(),
+                gui.getHarvestName(),
+                applyPlaceholders(
+                        gui.getHarvestLore(),
+                        "{harvest_status}", status,
+                        "{harvest_time_left}", timeLeft,
+                        "{harvest_preview}", preview
+                )
+        );
+    }
+
     private ItemStack createItem(Material material, String name, List<String> lore) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
@@ -232,11 +259,11 @@ public class GuiManager {
 
         String fullColor;
         if (progress <= 0.33) {
-            fullColor = "&c"; // rood
+            fullColor = "&c";
         } else if (progress <= 0.66) {
-            fullColor = "&6"; // oranje/goud
+            fullColor = "&6";
         } else {
-            fullColor = "&a"; // groen
+            fullColor = "&a";
         }
 
         return ColorUtil.colorize(fullColor + symbol.repeat(filled) + emptyColor + symbol.repeat(Math.max(0, length - filled)));

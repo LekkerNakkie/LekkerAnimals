@@ -8,6 +8,7 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
+import me.lekkernakkie.lekkeranimal.manager.HarvestManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -65,6 +66,7 @@ public class GuiClickListener implements Listener {
         int rawSlot = event.getRawSlot();
         int hungerSlot = plugin.getConfigManager().getGuiSettings().getHungerSlot();
         int levelSlot = plugin.getConfigManager().getGuiSettings().getLevelSlot();
+        int harvestSlot = plugin.getConfigManager().getGuiSettings().getHarvestSlot();
 
         if (rawSlot == hungerSlot) {
             handleFeedClick(player, entity, data, profile);
@@ -73,6 +75,11 @@ public class GuiClickListener implements Listener {
 
         if (rawSlot == levelSlot) {
             handleLevelClick(player, entity, data, profile);
+            return;
+        }
+
+        if (rawSlot == harvestSlot) {
+            handleHarvestClick(player, entity, data, profile);
         }
     }
 
@@ -182,6 +189,27 @@ public class GuiClickListener implements Listener {
         ));
 
         plugin.getHologramManager().refresh(entity);
+        plugin.getGuiManager().openAnimalInfo(player, entity);
+    }
+
+    private void handleHarvestClick(Player player, Entity entity, AnimalData data, AnimalProfile profile) {
+        LangSettings lang = plugin.getConfigManager().getLangSettings();
+
+        HarvestManager.HarvestResult result = plugin.getHarvestManager().tryHarvest(player, entity, data, profile);
+
+        switch (result) {
+            case SUCCESS -> lang.send(player, "harvesting.success", Map.of(
+                    "animal", profile.getDisplayName()
+            ));
+            case NOT_READY -> lang.send(player, "harvesting.not-ready", Map.of(
+                    "time", plugin.getHarvestManager().formatTimeLeft(
+                            plugin.getHarvestManager().getTimeLeftMillis(data, profile)
+                    )
+            ));
+            case DISABLED -> lang.send(player, "harvesting.disabled");
+            case NO_DROPS -> lang.send(player, "harvesting.no-drops");
+        }
+
         plugin.getGuiManager().openAnimalInfo(player, entity);
     }
 

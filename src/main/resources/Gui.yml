@@ -11,7 +11,7 @@ gui:
 
     items:
       owner:
-        slot: 11
+        slot: 10
         material: "PLAYER_HEAD"
         name: "&bEigenaar"
         lore:
@@ -19,18 +19,17 @@ gui:
           - "&7Type: &f{animal_type}"
 
       hunger:
-        slot: 13
+        slot: 12
         material: "GOLDEN_CARROT"
         name: "&bHonger"
         lore:
           - "&7Honger: &b{hunger}&8/&f{max_hunger}"
           - "&7Status: {hunger_bar}"
-#         - "&7Percentage: &f{hunger_percent}%"
           - ""
           - "&bKlik om te voederen"
 
       level:
-        slot: 15
+        slot: 14
         material: "EXPERIENCE_BOTTLE"
         name: "&bLevel &f{level}"
         lore:
@@ -43,6 +42,19 @@ gui:
           - "&7Hoeveel: &f{next_upgrade_amount}"
           - ""
           - "&eKlik om direct te upgraden"
+
+      harvest:
+        slot: 16
+        material: "CHEST"
+        name: "&6Harvest"
+        lore:
+          - "&7Status: {harvest_status}"
+          - "&7Cooldown: &f{harvest_time_left}"
+          - ""
+          - "&7Mogelijke drops:"
+          - "&f{harvest_preview}"
+          - ""
+          - "&eKlik om te harvesten"
 
 bars:
   hunger:

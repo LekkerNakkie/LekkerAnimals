@@ -110,7 +110,8 @@ public class DatabaseManager {
                         y DOUBLE,
                         z DOUBLE,
                         created_at BIGINT NOT NULL,
-                        updated_at BIGINT NOT NULL
+                        updated_at BIGINT NOT NULL,
+                        last_harvest_at BIGINT NOT NULL DEFAULT 0
                     )
                     """;
         } else {
@@ -131,7 +132,8 @@ public class DatabaseManager {
                         y REAL,
                         z REAL,
                         created_at INTEGER NOT NULL,
-                        updated_at INTEGER NOT NULL
+                        updated_at INTEGER NOT NULL,
+                        last_harvest_at INTEGER NOT NULL DEFAULT 0
                     )
                     """;
         }
@@ -139,6 +141,14 @@ public class DatabaseManager {
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {
             statement.executeUpdate(createTableSql);
+        }
+
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement()) {
+            try {
+                statement.executeUpdate("ALTER TABLE bonded_animals ADD COLUMN last_harvest_at BIGINT NOT NULL DEFAULT 0");
+            } catch (SQLException ignored) {
+            }
         }
     }
 }

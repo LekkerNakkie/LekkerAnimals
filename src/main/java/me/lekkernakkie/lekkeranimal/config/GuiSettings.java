@@ -3,7 +3,6 @@ package me.lekkernakkie.lekkeranimal.config;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.Collections;
 import java.util.List;
 
 public class GuiSettings {
@@ -31,7 +30,7 @@ public class GuiSettings {
     }
 
     public Material getFillerMaterial() {
-        return parseMaterial(config.getString("gui.animal-info.filler.material", "GRAY_STAINED_GLASS_PANE"), Material.GRAY_STAINED_GLASS_PANE);
+        return parseMaterial(config.getString("gui.animal-info.filler.material", "LIGHT_BLUE_STAINED_GLASS_PANE"), Material.LIGHT_BLUE_STAINED_GLASS_PANE);
     }
 
     public String getFillerName() {
@@ -86,20 +85,20 @@ public class GuiSettings {
         return config.getStringList("gui.animal-info.items.level.lore");
     }
 
-    public int getNextUpgradeSlot() {
-        return config.getInt("gui.animal-info.items.next-upgrade.slot", 22);
+    public int getHarvestSlot() {
+        return config.getInt("gui.animal-info.items.harvest.slot", 22);
     }
 
-    public Material getNextUpgradeMaterial() {
-        return parseMaterial(config.getString("gui.animal-info.items.next-upgrade.material", "ANVIL"), Material.ANVIL);
+    public Material getHarvestMaterial() {
+        return parseMaterial(config.getString("gui.animal-info.items.harvest.material", "CHEST"), Material.CHEST);
     }
 
-    public String getNextUpgradeName() {
-        return config.getString("gui.animal-info.items.next-upgrade.name", "&6Next Upgrade");
+    public String getHarvestName() {
+        return config.getString("gui.animal-info.items.harvest.name", "&6Harvest");
     }
 
-    public List<String> getNextUpgradeLore() {
-        return config.getStringList("gui.animal-info.items.next-upgrade.lore");
+    public List<String> getHarvestLore() {
+        return config.getStringList("gui.animal-info.items.harvest.lore");
     }
 
     public int getHungerBarLength() {

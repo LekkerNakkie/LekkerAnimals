@@ -28,11 +28,12 @@ public class AnimalData {
 
     private long createdAt;
     private long updatedAt;
+    private long lastHarvestAt;
 
     private boolean dirty = true;
 
     public AnimalData(UUID entityUuid, UUID ownerUuid, EntityType entityType, int hunger, int level, int xp, int bond) {
-        this(0L, entityUuid, ownerUuid, "", entityType, hunger, hunger, level, xp, bond, null, 0.0, 0.0, 0.0, System.currentTimeMillis(), System.currentTimeMillis());
+        this(0L, entityUuid, ownerUuid, "", entityType, hunger, hunger, level, xp, bond, null, 0.0, 0.0, 0.0, System.currentTimeMillis(), System.currentTimeMillis(), 0L);
     }
 
     public AnimalData(UUID entityUuid,
@@ -44,7 +45,7 @@ public class AnimalData {
                       int level,
                       int xp,
                       int bond) {
-        this(0L, entityUuid, ownerUuid, ownerName, entityType, hunger, maxHunger, level, xp, bond, null, 0.0, 0.0, 0.0, System.currentTimeMillis(), System.currentTimeMillis());
+        this(0L, entityUuid, ownerUuid, ownerName, entityType, hunger, maxHunger, level, xp, bond, null, 0.0, 0.0, 0.0, System.currentTimeMillis(), System.currentTimeMillis(), 0L);
     }
 
     public AnimalData(long databaseId,
@@ -62,7 +63,8 @@ public class AnimalData {
                       double y,
                       double z,
                       long createdAt,
-                      long updatedAt) {
+                      long updatedAt,
+                      long lastHarvestAt) {
         this.databaseId = databaseId;
         this.entityUuid = entityUuid;
         this.ownerUuid = ownerUuid;
@@ -79,6 +81,7 @@ public class AnimalData {
         this.z = z;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.lastHarvestAt = lastHarvestAt;
     }
 
     public void syncLocation(Entity entity) {
@@ -229,6 +232,16 @@ public class AnimalData {
 
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public long getLastHarvestAt() {
+        return lastHarvestAt;
+    }
+
+    public void setLastHarvestAt(long lastHarvestAt) {
+        this.lastHarvestAt = lastHarvestAt;
+        this.updatedAt = System.currentTimeMillis();
+        this.dirty = true;
     }
 
     public boolean isDirty() {

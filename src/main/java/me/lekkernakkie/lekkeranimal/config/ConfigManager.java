@@ -12,13 +12,16 @@ public class ConfigManager {
 
     private File animalsFile;
     private File langFile;
+    private File guiFile;
 
     private FileConfiguration animalsConfig;
     private FileConfiguration langConfig;
+    private FileConfiguration guiConfig;
 
     private MainSettings mainSettings;
     private AnimalsSettings animalsSettings;
     private LangSettings langSettings;
+    private GuiSettings guiSettings;
 
     public ConfigManager(LekkerAnimal plugin) {
         this.plugin = plugin;
@@ -27,19 +30,23 @@ public class ConfigManager {
     public void loadAll() {
         plugin.saveDefaultConfig();
         saveResourceIfNotExists("animals.yml");
-        saveResourceIfNotExists("Lang_NL.yml");
+        saveResourceIfNotExists("lang_NL.yml");
+        saveResourceIfNotExists("Gui.yml");
 
         plugin.reloadConfig();
 
         animalsFile = new File(plugin.getDataFolder(), "animals.yml");
-        langFile = new File(plugin.getDataFolder(), "Lang_NL.yml");
+        langFile = new File(plugin.getDataFolder(), "lang_NL.yml");
+        guiFile = new File(plugin.getDataFolder(), "Gui.yml");
 
         animalsConfig = YamlConfiguration.loadConfiguration(animalsFile);
         langConfig = YamlConfiguration.loadConfiguration(langFile);
+        guiConfig = YamlConfiguration.loadConfiguration(guiFile);
 
         mainSettings = new MainSettings(plugin.getConfig());
         animalsSettings = new AnimalsSettings(animalsConfig);
         langSettings = new LangSettings(langConfig);
+        guiSettings = new GuiSettings(guiConfig);
     }
 
     public void reloadAll() {
@@ -61,6 +68,10 @@ public class ConfigManager {
         return langConfig;
     }
 
+    public FileConfiguration getGuiConfig() {
+        return guiConfig;
+    }
+
     public MainSettings getMainSettings() {
         return mainSettings;
     }
@@ -71,5 +82,9 @@ public class ConfigManager {
 
     public LangSettings getLangSettings() {
         return langSettings;
+    }
+
+    public GuiSettings getGuiSettings() {
+        return guiSettings;
     }
 }

@@ -1,6 +1,7 @@
 package me.lekkernakkie.lekkeranimal.listener;
 
 import me.lekkernakkie.lekkeranimal.LekkerAnimal;
+import me.lekkernakkie.lekkeranimal.config.GuiSettings;
 import me.lekkernakkie.lekkeranimal.config.LangSettings;
 import me.lekkernakkie.lekkeranimal.config.MainSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalData;
@@ -47,13 +48,26 @@ public class AnimalInteractListener implements Listener {
 
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
-        ItemStack item = player.getInventory().getItemInMainHand();
         LangSettings lang = plugin.getConfigManager().getLangSettings();
 
         if (!animalManager.isSupported(entity)) {
             return;
         }
 
+        if (player.isSneaking() && animalManager.isBonded(entity)) {
+            AnimalData data = animalManager.getAnimalData(entity);
+
+            if (data != null && data.getOwnerUuid().equals(player.getUniqueId())) {
+                GuiSettings guiSettings = plugin.getConfigManager().getGuiSettings();
+                if (guiSettings.isAnimalInfoEnabled()) {
+                    plugin.getGuiManager().openAnimalInfo(player, entity);
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
+        ItemStack item = player.getInventory().getItemInMainHand();
         if (ItemUtil.isEmpty(item)) {
             return;
         }

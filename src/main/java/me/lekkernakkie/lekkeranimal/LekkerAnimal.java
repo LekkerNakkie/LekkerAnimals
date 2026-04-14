@@ -7,6 +7,7 @@ import me.lekkernakkie.lekkeranimal.listener.AnimalDeathListener;
 import me.lekkernakkie.lekkeranimal.listener.AnimalInteractListener;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import me.lekkernakkie.lekkeranimal.manager.BondManager;
+import me.lekkernakkie.lekkeranimal.manager.GuiManager;
 import me.lekkernakkie.lekkeranimal.manager.HologramManager;
 import me.lekkernakkie.lekkeranimal.manager.HungerManager;
 import me.lekkernakkie.lekkeranimal.manager.LevelManager;
@@ -24,6 +25,7 @@ public class LekkerAnimal extends JavaPlugin {
     private HungerManager hungerManager;
     private LevelManager levelManager;
     private HologramManager hologramManager;
+    private GuiManager guiManager;
 
     @Override
     public void onEnable() {
@@ -40,6 +42,7 @@ public class LekkerAnimal extends JavaPlugin {
         this.bondManager = new BondManager(this, animalManager);
         this.hungerManager = new HungerManager(this, animalManager);
         this.hologramManager = new HologramManager(this, animalManager);
+        this.guiManager = new GuiManager(this);
 
         this.dataManager.loadAllIntoMemory(animalManager);
 
@@ -110,5 +113,9 @@ public class LekkerAnimal extends JavaPlugin {
 
     public HologramManager getHologramManager() {
         return hologramManager;
+    }
+
+    public GuiManager getGuiManager() {
+        return guiManager;
     }
 }

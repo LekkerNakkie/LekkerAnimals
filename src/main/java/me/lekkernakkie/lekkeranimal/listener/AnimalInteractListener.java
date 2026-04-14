@@ -74,6 +74,10 @@ public class AnimalInteractListener implements Listener {
             return;
         }
 
+        if (!player.getName().equalsIgnoreCase(data.getOwnerName())) {
+            data.setOwnerName(player.getName());
+        }
+
         AnimalProfile profile = plugin.getConfigManager().getAnimalsSettings().getProfile(entity.getType());
         if (profile == null) {
             return;
@@ -143,6 +147,7 @@ public class AnimalInteractListener implements Listener {
 
         switch (result) {
             case SUCCESS -> {
+                plugin.getDataManager().saveAnimal(data);
                 lang.send(player, "leveling.direct-upgrade-success", Map.of(
                         "animal", profile.getDisplayName(),
                         "level", String.valueOf(data.getLevel())
@@ -200,6 +205,7 @@ public class AnimalInteractListener implements Listener {
 
         int newHunger = Math.min(profile.getMaxHunger(), data.getHunger() + reward.getHungerRestore());
         data.setHunger(newHunger);
+        data.setMaxHunger(profile.getMaxHunger());
 
         int newBond = Math.min(mainSettings.getMaxBond(), data.getBond() + reward.getBondGain());
         data.setBond(newBond);
@@ -207,6 +213,7 @@ public class AnimalInteractListener implements Listener {
         int levelsGained = levelManager.addXp(data, profile, reward.getXp());
 
         consumeOne(item);
+        plugin.getDataManager().saveAnimal(data);
 
         lang.send(player, "feeding.success", Map.of(
                 "animal", profile.getDisplayName(),

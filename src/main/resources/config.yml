@@ -1,9 +1,9 @@
 debug: false
 
-language-file: "Lang_NL.yml"
+language-file: "lang_NL.yml"
 
 database:
-  type: "SQLITE"
+  type: "SQLITE" # SQLITE or MYSQL
 
   sqlite:
     file: "data.db"
@@ -36,6 +36,8 @@ leveling:
 bond:
   enabled: true
   max-bond: 100
+  start-bond: 10
+  start-level: 1
 
 sounds:
   feed: "ENTITY_PLAYER_LEVELUP"

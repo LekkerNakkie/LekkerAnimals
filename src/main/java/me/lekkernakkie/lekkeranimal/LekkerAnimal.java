@@ -33,12 +33,15 @@ public class LekkerAnimal extends JavaPlugin {
         this.configManager.loadAll();
 
         this.dataManager = new DataManager(this);
+        this.dataManager.initialize();
 
         this.animalManager = new AnimalManager();
         this.levelManager = new LevelManager(this);
         this.bondManager = new BondManager(this, animalManager);
         this.hungerManager = new HungerManager(this, animalManager);
         this.hologramManager = new HologramManager(this, animalManager);
+
+        this.dataManager.loadAllIntoMemory(animalManager);
 
         if (getCommand("lekkeranimals") != null) {
             getCommand("lekkeranimals").setExecutor(new LekkerAnimalsCommand(this));
@@ -68,6 +71,10 @@ public class LekkerAnimal extends JavaPlugin {
 
         if (hologramManager != null) {
             hologramManager.stop();
+        }
+
+        if (dataManager != null) {
+            dataManager.shutdown(animalManager);
         }
 
         getLogger().info("LekkerAnimal disabled.");

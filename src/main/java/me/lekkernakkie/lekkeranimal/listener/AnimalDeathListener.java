@@ -25,6 +25,10 @@ public class AnimalDeathListener implements Listener {
             if (LekkerAnimal.getInstance().getHologramManager() != null) {
                 LekkerAnimal.getInstance().getHologramManager().remove(entity);
             }
+
+            if (LekkerAnimal.getInstance().getDataManager() != null) {
+                LekkerAnimal.getInstance().getDataManager().deleteAnimal(entity.getUniqueId());
+            }
         }
     }
 }

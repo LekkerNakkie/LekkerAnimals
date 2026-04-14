@@ -44,7 +44,7 @@ public class BondManager {
             return BondResult.NOT_SUPPORTED;
         }
 
-        if (itemInHand == null || itemInHand.getType().isAir() || itemInHand.getType() != profile.getBondItem()) {
+        if (itemInHand == null || itemInHand.getType() != profile.getBondItem()) {
             return BondResult.WRONG_ITEM;
         }
 
@@ -55,15 +55,20 @@ public class BondManager {
         AnimalData data = new AnimalData(
                 entity.getUniqueId(),
                 player.getUniqueId(),
+                player.getName(),
                 entity.getType(),
+                profile.getMaxHunger(),
                 profile.getMaxHunger(),
                 mainSettings.getStartLevel(),
                 0,
                 mainSettings.getStartBond()
         );
 
+        data.syncLocation(entity);
+
         animalManager.registerAnimal(data);
         consumeItem(itemInHand, profile.getRequiredBondAmount());
+        plugin.getDataManager().saveAnimal(data);
 
         return BondResult.SUCCESS;
     }

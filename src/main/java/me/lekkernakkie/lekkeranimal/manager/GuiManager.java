@@ -127,11 +127,10 @@ public class GuiManager {
                         "{hunger}", String.valueOf(data.getHunger()),
                         "{max_hunger}", String.valueOf(profile.getMaxHunger()),
                         "{hunger_percent}", String.valueOf(percent),
-                        "{hunger_bar}", createBar(
+                        "{hunger_bar}", createHungerBar(
                                 data.getHunger(),
                                 profile.getMaxHunger(),
                                 gui.getHungerBarLength(),
-                                gui.getHungerBarFullColor(),
                                 gui.getHungerBarEmptyColor(),
                                 gui.getHungerBarSymbol()
                         )
@@ -164,7 +163,7 @@ public class GuiManager {
 
         return createItem(
                 gui.getLevelMaterial(),
-                gui.getLevelName(),
+                gui.getLevelName().replace("{level}", String.valueOf(data.getLevel())),
                 applyPlaceholders(
                         gui.getLevelLore(),
                         "{level}", String.valueOf(data.getLevel()),
@@ -221,6 +220,26 @@ public class GuiManager {
             result.add(ColorUtil.colorize(line));
         }
         return result;
+    }
+
+    private String createHungerBar(int current, int max, int length, String emptyColor, String symbol) {
+        if (max <= 0) {
+            return ColorUtil.colorize(emptyColor + symbol.repeat(length));
+        }
+
+        double progress = Math.max(0.0, Math.min(1.0, current / (double) max));
+        int filled = (int) Math.round(progress * length);
+
+        String fullColor;
+        if (progress <= 0.33) {
+            fullColor = "&c"; // rood
+        } else if (progress <= 0.66) {
+            fullColor = "&6"; // oranje/goud
+        } else {
+            fullColor = "&a"; // groen
+        }
+
+        return ColorUtil.colorize(fullColor + symbol.repeat(filled) + emptyColor + symbol.repeat(Math.max(0, length - filled)));
     }
 
     private String createBar(int current, int max, int length, String fullColor, String emptyColor, String symbol) {

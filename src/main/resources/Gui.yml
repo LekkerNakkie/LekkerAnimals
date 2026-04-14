@@ -21,28 +21,26 @@ gui:
       hunger:
         slot: 13
         material: "GOLDEN_CARROT"
-        name: "&cHonger"
+        name: "&bHonger"
         lore:
-          - "&7Honger: &f{hunger}&8/&f{max_hunger}"
+          - "&7Honger: &b{hunger}&8/&f{max_hunger}"
           - "&7Status: {hunger_bar}"
-          - "&7Percentage: &f{hunger_percent}%"
+#         - "&7Percentage: &f{hunger_percent}%"
           - ""
-          - "&eKlik om te voederen"
+          - "&bKlik om te voederen"
 
       level:
         slot: 15
         material: "EXPERIENCE_BOTTLE"
-        name: "&eLevel"
+        name: "&bLevel &f{level}"
         lore:
-          - "&7Level: &f{level}"
           - "&7XP: &f{xp}&8/&f{required_xp}"
           - "&7Progress: {xp_bar}"
           - ""
-          - "&6Volgende upgrade:"
+          - "&bVolgende upgrade:"
           - "&7Level: &f{next_level}"
           - "&7Item: &f{next_upgrade_item}"
-          - "&7Amount: &f{next_upgrade_amount}"
-          - "&7Status: {next_upgrade_status}"
+          - "&7Hoeveel: &f{next_upgrade_amount}"
           - ""
           - "&eKlik om direct te upgraden"
 

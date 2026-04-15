@@ -5,6 +5,7 @@ import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.data.HarvestDrop;
 import me.lekkernakkie.lekkeranimal.data.HarvestLevelProfile;
+import me.lekkernakkie.lekkeranimal.data.HeadPriceRule;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -13,6 +14,7 @@ import org.bukkit.entity.EntityType;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -67,6 +69,10 @@ public class AnimalsSettings {
             long harvestCooldownSeconds = Math.max(0L, config.getLong(basePath + ".harvesting.cooldown-seconds", 1800L));
             TreeMap<Integer, HarvestLevelProfile> harvestProfiles = loadHarvestProfiles(basePath, key);
 
+            boolean headSellingEnabled = config.getBoolean(basePath + ".head-sell.enabled", false);
+            HeadPriceRule defaultHeadPrice = loadPriceRule(basePath + ".head-sell.default-pricing");
+            Map<String, HeadPriceRule> rarityHeadPrices = loadRarityPriceRules(basePath + ".head-sell.rarity-pricing");
+
             AnimalProfile profile = new AnimalProfile(
                     entityType,
                     enabled,
@@ -80,7 +86,10 @@ public class AnimalsSettings {
                     directUpgrades,
                     harvestingEnabled,
                     harvestCooldownSeconds,
-                    harvestProfiles
+                    harvestProfiles,
+                    headSellingEnabled,
+                    defaultHeadPrice,
+                    rarityHeadPrices
             );
 
             profiles.put(entityType, profile);
@@ -216,6 +225,42 @@ public class AnimalsSettings {
             }
 
             result.put(level, new HarvestLevelProfile(level, drops));
+        }
+
+        return result;
+    }
+
+    private HeadPriceRule loadPriceRule(String path) {
+        String typeRaw = config.getString(path + ".type", "FIXED");
+        HeadPriceRule.Type type;
+
+        try {
+            type = HeadPriceRule.Type.valueOf(typeRaw.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            type = HeadPriceRule.Type.FIXED;
+        }
+
+        double fixed = Math.max(0.0D, config.getDouble(path + ".fixed", 0.0D));
+        double min = Math.max(0.0D, config.getDouble(path + ".min", 0.0D));
+        double max = Math.max(0.0D, config.getDouble(path + ".max", 0.0D));
+
+        HeadPriceRule rule = new HeadPriceRule(type, fixed, min, max);
+        return rule.isConfigured() ? rule : null;
+    }
+
+    private Map<String, HeadPriceRule> loadRarityPriceRules(String path) {
+        Map<String, HeadPriceRule> result = new LinkedHashMap<>();
+        ConfigurationSection section = config.getConfigurationSection(path);
+
+        if (section == null) {
+            return result;
+        }
+
+        for (String rarityKey : section.getKeys(false)) {
+            HeadPriceRule rule = loadPriceRule(path + "." + rarityKey);
+            if (rule != null && rule.isConfigured()) {
+                result.put(rarityKey.toUpperCase(), rule);
+            }
         }
 
         return result;

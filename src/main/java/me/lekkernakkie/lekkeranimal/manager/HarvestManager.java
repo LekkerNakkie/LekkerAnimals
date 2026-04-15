@@ -33,6 +33,7 @@ public class HarvestManager {
     private final NamespacedKey customHeadKey;
     private final NamespacedKey rarityKey;
     private final NamespacedKey animalNameKey;
+    private final NamespacedKey animalTypeKey;
     private final NamespacedKey headOwnerKey;
     private final NamespacedKey headTextureKey;
 
@@ -41,6 +42,7 @@ public class HarvestManager {
         this.customHeadKey = new NamespacedKey(plugin, "lekkeranimal_head");
         this.rarityKey = new NamespacedKey(plugin, "lekkeranimal_head_rarity");
         this.animalNameKey = new NamespacedKey(plugin, "lekkeranimal_head_animal_name");
+        this.animalTypeKey = new NamespacedKey(plugin, "lekkeranimal_head_animal_type");
         this.headOwnerKey = new NamespacedKey(plugin, "lekkeranimal_head_owner");
         this.headTextureKey = new NamespacedKey(plugin, "lekkeranimal_head_texture");
     }
@@ -181,6 +183,15 @@ public class HarvestManager {
         return animalName != null ? animalName : "";
     }
 
+    public String getStoredAnimalTypeKey(ItemMeta meta) {
+        if (meta == null) {
+            return "";
+        }
+
+        String type = meta.getPersistentDataContainer().get(animalTypeKey, PersistentDataType.STRING);
+        return type != null ? type : "";
+    }
+
     public String getStoredHeadOwner(ItemMeta meta) {
         if (meta == null) {
             return "";
@@ -205,6 +216,10 @@ public class HarvestManager {
 
     public String getStoredAnimalNameFromMeta(ItemMeta meta) {
         return getStoredAnimalName(meta);
+    }
+
+    public String getStoredAnimalTypeKeyFromMeta(ItemMeta meta) {
+        return getStoredAnimalTypeKey(meta);
     }
 
     public String getStoredHeadOwnerFromMeta(ItemMeta meta) {
@@ -234,6 +249,15 @@ public class HarvestManager {
         return animalName != null ? animalName : "";
     }
 
+    public String getStoredAnimalTypeKey(Skull skull) {
+        if (skull == null) {
+            return "";
+        }
+
+        String type = skull.getPersistentDataContainer().get(animalTypeKey, PersistentDataType.STRING);
+        return type != null ? type : "";
+    }
+
     public String getStoredHeadOwner(Skull skull) {
         if (skull == null) {
             return "";
@@ -252,7 +276,12 @@ public class HarvestManager {
         return texture != null ? texture : "";
     }
 
-    public void applyPersistentHeadData(ItemMeta meta, String rarityId, String animalName, String headOwner, String headTexture) {
+    public void applyPersistentHeadData(ItemMeta meta,
+                                        String rarityId,
+                                        String animalType,
+                                        String animalName,
+                                        String headOwner,
+                                        String headTexture) {
         if (meta == null) {
             return;
         }
@@ -260,6 +289,12 @@ public class HarvestManager {
         meta.getPersistentDataContainer().set(customHeadKey, PersistentDataType.BYTE, (byte) 1);
         meta.getPersistentDataContainer().set(rarityKey, PersistentDataType.STRING, normalizeRarity(rarityId));
         meta.getPersistentDataContainer().set(animalNameKey, PersistentDataType.STRING, animalName != null ? animalName : "");
+
+        if (animalType != null && !animalType.isBlank()) {
+            meta.getPersistentDataContainer().set(animalTypeKey, PersistentDataType.STRING, animalType.toUpperCase());
+        } else {
+            meta.getPersistentDataContainer().remove(animalTypeKey);
+        }
 
         if (headOwner != null && !headOwner.isBlank()) {
             meta.getPersistentDataContainer().set(headOwnerKey, PersistentDataType.STRING, headOwner);
@@ -274,7 +309,12 @@ public class HarvestManager {
         }
     }
 
-    public void applyPersistentHeadData(Skull skull, String rarityId, String animalName, String headOwner, String headTexture) {
+    public void applyPersistentHeadData(Skull skull,
+                                        String rarityId,
+                                        String animalType,
+                                        String animalName,
+                                        String headOwner,
+                                        String headTexture) {
         if (skull == null) {
             return;
         }
@@ -284,6 +324,12 @@ public class HarvestManager {
         pdc.set(customHeadKey, PersistentDataType.BYTE, (byte) 1);
         pdc.set(rarityKey, PersistentDataType.STRING, normalizeRarity(rarityId));
         pdc.set(animalNameKey, PersistentDataType.STRING, animalName != null ? animalName : "");
+
+        if (animalType != null && !animalType.isBlank()) {
+            pdc.set(animalTypeKey, PersistentDataType.STRING, animalType.toUpperCase());
+        } else {
+            pdc.remove(animalTypeKey);
+        }
 
         if (headOwner != null && !headOwner.isBlank()) {
             pdc.set(headOwnerKey, PersistentDataType.STRING, headOwner);
@@ -298,7 +344,11 @@ public class HarvestManager {
         }
     }
 
-    public ItemStack createPersistentHeadItem(String rarityId, String animalName, String headOwner, String headTexture) {
+    public ItemStack createPersistentHeadItem(String rarityId,
+                                              String animalType,
+                                              String animalName,
+                                              String headOwner,
+                                              String headTexture) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         if (!(item.getItemMeta() instanceof SkullMeta meta)) {
             return item;
@@ -317,7 +367,7 @@ public class HarvestManager {
 
         meta.setDisplayName(ColorUtil.colorize(displayName));
         meta.setLore(colorizeLore(buildHeadLore(normalizedRarity, animalName, displayName)));
-        applyPersistentHeadData(meta, normalizedRarity, animalName, headOwner, headTexture);
+        applyPersistentHeadData(meta, normalizedRarity, animalType, animalName, headOwner, headTexture);
 
         item.setItemMeta(meta);
         return item;
@@ -343,6 +393,7 @@ public class HarvestManager {
         if (material == Material.PLAYER_HEAD && plugin.getConfigManager().getMainSettings().isCustomHeadsEnabled()) {
             return createPersistentHeadItem(
                     normalizeRarity(drop.getRarity()),
+                    profile.getEntityType().name(),
                     profile.getDisplayName(),
                     drop.getHeadOwner(),
                     drop.getHeadTexture()

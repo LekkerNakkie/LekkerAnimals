@@ -17,6 +17,8 @@ help:
   line1: "&f/lekkeranimals &8- &bOpen het help menu"
   line2: "&f/lekkeranimals reload &8- &bHerlaad de plugin"
   line3: "&f/lekkeranimals info &8- &bToon plugin info"
+  line4: "&f/animalhead <player> <animal> [amount] &8- &bGeef common animal heads"
+  line5: "&f/animalheadsell [player] &8- &bOpen het animal head sell menu"
   footer: "&8&m----------------------------------------"
 
 info:
@@ -68,3 +70,15 @@ co-owners:
   add-failed: "{prefix}&7Kon {player} niet toevoegen als mede-eigenaar."
   removed: "{prefix}&7{player} werd verwijderd als mede-eigenaar."
   toggle-updated: "{prefix}&7Co-owner activiteit is nu {status}&7."
+
+heads:
+  invalid-animal: "{prefix}&cOngeldig dier."
+  invalid-amount: "{prefix}&cOngeldig amount."
+  player-not-found: "{prefix}&cSpeler niet gevonden."
+  received: "{prefix}&7Je kreeg &b{amount}x {rarity} {animal} Head&7."
+  given: "{prefix}&7Je gaf &b{player} &f{amount}x {rarity} {animal} Head&7."
+  economy-missing: "{prefix}&cVault of economy provider ontbreekt."
+  not-sellable: "{prefix}&cDat item kan hier niet verkocht worden."
+  sell-none: "{prefix}&7Er zitten geen verkoopbare animal heads in het menu."
+  sell-success: "{prefix}&7Je verkocht &b{amount} &7heads voor &a{money}&7."
+  sell-opened-for: "{prefix}&7Animal head sell menu geopend voor &b{player}&7."

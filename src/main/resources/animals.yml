@@ -99,6 +99,35 @@ animals:
               amount: 1
               chance: 1.0
 
+    head-sell:
+      enabled: true
+      default-pricing:
+        type: "FIXED"
+        fixed: 20.0
+        min: 0.0
+        max: 0.0
+      rarity-pricing:
+        COMMON:
+          type: "FIXED"
+          fixed: 20.0
+          min: 0.0
+          max: 0.0
+        RARE:
+          type: "FIXED"
+          fixed: 45.0
+          min: 0.0
+          max: 0.0
+        ULTRA:
+          type: "RANGE"
+          fixed: 0.0
+          min: 70.0
+          max: 90.0
+        LEGENDARY:
+          type: "FIXED"
+          fixed: 100.0
+          min: 0.0
+          max: 0.0
+
   PIG:
     enabled: true
     display-name: "&fVarken"
@@ -188,6 +217,28 @@ animals:
             PIG_SPAWN_EGG:
               amount: 1
               chance: 1.0
+
+    head-sell:
+      enabled: true
+      default-pricing:
+        type: "FIXED"
+        fixed: 18.0
+        min: 0.0
+        max: 0.0
+      rarity-pricing:
+        COMMON:
+          type: "FIXED"
+          fixed: 18.0
+        RARE:
+          type: "FIXED"
+          fixed: 40.0
+        ULTRA:
+          type: "RANGE"
+          min: 60.0
+          max: 80.0
+        LEGENDARY:
+          type: "FIXED"
+          fixed: 95.0
 
   CHICKEN:
     enabled: true
@@ -279,6 +330,28 @@ animals:
               amount: 1
               chance: 1.0
 
+    head-sell:
+      enabled: true
+      default-pricing:
+        type: "FIXED"
+        fixed: 15.0
+        min: 0.0
+        max: 0.0
+      rarity-pricing:
+        COMMON:
+          type: "FIXED"
+          fixed: 15.0
+        RARE:
+          type: "FIXED"
+          fixed: 35.0
+        ULTRA:
+          type: "RANGE"
+          min: 50.0
+          max: 70.0
+        LEGENDARY:
+          type: "FIXED"
+          fixed: 85.0
+
   MUSHROOMCOW:
     enabled: true
     display-name: "&fMooshroom"
@@ -369,6 +442,28 @@ animals:
               amount: 1
               chance: 1.0
 
+    head-sell:
+      enabled: true
+      default-pricing:
+        type: "FIXED"
+        fixed: 25.0
+        min: 0.0
+        max: 0.0
+      rarity-pricing:
+        COMMON:
+          type: "FIXED"
+          fixed: 25.0
+        RARE:
+          type: "FIXED"
+          fixed: 55.0
+        ULTRA:
+          type: "RANGE"
+          min: 80.0
+          max: 105.0
+        LEGENDARY:
+          type: "FIXED"
+          fixed: 130.0
+
   SHEEP:
     enabled: true
     display-name: "&fSchaap"
@@ -454,3 +549,25 @@ animals:
             SHEEP_SPAWN_EGG:
               amount: 1
               chance: 1.0
+
+    head-sell:
+      enabled: true
+      default-pricing:
+        type: "FIXED"
+        fixed: 17.0
+        min: 0.0
+        max: 0.0
+      rarity-pricing:
+        COMMON:
+          type: "FIXED"
+          fixed: 17.0
+        RARE:
+          type: "FIXED"
+          fixed: 38.0
+        ULTRA:
+          type: "RANGE"
+          min: 55.0
+          max: 75.0
+        LEGENDARY:
+          type: "FIXED"
+          fixed: 92.0

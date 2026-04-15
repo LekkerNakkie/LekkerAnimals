@@ -60,6 +60,8 @@ public class LekkerAnimalsCommand implements CommandExecutor {
         lang.send(sender, "help.line1");
         lang.send(sender, "help.line2");
         lang.send(sender, "help.line3");
+        lang.send(sender, "help.line4");
+        lang.send(sender, "help.line5");
         lang.send(sender, "help.footer");
     }
 }

@@ -164,6 +164,61 @@ gui:
           - "&7Ga terug zonder iets"
           - "&7te verwijderen."
 
+  head-sell:
+    title: "&bAnimal Head Sell"
+    rows: 3
+
+    filler:
+      enabled: true
+      material: "LIGHT_BLUE_STAINED_GLASS_PANE"
+      name: " "
+
+    sell-slots:
+      - "0"
+      - "1"
+      - "2"
+      - "3"
+      - "4"
+      - "5"
+      - "6"
+      - "7"
+      - "8"
+      - "9"
+      - "10"
+      - "11"
+      - "12"
+      - "13"
+      - "14"
+      - "15"
+      - "16"
+      - "17"
+
+    items:
+      info:
+        slot: 22
+        material: "PAPER"
+        name: "&bVerkoop overzicht"
+        lore:
+          - "&7Heads: &f{heads}"
+          - "&7Minimum: &a{min_total}"
+          - "&7Maximum: &a{max_total}"
+
+      confirm:
+        slot: 24
+        material: "LIME_WOOL"
+        name: "&aBevestig verkoop"
+        lore:
+          - "&7Verkoop alle heads"
+          - "&7die in dit menu zitten."
+
+      close:
+        slot: 26
+        material: "BARRIER"
+        name: "&cSluiten"
+        lore:
+          - "&7Sluit het menu."
+          - "&7Items worden teruggegeven."
+
 # --------------------------------------------------------------------
 # Bars
 # --------------------------------------------------------------------

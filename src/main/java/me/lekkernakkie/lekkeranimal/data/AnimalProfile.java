@@ -24,6 +24,10 @@ public class AnimalProfile {
     private final long harvestCooldownSeconds;
     private final TreeMap<Integer, HarvestLevelProfile> harvestProfiles;
 
+    private final boolean headSellingEnabled;
+    private final HeadPriceRule defaultHeadPrice;
+    private final Map<String, HeadPriceRule> rarityHeadPrices;
+
     public AnimalProfile(EntityType entityType,
                          boolean enabled,
                          String displayName,
@@ -36,7 +40,10 @@ public class AnimalProfile {
                          Map<Integer, DirectLevelUpgrade> directLevelUpgrades,
                          boolean harvestingEnabled,
                          long harvestCooldownSeconds,
-                         TreeMap<Integer, HarvestLevelProfile> harvestProfiles) {
+                         TreeMap<Integer, HarvestLevelProfile> harvestProfiles,
+                         boolean headSellingEnabled,
+                         HeadPriceRule defaultHeadPrice,
+                         Map<String, HeadPriceRule> rarityHeadPrices) {
         this.entityType = entityType;
         this.enabled = enabled;
         this.displayName = displayName;
@@ -50,6 +57,9 @@ public class AnimalProfile {
         this.harvestingEnabled = harvestingEnabled;
         this.harvestCooldownSeconds = harvestCooldownSeconds;
         this.harvestProfiles = harvestProfiles;
+        this.headSellingEnabled = headSellingEnabled;
+        this.defaultHeadPrice = defaultHeadPrice;
+        this.rarityHeadPrices = rarityHeadPrices;
     }
 
     public EntityType getEntityType() {
@@ -115,5 +125,30 @@ public class AnimalProfile {
     public HarvestLevelProfile getHarvestProfileForLevel(int currentLevel) {
         Map.Entry<Integer, HarvestLevelProfile> entry = harvestProfiles.floorEntry(currentLevel);
         return entry != null ? entry.getValue() : null;
+    }
+
+    public boolean isHeadSellingEnabled() {
+        return headSellingEnabled;
+    }
+
+    public HeadPriceRule getDefaultHeadPrice() {
+        return defaultHeadPrice;
+    }
+
+    public Map<String, HeadPriceRule> getRarityHeadPrices() {
+        return Collections.unmodifiableMap(rarityHeadPrices);
+    }
+
+    public HeadPriceRule getHeadPriceRule(String rarityId) {
+        if (rarityId != null && !rarityId.isBlank()) {
+            HeadPriceRule specific = rarityHeadPrices.get(rarityId.toUpperCase());
+            if (specific != null && specific.isConfigured()) {
+                return specific;
+            }
+        }
+
+        return defaultHeadPrice != null && defaultHeadPrice.isConfigured()
+                ? defaultHeadPrice
+                : null;
     }
 }

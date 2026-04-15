@@ -4,6 +4,7 @@ main: me.lekkernakkie.lekkeranimal.LekkerAnimal
 api-version: '1.21'
 author: LekkerNakkie
 description: Bond, feed and take care of your animals.
+softdepend: [Vault]
 
 commands:
   lekkeranimals:
@@ -11,11 +12,22 @@ commands:
     usage: /lekkeranimals
     aliases: [la, lekkeranimal]
 
+  animalhead:
+    description: Give an animal head
+    usage: /animalhead <player> <animal> [amount] | /animalhead <player> <animal> <rarity> [amount]
+
+  animalheadsell:
+    description: Open the animal head sell menu
+    usage: /animalheadsell [player]
+
 permissions:
   lekkeranimal.admin:
     default: op
     children:
       lekkeranimal.command.reload: true
+      lekkeranimal.command.animalhead: true
+      lekkeranimal.command.animalheadsell: true
+      lekkeranimal.command.animalheadsell.others: true
       lekkeranimal.coowners.slots.3: false
 
   lekkeranimal.command.help:
@@ -28,6 +40,15 @@ permissions:
     default: op
 
   lekkeranimal.command.givebonditem:
+    default: op
+
+  lekkeranimal.command.animalhead:
+    default: op
+
+  lekkeranimal.command.animalheadsell:
+    default: op
+
+  lekkeranimal.command.animalheadsell.others:
     default: op
 
   lekkeranimal.coowners.slots.2:

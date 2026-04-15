@@ -1,5 +1,7 @@
 package me.lekkernakkie.lekkeranimal;
 
+import me.lekkernakkie.lekkeranimal.command.AnimalHeadCommand;
+import me.lekkernakkie.lekkeranimal.command.AnimalHeadSellCommand;
 import me.lekkernakkie.lekkeranimal.command.LekkerAnimalsCommand;
 import me.lekkernakkie.lekkeranimal.config.ConfigManager;
 import me.lekkernakkie.lekkeranimal.data.DataManager;
@@ -8,14 +10,18 @@ import me.lekkernakkie.lekkeranimal.listener.AnimalInteractListener;
 import me.lekkernakkie.lekkeranimal.listener.CoOwnerChatListener;
 import me.lekkernakkie.lekkeranimal.listener.CustomHeadListener;
 import me.lekkernakkie.lekkeranimal.listener.GuiClickListener;
+import me.lekkernakkie.lekkeranimal.listener.HeadSellListener;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import me.lekkernakkie.lekkeranimal.manager.BondManager;
 import me.lekkernakkie.lekkeranimal.manager.GuiManager;
 import me.lekkernakkie.lekkeranimal.manager.HarvestManager;
+import me.lekkernakkie.lekkeranimal.manager.HeadSellManager;
 import me.lekkernakkie.lekkeranimal.manager.HologramManager;
 import me.lekkernakkie.lekkeranimal.manager.HungerManager;
 import me.lekkernakkie.lekkeranimal.manager.LevelManager;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Entity;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -33,8 +39,10 @@ public class LekkerAnimal extends JavaPlugin {
     private HologramManager hologramManager;
     private GuiManager guiManager;
     private HarvestManager harvestManager;
+    private HeadSellManager headSellManager;
     private CoOwnerChatListener coOwnerChatListener;
 
+    private Economy economy;
     private BukkitTask autosaveTask;
 
     @Override
@@ -54,12 +62,23 @@ public class LekkerAnimal extends JavaPlugin {
         this.hologramManager = new HologramManager(this, animalManager);
         this.guiManager = new GuiManager(this);
         this.harvestManager = new HarvestManager(this);
+        this.headSellManager = new HeadSellManager(this);
         this.coOwnerChatListener = new CoOwnerChatListener(this);
 
         this.dataManager.loadAllIntoMemory(animalManager);
 
+        setupEconomy();
+
         if (getCommand("lekkeranimals") != null) {
             getCommand("lekkeranimals").setExecutor(new LekkerAnimalsCommand(this));
+        }
+
+        if (getCommand("animalhead") != null) {
+            getCommand("animalhead").setExecutor(new AnimalHeadCommand(this));
+        }
+
+        if (getCommand("animalheadsell") != null) {
+            getCommand("animalheadsell").setExecutor(new AnimalHeadSellCommand(this));
         }
 
         getServer().getPluginManager().registerEvents(
@@ -74,6 +93,11 @@ public class LekkerAnimal extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(
                 new GuiClickListener(this),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new HeadSellListener(this),
                 this
         );
 
@@ -109,6 +133,7 @@ public class LekkerAnimal extends JavaPlugin {
             configManager.reloadAll();
         }
 
+        setupEconomy();
         startRuntimeTasks();
         refreshLoadedAnimalDisplays();
     }
@@ -178,6 +203,33 @@ public class LekkerAnimal extends JavaPlugin {
         }
     }
 
+    private void setupEconomy() {
+        this.economy = null;
+
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            getLogger().warning("Vault not found. Animal head selling will be disabled.");
+            return;
+        }
+
+        RegisteredServiceProvider<Economy> registration =
+                getServer().getServicesManager().getRegistration(Economy.class);
+
+        if (registration == null) {
+            getLogger().warning("No economy provider found. Animal head selling will be disabled.");
+            return;
+        }
+
+        this.economy = registration.getProvider();
+    }
+
+    public boolean hasEconomy() {
+        return economy != null;
+    }
+
+    public Economy getEconomy() {
+        return economy;
+    }
+
     public static LekkerAnimal getInstance() {
         return instance;
     }
@@ -216,6 +268,10 @@ public class LekkerAnimal extends JavaPlugin {
 
     public HarvestManager getHarvestManager() {
         return harvestManager;
+    }
+
+    public HeadSellManager getHeadSellManager() {
+        return headSellManager;
     }
 
     public CoOwnerChatListener getCoOwnerChatListener() {

@@ -7,32 +7,50 @@ import me.lekkernakkie.lekkeranimal.data.AnimalData;
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
+import me.lekkernakkie.lekkeranimal.gui.AnimalsListGuiHolder;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
 import me.lekkernakkie.lekkeranimal.util.ItemsAdderUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class GuiManager {
 
+    private static final int ANIMALS_LIST_ROWS = 6;
+    private static final int ANIMALS_LIST_PAGE_SIZE = 28;
+
     private final LekkerAnimal plugin;
+    private final NamespacedKey animalsListEntityKey;
 
     public GuiManager(LekkerAnimal plugin) {
         this.plugin = plugin;
+        this.animalsListEntityKey = new NamespacedKey(plugin, "animals_list_entity");
     }
 
-    public void openAnimalInfo(org.bukkit.entity.Player player, Entity entity) {
+    public void openAnimalInfo(Player player, Entity entity) {
+        openAnimalInfo(player, entity, false, false, 0);
+    }
+
+    public void openAnimalInfo(Player player,
+                               Entity entity,
+                               boolean openedFromAnimalsMenu,
+                               boolean animalsMenuCoOwnerView,
+                               int animalsMenuPage) {
         if (player == null || entity == null) {
             return;
         }
@@ -59,7 +77,14 @@ public class GuiManager {
         );
 
         Inventory inventory = Bukkit.createInventory(
-                new AnimalGuiHolder(entity.getUniqueId(), AnimalGuiHolder.ScreenType.MAIN),
+                new AnimalGuiHolder(
+                        entity.getUniqueId(),
+                        AnimalGuiHolder.ScreenType.MAIN,
+                        null,
+                        openedFromAnimalsMenu,
+                        animalsMenuCoOwnerView,
+                        animalsMenuPage
+                ),
                 gui.getAnimalInfoRows() * 9,
                 title
         );
@@ -85,10 +110,131 @@ public class GuiManager {
             inventory.setItem(gui.getCoOwnerManageSlot(), createCoOwnerManageItem(data, gui));
         }
 
+        if (openedFromAnimalsMenu) {
+            inventory.setItem(18, createItem(
+                    "ARROW",
+                    Material.ARROW,
+                    "&cTerug",
+                    List.of("&7Terug naar jouw dieren")
+            ));
+        }
+
         player.openInventory(inventory);
     }
 
-    public void openCoOwnerMenu(org.bukkit.entity.Player player, Entity entity) {
+    public void openAnimalsList(Player player, boolean coOwnerView, int page) {
+        if (player == null) {
+            return;
+        }
+
+        List<AnimalData> source = new ArrayList<>();
+
+        for (AnimalData data : plugin.getAnimalManager().getAllBondedAnimals()) {
+            if (coOwnerView) {
+                if (data.isCoOwner(player.getUniqueId())) {
+                    source.add(data);
+                }
+            } else {
+                if (data.isOwner(player.getUniqueId())) {
+                    source.add(data);
+                }
+            }
+        }
+
+        for (AnimalData data : plugin.getAnimalManager().getAllPendingAnimals()) {
+            if (coOwnerView) {
+                if (data.isCoOwner(player.getUniqueId())) {
+                    source.add(data);
+                }
+            } else {
+                if (data.isOwner(player.getUniqueId())) {
+                    source.add(data);
+                }
+            }
+        }
+
+        source.sort(Comparator
+                .comparing((AnimalData data) -> data.getWorldName() == null ? "" : data.getWorldName(), String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(data -> data.getEntityType().name(), String.CASE_INSENSITIVE_ORDER)
+                .thenComparingInt(AnimalData::getLevel)
+                .reversed()
+        );
+
+        int maxPage = Math.max(0, (source.size() - 1) / ANIMALS_LIST_PAGE_SIZE);
+        int currentPage = Math.max(0, Math.min(page, maxPage));
+
+        String title = coOwnerView
+                ? "&bJouw Co-owner Dieren &8• &fPagina " + (currentPage + 1)
+                : "&bJouw Dieren &8• &fPagina " + (currentPage + 1);
+
+        Inventory inventory = Bukkit.createInventory(
+                new AnimalsListGuiHolder(coOwnerView, currentPage),
+                ANIMALS_LIST_ROWS * 9,
+                ColorUtil.colorize(title)
+        );
+
+        ItemStack filler = createItem(
+                "LIGHT_BLUE_STAINED_GLASS_PANE",
+                Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                " ",
+                List.of()
+        );
+
+        for (int i = 0; i < inventory.getSize(); i++) {
+            inventory.setItem(i, filler);
+        }
+
+        inventory.setItem(45, createTabItem(!coOwnerView, "&bMijn dieren", Material.LEAD));
+        inventory.setItem(46, createTabItem(coOwnerView, "&dCo-owner dieren", Material.NAME_TAG));
+
+        if (currentPage > 0) {
+            inventory.setItem(48, createItem(
+                    "ARROW",
+                    Material.ARROW,
+                    "&bVorige pagina",
+                    List.of("&7Ga naar de vorige pagina")
+            ));
+        }
+
+        if (currentPage < maxPage) {
+            inventory.setItem(50, createItem(
+                    "ARROW",
+                    Material.ARROW,
+                    "&bVolgende pagina",
+                    List.of("&7Ga naar de volgende pagina")
+            ));
+        }
+
+        inventory.setItem(49, createItem(
+                "BOOK",
+                Material.BOOK,
+                coOwnerView ? "&dCo-owner dieren" : "&bMijn dieren",
+                List.of(
+                        "&7Totaal: &f" + source.size(),
+                        "&7Pagina: &f" + (currentPage + 1) + "&7/&f" + (maxPage + 1)
+                )
+        ));
+
+        int start = currentPage * ANIMALS_LIST_PAGE_SIZE;
+        int end = Math.min(source.size(), start + ANIMALS_LIST_PAGE_SIZE);
+
+        int[] slots = {
+                10, 11, 12, 13, 14, 15, 16,
+                19, 20, 21, 22, 23, 24, 25,
+                28, 29, 30, 31, 32, 33, 34,
+                37, 38, 39, 40, 41, 42, 43
+        };
+
+        int slotIndex = 0;
+        for (int i = start; i < end; i++) {
+            AnimalData data = source.get(i);
+            inventory.setItem(slots[slotIndex++], createAnimalListItem(data, coOwnerView));
+        }
+
+        player.openInventory(inventory);
+    }
+
+    public void openCoOwnerMenu(Player player, Entity entity) {
         if (player == null || entity == null) {
             return;
         }
@@ -173,7 +319,7 @@ public class GuiManager {
         player.openInventory(inventory);
     }
 
-    public void openRemoveCoOwnerConfirm(org.bukkit.entity.Player player, Entity entity, UUID targetCoOwnerUuid) {
+    public void openRemoveCoOwnerConfirm(Player player, Entity entity, UUID targetCoOwnerUuid) {
         if (player == null || entity == null || targetCoOwnerUuid == null) {
             return;
         }
@@ -217,7 +363,7 @@ public class GuiManager {
         player.openInventory(inventory);
     }
 
-    public void refreshOpenAnimalGui(org.bukkit.entity.Player player, Entity entity) {
+    public void refreshOpenAnimalGui(Player player, Entity entity) {
         if (player == null || entity == null) {
             return;
         }
@@ -231,7 +377,13 @@ public class GuiManager {
         }
 
         switch (holder.getScreenType()) {
-            case MAIN -> openAnimalInfo(player, entity);
+            case MAIN -> openAnimalInfo(
+                    player,
+                    entity,
+                    holder.isOpenedFromAnimalsMenu(),
+                    holder.isAnimalsMenuCoOwnerView(),
+                    holder.getAnimalsMenuPage()
+            );
             case CO_OWNERS -> openCoOwnerMenu(player, entity);
             case REMOVE_CO_OWNER_CONFIRM -> {
                 if (holder.getTargetCoOwnerUuid() != null) {
@@ -239,6 +391,76 @@ public class GuiManager {
                 }
             }
         }
+    }
+
+    private ItemStack createAnimalListItem(AnimalData data, boolean coOwnerView) {
+        Entity entity = plugin.getServer().getEntity(data.getEntityUuid());
+        boolean loaded = entity != null && entity.isValid() && !entity.isDead();
+
+        String typeName = data.getEntityType().name();
+        String ownerName = data.getOwnerName() != null && !data.getOwnerName().isBlank()
+                ? data.getOwnerName()
+                : "Unknown";
+        String world = data.getWorldName() != null ? data.getWorldName() : "Onbekend";
+        String coords = (int) Math.floor(data.getX()) + ", " + (int) Math.floor(data.getY()) + ", " + (int) Math.floor(data.getZ());
+
+        String headOwner = switch (typeName) {
+            case "COW" -> "MHF_Cow";
+            case "PIG" -> "MHF_Pig";
+            case "CHICKEN" -> "MHF_Chicken";
+            case "SHEEP" -> "MHF_Sheep";
+            case "MUSHROOMCOW", "MUSHROOM_COW" -> "MHF_MushroomCow";
+            default -> "";
+        };
+
+        String animalDisplay = formatMaterialFromEntityType(typeName);
+        String displayName = (coOwnerView ? "&d" : "&b") + animalDisplay;
+
+        List<String> lore = new ArrayList<>();
+        lore.add("&7Type: &f" + animalDisplay);
+        lore.add("&7Rol: " + (coOwnerView ? "&dCo-owner" : "&bEigenaar"));
+        lore.add("&7Level: &f" + data.getLevel());
+        lore.add("&7Honger: &f" + data.getHunger() + "&7/&f" + data.getMaxHunger());
+        lore.add("&7Wereld: &f" + world);
+        lore.add("&7Locatie: &f" + coords);
+        lore.add("&7Status: " + (loaded ? "&aGeladen" : "&cNiet geladen"));
+        lore.add("&7Owner: &f" + ownerName);
+        lore.add("");
+        lore.add(loaded ? "&aKlik om te openen" : "&cDit dier is momenteel niet geladen");
+
+        ItemStack item;
+        if (!headOwner.isBlank()) {
+            item = plugin.getHarvestManager().createPersistentHeadItem(
+                    "COMMON",
+                    typeName,
+                    animalDisplay,
+                    headOwner,
+                    ""
+            );
+        } else {
+            item = new ItemStack(Material.WHEAT);
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorUtil.colorize(displayName));
+            meta.setLore(colorizeList(lore));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            meta.getPersistentDataContainer().set(
+                    animalsListEntityKey,
+                    PersistentDataType.STRING,
+                    data.getEntityUuid().toString()
+            );
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    private ItemStack createTabItem(boolean selected, String name, Material material) {
+        List<String> lore = new ArrayList<>();
+        lore.add(selected ? "&aGeselecteerd" : "&7Klik om te openen");
+        return createItem(material.name(), material, name, lore);
     }
 
     private ItemStack createOwnerItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
@@ -462,10 +684,6 @@ public class GuiManager {
         return item;
     }
 
-    private ItemStack createItem(Material material, String name, List<String> lore) {
-        return createItem(material.name(), material, name, lore);
-    }
-
     private List<String> applyPlaceholders(List<String> input, String... replacements) {
         List<String> result = new ArrayList<>();
 
@@ -550,6 +768,23 @@ public class GuiManager {
 
     private String formatMaterial(Material material) {
         String[] parts = material.name().toLowerCase().split("_");
+        StringBuilder builder = new StringBuilder();
+
+        for (String part : parts) {
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            builder.append(Character.toUpperCase(part.charAt(0)))
+                    .append(part.substring(1))
+                    .append(" ");
+        }
+
+        return builder.toString().trim();
+    }
+
+    private String formatMaterialFromEntityType(String entityTypeName) {
+        String[] parts = entityTypeName.toLowerCase().split("_");
         StringBuilder builder = new StringBuilder();
 
         for (String part : parts) {

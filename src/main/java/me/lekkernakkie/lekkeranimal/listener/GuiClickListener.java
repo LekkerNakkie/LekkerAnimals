@@ -9,9 +9,11 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
+import me.lekkernakkie.lekkeranimal.gui.AnimalsListGuiHolder;
 import me.lekkernakkie.lekkeranimal.manager.HarvestManager;
 import me.lekkernakkie.lekkeranimal.manager.LevelManager;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,6 +21,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,14 +31,21 @@ import java.util.UUID;
 public class GuiClickListener implements Listener {
 
     private final LekkerAnimal plugin;
+    private final NamespacedKey animalsListEntityKey;
 
     public GuiClickListener(LekkerAnimal plugin) {
         this.plugin = plugin;
+        this.animalsListEntityKey = new NamespacedKey(plugin, "animals_list_entity");
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+
+        if (event.getInventory().getHolder() instanceof AnimalsListGuiHolder holder) {
+            handleAnimalsListClick(event, player, holder);
             return;
         }
 
@@ -73,35 +83,121 @@ public class GuiClickListener implements Listener {
         }
 
         switch (holder.getScreenType()) {
-            case MAIN -> handleMainMenuClick(event, player, entity, data, profile);
+            case MAIN -> handleMainMenuClick(event, player, entity, data, profile, holder);
             case CO_OWNERS -> handleCoOwnerMenuClick(event, player, entity, data);
             case REMOVE_CO_OWNER_CONFIRM -> handleRemoveConfirmClick(event, player, entity, data, holder);
         }
     }
 
-    private void handleMainMenuClick(InventoryClickEvent event, Player player, Entity entity, AnimalData data, AnimalProfile profile) {
+    private void handleAnimalsListClick(InventoryClickEvent event, Player player, AnimalsListGuiHolder holder) {
+        event.setCancelled(true);
+
+        int rawSlot = event.getRawSlot();
+        boolean coOwnerView = holder.isCoOwnerView();
+        int page = holder.getPage();
+
+        if (rawSlot == 45 && coOwnerView) {
+            plugin.getGuiManager().openAnimalsList(player, false, 0);
+            return;
+        }
+
+        if (rawSlot == 46 && !coOwnerView) {
+            plugin.getGuiManager().openAnimalsList(player, true, 0);
+            return;
+        }
+
+        if (rawSlot == 48 && page > 0) {
+            plugin.getGuiManager().openAnimalsList(player, coOwnerView, page - 1);
+            return;
+        }
+
+        if (rawSlot == 50) {
+            plugin.getGuiManager().openAnimalsList(player, coOwnerView, page + 1);
+            return;
+        }
+
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || !clicked.hasItemMeta()) {
+            return;
+        }
+
+        String entityUuidRaw = clicked.getItemMeta().getPersistentDataContainer().get(
+                animalsListEntityKey,
+                PersistentDataType.STRING
+        );
+
+        if (entityUuidRaw == null || entityUuidRaw.isBlank()) {
+            return;
+        }
+
+        UUID entityUuid;
+        try {
+            entityUuid = UUID.fromString(entityUuidRaw);
+        } catch (IllegalArgumentException ex) {
+            return;
+        }
+
+        Entity entity = plugin.getServer().getEntity(entityUuid);
+        if (entity == null || !entity.isValid() || entity.isDead()) {
+            player.sendMessage("§cDit dier is momenteel niet geladen.");
+            return;
+        }
+
+        AnimalData data = plugin.getAnimalManager().getAnimalData(entityUuid);
+        if (data == null) {
+            player.sendMessage("§cKon dierdata niet vinden.");
+            return;
+        }
+
+        MainSettings main = plugin.getConfigManager().getMainSettings();
+        boolean allowed = data.isOwner(player.getUniqueId())
+                || (main.isCoOwnersEnabled() && main.isCoOwnersAllowGuiAccess() && data.isCoOwner(player.getUniqueId()));
+
+        if (!allowed) {
+            player.sendMessage("§cJe hebt geen toegang tot dit dier.");
+            return;
+        }
+
+        plugin.getGuiManager().openAnimalInfo(player, entity, true, coOwnerView, page);
+    }
+
+    private void handleMainMenuClick(InventoryClickEvent event,
+                                     Player player,
+                                     Entity entity,
+                                     AnimalData data,
+                                     AnimalProfile profile,
+                                     AnimalGuiHolder holder) {
         GuiSettings gui = plugin.getConfigManager().getGuiSettings();
         MainSettings main = plugin.getConfigManager().getMainSettings();
 
         int rawSlot = event.getRawSlot();
 
+        if (holder.isOpenedFromAnimalsMenu() && rawSlot == 18) {
+            plugin.getGuiManager().openAnimalsList(
+                    player,
+                    holder.isAnimalsMenuCoOwnerView(),
+                    holder.getAnimalsMenuPage()
+            );
+            return;
+        }
+
         if (rawSlot == gui.getHungerSlot()) {
             if (data.isOwner(player.getUniqueId()) || (main.isCoOwnersEnabled() && main.isCoOwnersAllowFeed() && data.isCoOwner(player.getUniqueId()))) {
-                handleFeedClick(player, entity, data, profile);
+                handleFeedClick(player, entity, data, profile, holder);
             }
             return;
         }
 
         if (rawSlot == gui.getLevelSlot()) {
             if (data.isOwner(player.getUniqueId()) || (main.isCoOwnersEnabled() && main.isCoOwnersAllowDirectUpgrades() && data.isCoOwner(player.getUniqueId()))) {
-                handleLevelClick(player, entity, data, profile);
+                handleLevelClick(player, entity, data, profile, holder);
             }
             return;
         }
 
         if (rawSlot == gui.getHarvestSlot()) {
             if (data.isOwner(player.getUniqueId()) || (main.isCoOwnersEnabled() && main.isCoOwnersAllowHarvest() && data.isCoOwner(player.getUniqueId()))) {
-                handleHarvestClick(player, entity, data, profile);
+                handleHarvestClick(player, entity, data, profile, holder);
             }
             return;
         }
@@ -176,7 +272,11 @@ public class GuiClickListener implements Listener {
         }
     }
 
-    private void handleRemoveConfirmClick(InventoryClickEvent event, Player player, Entity entity, AnimalData data, AnimalGuiHolder holder) {
+    private void handleRemoveConfirmClick(InventoryClickEvent event,
+                                          Player player,
+                                          Entity entity,
+                                          AnimalData data,
+                                          AnimalGuiHolder holder) {
         MainSettings main = plugin.getConfigManager().getMainSettings();
         GuiSettings gui = plugin.getConfigManager().getGuiSettings();
         LangSettings lang = plugin.getConfigManager().getLangSettings();
@@ -217,8 +317,19 @@ public class GuiClickListener implements Listener {
         }
     }
 
-    private void handleFeedClick(Player player, Entity entity, AnimalData data, AnimalProfile profile) {
+    private void handleFeedClick(Player player,
+                                 Entity entity,
+                                 AnimalData data,
+                                 AnimalProfile profile,
+                                 AnimalGuiHolder holder) {
         LangSettings lang = plugin.getConfigManager().getLangSettings();
+        MainSettings main = plugin.getConfigManager().getMainSettings();
+
+        if (!isWithinInteractionRange(player, entity, main)) {
+            player.sendMessage(ColorUtil.colorize("&cJe bent te ver van dit dier verwijderd om het te voeden."));
+            plugin.getGuiManager().refreshOpenAnimalGui(player, entity);
+            return;
+        }
 
         if (data.getHunger() >= profile.getMaxHunger()) {
             lang.send(player, "feeding.full");
@@ -240,13 +351,11 @@ public class GuiClickListener implements Listener {
             return;
         }
 
-        MainSettings mainSettings = plugin.getConfigManager().getMainSettings();
-
         int newHunger = Math.min(profile.getMaxHunger(), data.getHunger() + reward.getHungerRestore());
         data.setHunger(newHunger);
         data.setMaxHunger(profile.getMaxHunger());
 
-        int newBond = Math.min(mainSettings.getMaxBond(), data.getBond() + reward.getBondGain());
+        int newBond = Math.min(main.getMaxBond(), data.getBond() + reward.getBondGain());
         data.setBond(newBond);
 
         int levelsGained = plugin.getLevelManager().addXp(data, profile, reward.getXp());
@@ -269,12 +378,29 @@ public class GuiClickListener implements Listener {
         }
 
         plugin.getHologramManager().refresh(entity);
-        plugin.getGuiManager().openAnimalInfo(player, entity);
+        plugin.getGuiManager().openAnimalInfo(
+                player,
+                entity,
+                holder.isOpenedFromAnimalsMenu(),
+                holder.isAnimalsMenuCoOwnerView(),
+                holder.getAnimalsMenuPage()
+        );
     }
 
-    private void handleLevelClick(Player player, Entity entity, AnimalData data, AnimalProfile profile) {
+    private void handleLevelClick(Player player,
+                                  Entity entity,
+                                  AnimalData data,
+                                  AnimalProfile profile,
+                                  AnimalGuiHolder holder) {
         LangSettings lang = plugin.getConfigManager().getLangSettings();
         LevelManager levelManager = plugin.getLevelManager();
+        MainSettings main = plugin.getConfigManager().getMainSettings();
+
+        if (!isWithinInteractionRange(player, entity, main)) {
+            player.sendMessage(ColorUtil.colorize("&cJe bent te ver van dit dier verwijderd om het te levelen."));
+            plugin.getGuiManager().refreshOpenAnimalGui(player, entity);
+            return;
+        }
 
         if (data.getLevel() >= profile.getMaxLevel()) {
             lang.send(player, "leveling.max-level");
@@ -322,10 +448,20 @@ public class GuiClickListener implements Listener {
         ));
 
         plugin.getHologramManager().refresh(entity);
-        plugin.getGuiManager().openAnimalInfo(player, entity);
+        plugin.getGuiManager().openAnimalInfo(
+                player,
+                entity,
+                holder.isOpenedFromAnimalsMenu(),
+                holder.isAnimalsMenuCoOwnerView(),
+                holder.getAnimalsMenuPage()
+        );
     }
 
-    private void handleHarvestClick(Player player, Entity entity, AnimalData data, AnimalProfile profile) {
+    private void handleHarvestClick(Player player,
+                                    Entity entity,
+                                    AnimalData data,
+                                    AnimalProfile profile,
+                                    AnimalGuiHolder holder) {
         LangSettings lang = plugin.getConfigManager().getLangSettings();
 
         HarvestManager.HarvestResult result = plugin.getHarvestManager().tryHarvest(player, entity, data, profile);
@@ -343,7 +479,28 @@ public class GuiClickListener implements Listener {
             case NO_DROPS -> lang.send(player, "harvesting.no-drops");
         }
 
-        plugin.getGuiManager().openAnimalInfo(player, entity);
+        plugin.getGuiManager().openAnimalInfo(
+                player,
+                entity,
+                holder.isOpenedFromAnimalsMenu(),
+                holder.isAnimalsMenuCoOwnerView(),
+                holder.getAnimalsMenuPage()
+        );
+    }
+
+    private boolean isWithinInteractionRange(Player player, Entity entity, MainSettings settings) {
+        if (!settings.isInteractionRangeEnabled()) {
+            return true;
+        }
+
+        if (player == null || entity == null || player.getWorld() != entity.getWorld()) {
+            return false;
+        }
+
+        double maxDistance = settings.getFeedAndLevelDistance();
+        double maxDistanceSquared = maxDistance * maxDistance;
+
+        return player.getLocation().distanceSquared(entity.getLocation()) <= maxDistanceSquared;
     }
 
     private ItemStack findFirstMatchingFood(Player player, AnimalProfile profile) {

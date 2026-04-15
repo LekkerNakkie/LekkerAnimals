@@ -61,6 +61,9 @@ public class MainSettings {
     private final List<String> customHeadLore;
     private final Map<String, String> rarityDisplays;
 
+    private final boolean interactionRangeEnabled;
+    private final double feedAndLevelDistance;
+
     public MainSettings(FileConfiguration config) {
         this.debug = config.getBoolean("debug", false);
         this.languageFile = config.getString("language-file", "lang_NL.yml");
@@ -119,6 +122,9 @@ public class MainSettings {
             }
         }
         this.rarityDisplays = loadedRarities;
+
+        this.interactionRangeEnabled = config.getBoolean("interaction-range.enabled", true);
+        this.feedAndLevelDistance = Math.max(0.0D, config.getDouble("interaction-range.feed-and-level-distance", 5.0D));
     }
 
     public boolean isDebug() {
@@ -305,5 +311,13 @@ public class MainSettings {
 
     public Map<String, String> getRarityDisplays() {
         return Collections.unmodifiableMap(rarityDisplays);
+    }
+
+    public boolean isInteractionRangeEnabled() {
+        return interactionRangeEnabled;
+    }
+
+    public double getFeedAndLevelDistance() {
+        return feedAndLevelDistance;
     }
 }

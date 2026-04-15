@@ -2,6 +2,7 @@ package me.lekkernakkie.lekkeranimal;
 
 import me.lekkernakkie.lekkeranimal.command.AnimalHeadCommand;
 import me.lekkernakkie.lekkeranimal.command.AnimalHeadSellCommand;
+import me.lekkernakkie.lekkeranimal.command.AnimalsCommand;
 import me.lekkernakkie.lekkeranimal.command.LekkerAnimalsCommand;
 import me.lekkernakkie.lekkeranimal.config.ConfigManager;
 import me.lekkernakkie.lekkeranimal.data.DataManager;
@@ -72,6 +73,10 @@ public class LekkerAnimal extends JavaPlugin {
 
         if (getCommand("lekkeranimals") != null) {
             getCommand("lekkeranimals").setExecutor(new LekkerAnimalsCommand(this));
+        }
+
+        if (getCommand("animals") != null) {
+            getCommand("animals").setExecutor(new AnimalsCommand(this));
         }
 
         if (getCommand("animalhead") != null) {

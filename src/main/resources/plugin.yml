@@ -19,6 +19,9 @@ commands:
   animalheadsell:
     description: Open the animal head sell menu
     usage: /animalheadsell [player]
+  animals:
+    description: Open your animals menu
+    usage: /animals
 
 permissions:
   lekkeranimal.admin:
@@ -56,3 +59,6 @@ permissions:
 
   lekkeranimal.coowners.slots.3:
     default: false
+
+  lekkeranimal.command.animals:
+    default: true

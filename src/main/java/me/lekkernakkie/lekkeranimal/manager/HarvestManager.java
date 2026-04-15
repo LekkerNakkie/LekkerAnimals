@@ -10,6 +10,7 @@ import me.lekkernakkie.lekkeranimal.util.ColorUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Skull;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -19,10 +20,17 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public class HarvestManager {
 
@@ -354,13 +362,7 @@ public class HarvestManager {
             return item;
         }
 
-        if (headOwner != null && !headOwner.isBlank()) {
-            try {
-                meta.setOwningPlayer(Bukkit.getOfflinePlayer(headOwner));
-            } catch (Throwable throwable) {
-                plugin.getLogger().warning("Failed to apply head owner '" + headOwner + "': " + throwable.getMessage());
-            }
-        }
+        applyHeadVisual(meta, headOwner, headTexture);
 
         String normalizedRarity = normalizeRarity(rarityId);
         String displayName = buildHeadDisplayName(normalizedRarity, animalName);
@@ -371,6 +373,94 @@ public class HarvestManager {
 
         item.setItemMeta(meta);
         return item;
+    }
+
+    private void applyHeadVisual(SkullMeta meta, String headOwner, String headTexture) {
+        if (meta == null) {
+            return;
+        }
+
+        if (headTexture != null && !headTexture.isBlank() && applyTextureProfile(meta, headTexture)) {
+            return;
+        }
+
+        if (headOwner != null && !headOwner.isBlank() && applyResolvedOwnerProfile(meta, headOwner)) {
+            return;
+        }
+
+        if (headOwner != null && !headOwner.isBlank()) {
+            try {
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(headOwner);
+                meta.setOwningPlayer(offlinePlayer);
+            } catch (Throwable throwable) {
+                plugin.getLogger().warning("Failed to apply head owner '" + headOwner + "': " + throwable.getMessage());
+            }
+        }
+    }
+
+    private boolean applyResolvedOwnerProfile(SkullMeta meta, String headOwner) {
+        try {
+            PlayerProfile profile = Bukkit.createPlayerProfile(headOwner);
+
+            try {
+                PlayerProfile updated = profile.update().get(3, TimeUnit.SECONDS);
+                if (updated != null) {
+                    profile = updated;
+                }
+            } catch (Throwable ignored) {
+            }
+
+            if (profile.getTextures() != null && profile.getTextures().getSkin() != null) {
+                meta.setOwnerProfile(profile);
+                return true;
+            }
+        } catch (Throwable throwable) {
+            plugin.getLogger().warning("Failed to resolve head profile '" + headOwner + "': " + throwable.getMessage());
+        }
+
+        return false;
+    }
+
+    private boolean applyTextureProfile(SkullMeta meta, String textureValue) {
+        try {
+            URL skinUrl = normalizeTextureToUrl(textureValue);
+            if (skinUrl == null) {
+                return false;
+            }
+
+            PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID());
+            PlayerTextures textures = profile.getTextures();
+            textures.setSkin(skinUrl);
+            profile.setTextures(textures);
+
+            meta.setOwnerProfile(profile);
+            return true;
+        } catch (Throwable throwable) {
+            plugin.getLogger().warning("Invalid head texture '" + textureValue + "': " + throwable.getMessage());
+            return false;
+        }
+    }
+
+    private URL normalizeTextureToUrl(String textureValue) throws MalformedURLException {
+        if (textureValue == null || textureValue.isBlank()) {
+            return null;
+        }
+
+        String value = textureValue.trim();
+
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            return URI.create(value).toURL();
+        }
+
+        if (value.startsWith("textures.minecraft.net/texture/")) {
+            return URI.create("https://" + value).toURL();
+        }
+
+        if (value.matches("^[a-fA-F0-9]{20,}$")) {
+            return URI.create("https://textures.minecraft.net/texture/" + value).toURL();
+        }
+
+        return null;
     }
 
     private boolean roll(double chance) {

@@ -8,6 +8,7 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
+import me.lekkernakkie.lekkeranimal.util.ItemsAdderUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -64,7 +65,7 @@ public class GuiManager {
         );
 
         if (gui.isFillerEnabled()) {
-            ItemStack filler = createItem(gui.getFillerMaterial(), gui.getFillerName(), List.of());
+            ItemStack filler = createItem(gui.getFillerItemId(), Material.LIGHT_BLUE_STAINED_GLASS_PANE, gui.getFillerName(), List.of());
             for (int i = 0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, filler);
             }
@@ -106,7 +107,7 @@ public class GuiManager {
         );
 
         if (gui.isCoOwnerFillerEnabled()) {
-            ItemStack filler = createItem(gui.getCoOwnerFillerMaterial(), gui.getCoOwnerFillerName(), List.of());
+            ItemStack filler = createItem(gui.getCoOwnerFillerItemId(), Material.LIGHT_BLUE_STAINED_GLASS_PANE, gui.getCoOwnerFillerName(), List.of());
             for (int i = 0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, filler);
             }
@@ -128,7 +129,8 @@ public class GuiManager {
                 inventory.setItem(slot, createCoOwnerHead(coOwners.get(i), gui));
             } else {
                 inventory.setItem(slot, createItem(
-                        gui.getEmptyCoOwnerMaterial(),
+                        gui.getEmptyCoOwnerItemId(),
+                        Material.GRAY_DYE,
                         gui.getEmptyCoOwnerName(),
                         applyPlaceholders(
                                 gui.getEmptyCoOwnerLore(),
@@ -139,7 +141,8 @@ public class GuiManager {
         }
 
         inventory.setItem(gui.getCoOwnerAddSlot(), createItem(
-                gui.getCoOwnerAddMaterial(),
+                gui.getCoOwnerAddItemId(),
+                Material.LIME_WOOL,
                 gui.getCoOwnerAddName(),
                 applyPlaceholders(
                         gui.getCoOwnerAddLore(),
@@ -149,7 +152,8 @@ public class GuiManager {
         ));
 
         inventory.setItem(gui.getCoOwnerBackSlot(), createItem(
-                gui.getCoOwnerBackMaterial(),
+                gui.getCoOwnerBackItemId(),
+                Material.BARRIER,
                 gui.getCoOwnerBackName(),
                 gui.getCoOwnerBackLore()
         ));
@@ -175,7 +179,7 @@ public class GuiManager {
         );
 
         if (gui.isCoOwnerFillerEnabled()) {
-            ItemStack filler = createItem(gui.getCoOwnerFillerMaterial(), gui.getCoOwnerFillerName(), List.of());
+            ItemStack filler = createItem(gui.getCoOwnerFillerItemId(), Material.LIGHT_BLUE_STAINED_GLASS_PANE, gui.getCoOwnerFillerName(), List.of());
             for (int i = 0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, filler);
             }
@@ -183,12 +187,14 @@ public class GuiManager {
 
         inventory.setItem(gui.getCoOwnerRemoveConfirmTargetSlot(), createCoOwnerHead(targetCoOwnerUuid, gui));
         inventory.setItem(gui.getCoOwnerRemoveConfirmYesSlot(), createItem(
-                gui.getCoOwnerRemoveConfirmYesMaterial(),
+                gui.getCoOwnerRemoveConfirmYesItemId(),
+                Material.LIME_WOOL,
                 gui.getCoOwnerRemoveConfirmYesName(),
                 applyPlaceholders(gui.getCoOwnerRemoveConfirmYesLore(), "{player}", targetName)
         ));
         inventory.setItem(gui.getCoOwnerRemoveConfirmNoSlot(), createItem(
-                gui.getCoOwnerRemoveConfirmNoMaterial(),
+                gui.getCoOwnerRemoveConfirmNoItemId(),
+                Material.RED_WOOL,
                 gui.getCoOwnerRemoveConfirmNoName(),
                 applyPlaceholders(gui.getCoOwnerRemoveConfirmNoLore(), "{player}", targetName)
         ));
@@ -221,23 +227,29 @@ public class GuiManager {
     }
 
     private ItemStack createOwnerItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
-        ItemStack item = new ItemStack(gui.getOwnerMaterial());
+        String itemId = gui.getOwnerItemId();
 
-        if (item.getType() == Material.PLAYER_HEAD && item.getItemMeta() instanceof SkullMeta skullMeta) {
-            skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(data.getOwnerUuid()));
-            skullMeta.setDisplayName(ColorUtil.colorize(gui.getOwnerName()));
-            skullMeta.setLore(colorizeList(applyPlaceholders(
-                    gui.getOwnerLore(),
-                    "{owner}", data.getOwnerName(),
-                    "{animal_type}", profile.getEntityType().name(),
-                    "{animal}", profile.getDisplayName()
-            )));
-            skullMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-            item.setItemMeta(skullMeta);
+        if ("PLAYER_HEAD".equalsIgnoreCase(itemId)) {
+            ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+
+            if (item.getItemMeta() instanceof SkullMeta skullMeta) {
+                skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(data.getOwnerUuid()));
+                skullMeta.setDisplayName(ColorUtil.colorize(gui.getOwnerName()));
+                skullMeta.setLore(colorizeList(applyPlaceholders(
+                        gui.getOwnerLore(),
+                        "{owner}", data.getOwnerName(),
+                        "{animal_type}", profile.getEntityType().name(),
+                        "{animal}", profile.getDisplayName()
+                )));
+                skullMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                item.setItemMeta(skullMeta);
+            }
+
             return item;
         }
 
         return createItem(
+                itemId,
                 gui.getOwnerMaterial(),
                 gui.getOwnerName(),
                 applyPlaceholders(
@@ -253,6 +265,7 @@ public class GuiManager {
         int percent = profile.getMaxHunger() <= 0 ? 0 : (int) Math.round((data.getHunger() * 100.0) / profile.getMaxHunger());
 
         return createItem(
+                gui.getHungerItemId(),
                 gui.getHungerMaterial(),
                 gui.getHungerName(),
                 applyPlaceholders(
@@ -295,6 +308,7 @@ public class GuiManager {
         }
 
         return createItem(
+                gui.getLevelItemId(),
                 gui.getLevelMaterial(),
                 gui.getLevelName().replace("{level}", String.valueOf(data.getLevel())),
                 applyPlaceholders(
@@ -334,6 +348,7 @@ public class GuiManager {
         String preview = plugin.getHarvestManager().getPreview(profile, data.getLevel());
 
         return createItem(
+                gui.getHarvestItemId(),
                 gui.getHarvestMaterial(),
                 gui.getHarvestName(),
                 applyPlaceholders(
@@ -357,6 +372,7 @@ public class GuiManager {
         }
 
         return createItem(
+                gui.getCoOwnerManageItemId(),
                 gui.getCoOwnerManageMaterial(),
                 gui.getCoOwnerManageName(),
                 applyPlaceholders(
@@ -387,6 +403,7 @@ public class GuiManager {
 
     private ItemStack createLockedCoOwnerItem(GuiSettings gui, int slotNumber) {
         return createItem(
+                gui.getLockedCoOwnerItemId(),
                 gui.getLockedCoOwnerMaterial(),
                 gui.getLockedCoOwnerName(),
                 applyPlaceholders(
@@ -402,25 +419,27 @@ public class GuiManager {
                 : ColorUtil.colorize(gui.getCoOwnerToggleStatusDisabled());
 
         return createItem(
+                gui.getCoOwnerToggleItemId(),
                 gui.getCoOwnerToggleMaterial(),
                 gui.getCoOwnerToggleName().replace("{status}", status),
                 applyPlaceholders(gui.getCoOwnerToggleLore(), "{status}", status)
         );
     }
 
-    private ItemStack createItem(Material material, String name, List<String> lore) {
-        ItemStack item = new ItemStack(material);
+    private ItemStack createItem(String idOrMaterial, Material fallback, String name, List<String> lore) {
+        ItemStack item = ItemsAdderUtil.createGuiItem(idOrMaterial, fallback, name, lore);
         ItemMeta meta = item.getItemMeta();
 
-        if (meta == null) {
-            return item;
+        if (meta != null) {
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
         }
 
-        meta.setDisplayName(ColorUtil.colorize(name));
-        meta.setLore(colorizeList(lore));
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        item.setItemMeta(meta);
         return item;
+    }
+
+    private ItemStack createItem(Material material, String name, List<String> lore) {
+        return createItem(material.name(), material, name, lore);
     }
 
     private List<String> applyPlaceholders(List<String> input, String... replacements) {

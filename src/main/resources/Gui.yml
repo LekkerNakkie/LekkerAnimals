@@ -196,7 +196,7 @@ gui:
     items:
       info:
         slot: 22
-        material: "PAPER"
+        material: "iabattery:kuras"
         name: "&bVerkoop overzicht"
         lore:
           - "&7Heads: &f{heads}"

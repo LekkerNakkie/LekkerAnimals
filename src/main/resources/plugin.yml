@@ -4,7 +4,7 @@ main: me.lekkernakkie.lekkeranimal.LekkerAnimal
 api-version: '1.21'
 author: LekkerNakkie
 description: Bond, feed and take care of your animals.
-softdepend: [Vault]
+softdepend: [Vault, ItemsAdder]
 
 commands:
   lekkeranimals:
@@ -46,7 +46,7 @@ permissions:
     default: op
 
   lekkeranimal.command.animalheadsell:
-    default: op
+    default: true
 
   lekkeranimal.command.animalheadsell.others:
     default: op

@@ -5,11 +5,12 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.HeadPriceRule;
 import me.lekkernakkie.lekkeranimal.gui.HeadSellGuiHolder;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
+import me.lekkernakkie.lekkeranimal.util.ItemsAdderUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -95,7 +96,8 @@ public class HeadSellManager {
 
         if (fillerEnabled) {
             ItemStack filler = createItem(
-                    parseMaterial(gui.getString("gui.head-sell.filler.material", "LIGHT_BLUE_STAINED_GLASS_PANE"), Material.LIGHT_BLUE_STAINED_GLASS_PANE),
+                    gui.getString("gui.head-sell.filler.material", "LIGHT_BLUE_STAINED_GLASS_PANE"),
+                    Material.LIGHT_BLUE_STAINED_GLASS_PANE,
                     gui.getString("gui.head-sell.filler.name", " "),
                     List.of()
             );
@@ -108,13 +110,15 @@ public class HeadSellManager {
         }
 
         inventory.setItem(getConfirmSlot(), createItem(
-                parseMaterial(gui.getString("gui.head-sell.items.confirm.material", "LIME_WOOL"), Material.LIME_WOOL),
+                gui.getString("gui.head-sell.items.confirm.material", "LIME_WOOL"),
+                Material.LIME_WOOL,
                 gui.getString("gui.head-sell.items.confirm.name", "&aBevestig verkoop"),
                 gui.getStringList("gui.head-sell.items.confirm.lore")
         ));
 
         inventory.setItem(getCloseSlot(), createItem(
-                parseMaterial(gui.getString("gui.head-sell.items.close.material", "BARRIER"), Material.BARRIER),
+                gui.getString("gui.head-sell.items.close.material", "BARRIER"),
+                Material.BARRIER,
                 gui.getString("gui.head-sell.items.close.name", "&cSluiten"),
                 gui.getStringList("gui.head-sell.items.close.lore")
         ));
@@ -142,7 +146,8 @@ public class HeadSellManager {
         }
 
         inventory.setItem(getInfoSlot(), createItem(
-                parseMaterial(gui.getString("gui.head-sell.items.info.material", "PAPER"), Material.PAPER),
+                gui.getString("gui.head-sell.items.info.material", "PAPER"),
+                Material.PAPER,
                 gui.getString("gui.head-sell.items.info.name", "&bVerkoop overzicht"),
                 lore
         ));
@@ -337,37 +342,16 @@ public class HeadSellManager {
         return null;
     }
 
-    private ItemStack createItem(Material material, String name, List<String> lore) {
-        ItemStack item = new ItemStack(material);
+    private ItemStack createItem(String idOrMaterial, Material fallback, String name, List<String> lore) {
+        ItemStack item = ItemsAdderUtil.createGuiItem(idOrMaterial, fallback, name, lore);
         ItemMeta meta = item.getItemMeta();
 
-        if (meta == null) {
-            return item;
+        if (meta != null) {
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
         }
 
-        meta.setDisplayName(ColorUtil.colorize(name));
-
-        List<String> coloredLore = new ArrayList<>();
-        for (String line : lore) {
-            coloredLore.add(ColorUtil.colorize(line));
-        }
-
-        meta.setLore(coloredLore);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        item.setItemMeta(meta);
         return item;
-    }
-
-    private Material parseMaterial(String input, Material fallback) {
-        if (input == null || input.isBlank()) {
-            return fallback;
-        }
-
-        try {
-            return Material.valueOf(input.toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            return fallback;
-        }
     }
 
     public String formatMoney(double amount) {

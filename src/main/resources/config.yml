@@ -4,7 +4,6 @@
 
 debug: false
 
-# Language file to use from the plugin folder
 language-file: "lang_NL.yml"
 
 # --------------------------------------------------------------------
@@ -12,8 +11,7 @@ language-file: "lang_NL.yml"
 # --------------------------------------------------------------------
 
 database:
-  # Supported: SQLITE, MYSQL
-  type: "SQLITE"
+  type: "SQLITE" # SQLITE or MYSQL
 
   sqlite:
     file: "data.db"
@@ -45,14 +43,7 @@ modules:
 
   co-owners:
     enabled: true
-
-    # Hard cap from config.
-    # Actual player limit is still determined by permissions:
-    # - no permission = 1 slot
-    # - lekkeranimal.coowners.slots.2 = 2 slots
-    # - lekkeranimal.coowners.slots.3 = 3 slots
     max-per-animal: 3
-
     allow-feed: true
     allow-harvest: true
     allow-gui-access: true
@@ -91,6 +82,32 @@ bond:
   max-bond: 100
   start-bond: 10
   start-level: 1
+
+# --------------------------------------------------------------------
+# Custom Heads
+# --------------------------------------------------------------------
+
+custom-heads:
+  enabled: true
+
+  # If true, custom LekkerAnimal heads keep their rarity and meta
+  # after being placed and broken again.
+  preserve-placed-heads: true
+
+  # Head display name format
+  default-name-format: "{rarity} {animal} Head"
+
+  # Optional lore
+  lore:
+    - "&7Rarity: {rarity}"
+
+  # Rarity display texts
+  rarities:
+    COMMON: "&fCommon"
+    UNCOMMON: "&aUncommon"
+    RARE: "&dRare"
+    ULTRA: "&eUltra"
+    LEGENDARY: "&6Legendary"
 
 # --------------------------------------------------------------------
 # Sounds

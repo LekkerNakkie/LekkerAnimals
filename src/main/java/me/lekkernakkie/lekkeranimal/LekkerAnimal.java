@@ -6,6 +6,7 @@ import me.lekkernakkie.lekkeranimal.data.DataManager;
 import me.lekkernakkie.lekkeranimal.listener.AnimalDeathListener;
 import me.lekkernakkie.lekkeranimal.listener.AnimalInteractListener;
 import me.lekkernakkie.lekkeranimal.listener.CoOwnerChatListener;
+import me.lekkernakkie.lekkeranimal.listener.CustomHeadListener;
 import me.lekkernakkie.lekkeranimal.listener.GuiClickListener;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import me.lekkernakkie.lekkeranimal.manager.BondManager;
@@ -15,8 +16,8 @@ import me.lekkernakkie.lekkeranimal.manager.HologramManager;
 import me.lekkernakkie.lekkeranimal.manager.HungerManager;
 import me.lekkernakkie.lekkeranimal.manager.LevelManager;
 import org.bukkit.entity.Entity;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 public class LekkerAnimal extends JavaPlugin {
 
@@ -78,6 +79,11 @@ public class LekkerAnimal extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(
                 coOwnerChatListener,
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new CustomHeadListener(this),
                 this
         );
 

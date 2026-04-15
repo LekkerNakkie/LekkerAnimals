@@ -1,7 +1,13 @@
 package me.lekkernakkie.lekkeranimal.config;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.permissions.Permissible;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainSettings {
 
@@ -49,6 +55,12 @@ public class MainSettings {
     private final boolean coOwnerGuiEnabled;
     private final boolean coOwnerChatInputEnabled;
 
+    private final boolean customHeadsEnabled;
+    private final boolean preservePlacedCustomHeads;
+    private final String customHeadDefaultNameFormat;
+    private final List<String> customHeadLore;
+    private final Map<String, String> rarityDisplays;
+
     public MainSettings(FileConfiguration config) {
         this.debug = config.getBoolean("debug", false);
         this.languageFile = config.getString("language-file", "lang_NL.yml");
@@ -93,6 +105,20 @@ public class MainSettings {
 
         this.coOwnerGuiEnabled = config.getBoolean("modules.co-owner-gui.enabled", true);
         this.coOwnerChatInputEnabled = config.getBoolean("modules.co-owner-gui.use-chat-input", true);
+
+        this.customHeadsEnabled = config.getBoolean("custom-heads.enabled", true);
+        this.preservePlacedCustomHeads = config.getBoolean("custom-heads.preserve-placed-heads", true);
+        this.customHeadDefaultNameFormat = config.getString("custom-heads.default-name-format", "{rarity} {animal} Head");
+        this.customHeadLore = config.getStringList("custom-heads.lore");
+
+        Map<String, String> loadedRarities = new LinkedHashMap<>();
+        ConfigurationSection raritySection = config.getConfigurationSection("custom-heads.rarities");
+        if (raritySection != null) {
+            for (String key : raritySection.getKeys(false)) {
+                loadedRarities.put(key.toUpperCase(), raritySection.getString(key, key));
+            }
+        }
+        this.rarityDisplays = loadedRarities;
     }
 
     public boolean isDebug() {
@@ -248,5 +274,36 @@ public class MainSettings {
 
     public boolean isCoOwnerChatInputEnabled() {
         return coOwnerChatInputEnabled;
+    }
+
+    public boolean isCustomHeadsEnabled() {
+        return customHeadsEnabled;
+    }
+
+    public boolean isPreservePlacedCustomHeads() {
+        return preservePlacedCustomHeads;
+    }
+
+    public String getCustomHeadDefaultNameFormat() {
+        return customHeadDefaultNameFormat;
+    }
+
+    public List<String> getCustomHeadLore() {
+        return customHeadLore;
+    }
+
+    public String getRarityDisplay(String rarityId) {
+        if (rarityId == null || rarityId.isBlank()) {
+            return rarityDisplays.getOrDefault("COMMON", "Common");
+        }
+
+        return rarityDisplays.getOrDefault(
+                rarityId.toUpperCase(),
+                rarityDisplays.getOrDefault("COMMON", rarityId)
+        );
+    }
+
+    public Map<String, String> getRarityDisplays() {
+        return Collections.unmodifiableMap(rarityDisplays);
     }
 }

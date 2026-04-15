@@ -73,8 +73,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 25.0
-              name: "&7Cow Head"
               head-owner: "MHF_Cow"
+              rarity: "RARE"
         4:
           drops:
             LEATHER:
@@ -83,8 +83,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 60.0
-              name: "&7Cow Head"
               head-owner: "MHF_Cow"
+              rarity: "ULTRA"
         5:
           drops:
             LEATHER:
@@ -93,8 +93,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 80.0
-              name: "&7Cow Head"
               head-owner: "MHF_Cow"
+              rarity: "LEGENDARY"
             COW_SPAWN_EGG:
               amount: 1
               chance: 1.0
@@ -163,8 +163,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 25.0
-              name: "&fPig Head"
               head-owner: "MHF_Pig"
+              rarity: "RARE"
         4:
           drops:
             PORKCHOP:
@@ -173,8 +173,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 60.0
-              name: "&fPig Head"
               head-owner: "MHF_Pig"
+              rarity: "ULTRA"
         5:
           drops:
             PORKCHOP:
@@ -183,8 +183,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 80.0
-              name: "&fPig Head"
               head-owner: "MHF_Pig"
+              rarity: "LEGENDARY"
             PIG_SPAWN_EGG:
               amount: 1
               chance: 1.0
@@ -253,8 +253,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 25.0
-              name: "&7Chicken Head"
               head-owner: "MHF_Chicken"
+              rarity: "RARE"
         4:
           drops:
             EGG:
@@ -263,8 +263,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 60.0
-              name: "&7Chicken Head"
               head-owner: "MHF_Chicken"
+              rarity: "ULTRA"
         5:
           drops:
             EGG:
@@ -273,8 +273,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 80.0
-              name: "&7Chicken Head"
               head-owner: "MHF_Chicken"
+              rarity: "LEGENDARY"
             CHICKEN_SPAWN_EGG:
               amount: 1
               chance: 1.0
@@ -343,8 +343,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 25.0
-              name: "&7Mooshroom Head"
               head-owner: "MHF_MushroomCow"
+              rarity: "RARE"
         4:
           drops:
             RED_MUSHROOM:
@@ -353,8 +353,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 60.0
-              name: "&7Mooshroom Head"
               head-owner: "MHF_MushroomCow"
+              rarity: "ULTRA"
         5:
           drops:
             RED_MUSHROOM:
@@ -363,8 +363,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 80.0
-              name: "&7Mooshroom Head"
               head-owner: "MHF_MushroomCow"
+              rarity: "LEGENDARY"
             MOOSHROOM_SPAWN_EGG:
               amount: 1
               chance: 1.0
@@ -429,18 +429,18 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 25.0
-              name: "&7Sheep Head"
               head-owner: "MHF_Sheep"
+              rarity: "RARE"
         4:
           drops:
             WHITE_WOOL:
               amount: 3
               chance: 100.0
             PLAYER_HEAD:
-              amount: 3
+              amount: 1
               chance: 60.0
-              name: "&7Sheep Head"
               head-owner: "MHF_Sheep"
+              rarity: "ULTRA"
         5:
           drops:
             WHITE_WOOL:
@@ -449,8 +449,8 @@ animals:
             PLAYER_HEAD:
               amount: 1
               chance: 80.0
-              name: "&7Sheep Head"
               head-owner: "MHF_Sheep"
+              rarity: "LEGENDARY"
             SHEEP_SPAWN_EGG:
               amount: 1
               chance: 1.0

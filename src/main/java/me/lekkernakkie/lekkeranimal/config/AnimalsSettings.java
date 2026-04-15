@@ -5,7 +5,6 @@ import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.data.HarvestDrop;
 import me.lekkernakkie.lekkeranimal.data.HarvestLevelProfile;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -203,6 +202,7 @@ public class AnimalsSettings {
                 String displayName = config.getString(path + ".name", "");
                 String headTexture = config.getString(path + ".head-texture", "");
                 String headOwner = config.getString(path + ".head-owner", "");
+                String rarity = config.getString(path + ".rarity", "COMMON");
 
                 drops.add(new HarvestDrop(
                         material,
@@ -210,7 +210,8 @@ public class AnimalsSettings {
                         chance,
                         displayName,
                         headTexture,
-                        headOwner
+                        headOwner,
+                        rarity
                 ));
             }
 

@@ -128,9 +128,11 @@ public class GuiClickListener implements Listener {
         }
 
         if (rawSlot == gui.getCoOwnerAddSlot()) {
-            if (data.getCoOwnerCount() >= main.getCoOwnersMaxPerAnimal()) {
+            int maxCoOwners = main.getEffectiveCoOwnersMax(player);
+
+            if (data.getCoOwnerCount() >= maxCoOwners) {
                 lang.send(player, "co-owners.max-reached", Map.of(
-                        "max", String.valueOf(main.getCoOwnersMaxPerAnimal())
+                        "max", String.valueOf(maxCoOwners)
                 ));
                 return;
             }

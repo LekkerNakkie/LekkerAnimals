@@ -114,9 +114,15 @@ public class GuiManager {
 
         List<UUID> coOwners = new ArrayList<>(data.getCoOwnerUuids());
         List<Integer> slots = gui.getCoOwnerSlots();
+        int unlockedSlots = main.getEffectiveCoOwnersMax(player);
 
         for (int i = 0; i < slots.size(); i++) {
             int slot = slots.get(i);
+
+            if (i >= unlockedSlots) {
+                inventory.setItem(slot, createLockedCoOwnerItem(gui, i + 1));
+                continue;
+            }
 
             if (i < coOwners.size()) {
                 inventory.setItem(slot, createCoOwnerHead(coOwners.get(i), gui));
@@ -124,7 +130,10 @@ public class GuiManager {
                 inventory.setItem(slot, createItem(
                         gui.getEmptyCoOwnerMaterial(),
                         gui.getEmptyCoOwnerName(),
-                        gui.getEmptyCoOwnerLore()
+                        applyPlaceholders(
+                                gui.getEmptyCoOwnerLore(),
+                                "{slot}", String.valueOf(i + 1)
+                        )
                 ));
             }
         }
@@ -135,7 +144,7 @@ public class GuiManager {
                 applyPlaceholders(
                         gui.getCoOwnerAddLore(),
                         "{current}", String.valueOf(data.getCoOwnerCount()),
-                        "{max}", String.valueOf(main.getCoOwnersMaxPerAnimal())
+                        "{max}", String.valueOf(unlockedSlots)
                 )
         ));
 
@@ -374,6 +383,17 @@ public class GuiManager {
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         item.setItemMeta(meta);
         return item;
+    }
+
+    private ItemStack createLockedCoOwnerItem(GuiSettings gui, int slotNumber) {
+        return createItem(
+                gui.getLockedCoOwnerMaterial(),
+                gui.getLockedCoOwnerName(),
+                applyPlaceholders(
+                        gui.getLockedCoOwnerLore(),
+                        "{slot}", String.valueOf(slotNumber)
+                )
+        );
     }
 
     private ItemStack createCoOwnerActiveToggleItem(AnimalData data, GuiSettings gui) {

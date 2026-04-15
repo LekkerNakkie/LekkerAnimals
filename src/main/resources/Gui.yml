@@ -1,3 +1,7 @@
+# --------------------------------------------------------------------
+# GUI configuration
+# --------------------------------------------------------------------
+
 gui:
   animal-info:
     enabled: true
@@ -41,7 +45,7 @@ gui:
           - "&7Item: &f{next_upgrade_item}"
           - "&7Hoeveel: &f{next_upgrade_amount}"
           - ""
-          - "&bKlik om direct te upgraden"
+          - "{next_upgrade_status}"
 
       harvest:
         slot: 16
@@ -87,6 +91,19 @@ gui:
         name: "&7Leeg slot"
         lore:
           - "&7Hier is nog geen mede-eigenaar."
+          - "&7Slot: &f{slot}"
+
+      locked-slot:
+        material: "RED_STAINED_GLASS_PANE"
+        name: "&cVergrendeld slot"
+        lore:
+          - "&7Dit mede-eigenaar slot is nog"
+          - "&7niet beschikbaar voor jou."
+          - ""
+          - "&7Slot: &f{slot}"
+          - "&7Benodigd:"
+          - "&fSlot 2 &8» &7lekkeranimal.coowners.slots.2"
+          - "&fSlot 3 &8» &7lekkeranimal.coowners.slots.3"
 
       co-owner-head:
         name: "&b{player}"
@@ -110,7 +127,7 @@ gui:
         name: "&bMede-eigenaars activiteit: {status}"
         lore:
           - "&7Als dit aan staat,"
-          - "&7blijft het dier actief (honger en harvesting)"
+          - "&7blijft het dier actief"
           - "&7wanneer een mede-eigenaar"
           - "&7online is."
           - ""
@@ -131,9 +148,11 @@ gui:
   co-owner-remove-confirm:
     title: "&cVerwijder {player}?"
     rows: 3
+
     items:
       target:
         slot: 13
+
       yes:
         slot: 11
         material: "LIME_WOOL"
@@ -141,6 +160,7 @@ gui:
         lore:
           - "&7Verwijder &f{player}"
           - "&7als mede-eigenaar."
+
       no:
         slot: 15
         material: "RED_WOOL"
@@ -148,6 +168,10 @@ gui:
         lore:
           - "&7Ga terug zonder iets"
           - "&7te verwijderen."
+
+# --------------------------------------------------------------------
+# Bars
+# --------------------------------------------------------------------
 
 bars:
   hunger:

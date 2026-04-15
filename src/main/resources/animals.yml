@@ -1,8 +1,16 @@
+# --------------------------------------------------------------------
+# Hologram
+# --------------------------------------------------------------------
+
 hologram:
   enabled: true
   update-interval-ticks: 10
   show-distance: 12.0
   format: "&b{animal} &8• &7Lvl &b{level} &8• &c❤ &b{hunger}&8/&7{max_hunger}"
+
+# --------------------------------------------------------------------
+# Animals
+# --------------------------------------------------------------------
 
 animals:
   COW:
@@ -40,8 +48,9 @@ animals:
           item: "EMERALD"
           amount: 16
         5:
-          item: "EMERALDS"
+          item: "EMERALD"
           amount: 32
+
     harvesting:
       enabled: true
       cooldown-seconds: 1800
@@ -63,7 +72,7 @@ animals:
               chance: 100.0
             PLAYER_HEAD:
               amount: 1
-              chance: 25
+              chance: 25.0
               name: "&7Cow Head"
               head-owner: "MHF_Cow"
         4:
@@ -73,7 +82,7 @@ animals:
               chance: 100.0
             PLAYER_HEAD:
               amount: 1
-              chance: 60
+              chance: 60.0
               name: "&7Cow Head"
               head-owner: "MHF_Cow"
         5:
@@ -83,12 +92,13 @@ animals:
               chance: 100.0
             PLAYER_HEAD:
               amount: 1
-              chance: 80
+              chance: 80.0
               name: "&7Cow Head"
               head-owner: "MHF_Cow"
             COW_SPAWN_EGG:
               amount: 1
               chance: 1.0
+
   PIG:
     enabled: true
     display-name: "&fVarken"
@@ -128,8 +138,9 @@ animals:
           item: "EMERALD"
           amount: 16
         5:
-          item: "EMERALDS"
+          item: "EMERALD"
           amount: 32
+
     harvesting:
       enabled: true
       cooldown-seconds: 1800
@@ -161,7 +172,7 @@ animals:
               chance: 100.0
             PLAYER_HEAD:
               amount: 1
-              chance: 60
+              chance: 60.0
               name: "&fPig Head"
               head-owner: "MHF_Pig"
         5:
@@ -171,12 +182,13 @@ animals:
               chance: 100.0
             PLAYER_HEAD:
               amount: 1
-              chance: 80
+              chance: 80.0
               name: "&fPig Head"
               head-owner: "MHF_Pig"
             PIG_SPAWN_EGG:
               amount: 1
               chance: 1.0
+
   CHICKEN:
     enabled: true
     display-name: "&fKip"

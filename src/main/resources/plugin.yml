@@ -14,6 +14,9 @@ commands:
 permissions:
   lekkeranimal.admin:
     default: op
+    children:
+      lekkeranimal.command.reload: true
+      lekkeranimal.coowners.slots.3: false
 
   lekkeranimal.command.help:
     default: true
@@ -26,3 +29,9 @@ permissions:
 
   lekkeranimal.command.givebonditem:
     default: op
+
+  lekkeranimal.coowners.slots.2:
+    default: false
+
+  lekkeranimal.coowners.slots.3:
+    default: false

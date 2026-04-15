@@ -1,6 +1,7 @@
 package me.lekkernakkie.lekkeranimal.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.permissions.Permissible;
 
 public class MainSettings {
 
@@ -204,6 +205,25 @@ public class MainSettings {
 
     public int getCoOwnersMaxPerAnimal() {
         return coOwnersMaxPerAnimal;
+    }
+
+    public int getEffectiveCoOwnersMax(Permissible permissible) {
+        int configuredMax = Math.max(1, coOwnersMaxPerAnimal);
+        int allowed = 1;
+
+        if (permissible != null) {
+            if (permissible.hasPermission("lekkeranimal.coowners.slots.3")) {
+                allowed = 3;
+            } else if (permissible.hasPermission("lekkeranimal.coowners.slots.2")) {
+                allowed = 2;
+            }
+
+            if (permissible.hasPermission("lekkeranimal.admin")) {
+                allowed = Math.max(allowed, configuredMax);
+            }
+        }
+
+        return Math.max(1, Math.min(configuredMax, allowed));
     }
 
     public boolean isCoOwnersAllowFeed() {

@@ -1,3 +1,7 @@
+# --------------------------------------------------------------------
+# Language file - Dutch
+# --------------------------------------------------------------------
+
 prefix: "&8[&bLekkerAnimal&8] &7"
 
 general:
@@ -5,7 +9,7 @@ general:
   no-permission: "{prefix}&7Daar edde gij het lef ni vur.."
   already-owned: "{prefix}&bDit dier heeft al een eigenaar."
   not-your-animal: "{prefix}&bDit dier is niet van jou."
-  animal-not-supported: "{prefix}&bDit dier kan je niet met bonden."
+  animal-not-supported: "{prefix}&bDit dier kan je niet bonden."
 
 help:
   header: "&8&m----------------------------------------"

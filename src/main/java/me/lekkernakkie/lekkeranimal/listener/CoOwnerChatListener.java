@@ -129,15 +129,17 @@ public class CoOwnerChatListener implements Listener {
             return;
         }
 
-        if (data.getCoOwnerCount() >= settings.getCoOwnersMaxPerAnimal()) {
+        int maxCoOwners = settings.getEffectiveCoOwnersMax(player);
+
+        if (data.getCoOwnerCount() >= maxCoOwners) {
             lang.send(player, "co-owners.max-reached", Map.of(
-                    "max", String.valueOf(settings.getCoOwnersMaxPerAnimal())
+                    "max", String.valueOf(maxCoOwners)
             ));
             plugin.getGuiManager().openCoOwnerMenu(player, entity);
             return;
         }
 
-        if (data.addCoOwner(targetUuid, settings.getCoOwnersMaxPerAnimal())) {
+        if (data.addCoOwner(targetUuid, maxCoOwners)) {
             plugin.getDataManager().saveAnimal(data);
             lang.send(player, "co-owners.added", Map.of(
                     "player", resolvedName

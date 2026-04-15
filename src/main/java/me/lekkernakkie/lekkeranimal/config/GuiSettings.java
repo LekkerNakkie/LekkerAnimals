@@ -194,6 +194,21 @@ public class GuiSettings {
         return config.getStringList("gui.co-owner-menu.items.empty-slot.lore");
     }
 
+    public Material getLockedCoOwnerMaterial() {
+        return parseMaterial(
+                config.getString("gui.co-owner-menu.items.locked-slot.material", "RED_STAINED_GLASS_PANE"),
+                Material.RED_STAINED_GLASS_PANE
+        );
+    }
+
+    public String getLockedCoOwnerName() {
+        return config.getString("gui.co-owner-menu.items.locked-slot.name", "&cVergrendeld slot");
+    }
+
+    public List<String> getLockedCoOwnerLore() {
+        return config.getStringList("gui.co-owner-menu.items.locked-slot.lore");
+    }
+
     public String getCoOwnerHeadName() {
         return config.getString("gui.co-owner-menu.items.co-owner-head.name", "&b{player}");
     }

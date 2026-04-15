@@ -1,9 +1,19 @@
+# --------------------------------------------------------------------
+# LekkerAnimal main configuration
+# --------------------------------------------------------------------
+
 debug: false
 
+# Language file to use from the plugin folder
 language-file: "lang_NL.yml"
 
+# --------------------------------------------------------------------
+# Database
+# --------------------------------------------------------------------
+
 database:
-  type: "SQLITE" # SQLITE or MYSQL
+  # Supported: SQLITE, MYSQL
+  type: "SQLITE"
 
   sqlite:
     file: "data.db"
@@ -17,9 +27,17 @@ database:
     ssl: false
     pool-size: 10
 
+# --------------------------------------------------------------------
+# Main
+# --------------------------------------------------------------------
+
 main:
   autosave-interval-seconds: 300
   save-on-disable: true
+
+# --------------------------------------------------------------------
+# Modules
+# --------------------------------------------------------------------
 
 modules:
   online-owner-activity:
@@ -27,7 +45,14 @@ modules:
 
   co-owners:
     enabled: true
+
+    # Hard cap from config.
+    # Actual player limit is still determined by permissions:
+    # - no permission = 1 slot
+    # - lekkeranimal.coowners.slots.2 = 2 slots
+    # - lekkeranimal.coowners.slots.3 = 3 slots
     max-per-animal: 3
+
     allow-feed: true
     allow-harvest: true
     allow-gui-access: true
@@ -37,11 +62,19 @@ modules:
     enabled: true
     use-chat-input: true
 
+# --------------------------------------------------------------------
+# Hunger
+# --------------------------------------------------------------------
+
 hunger:
   enabled: true
   task-interval-seconds: 60
   warning-threshold-percent: 25
   kill-on-zero: true
+
+# --------------------------------------------------------------------
+# Leveling
+# --------------------------------------------------------------------
 
 leveling:
   enabled: true
@@ -49,11 +82,19 @@ leveling:
   base-xp: 100
   xp-scale: 1.15
 
+# --------------------------------------------------------------------
+# Bond
+# --------------------------------------------------------------------
+
 bond:
   enabled: true
   max-bond: 100
   start-bond: 10
   start-level: 1
+
+# --------------------------------------------------------------------
+# Sounds
+# --------------------------------------------------------------------
 
 sounds:
   feed: "ENTITY_PLAYER_LEVELUP"

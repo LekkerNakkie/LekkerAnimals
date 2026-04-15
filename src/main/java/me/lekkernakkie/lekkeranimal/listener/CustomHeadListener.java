@@ -11,7 +11,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 public class CustomHeadListener implements Listener {
 
@@ -48,11 +48,11 @@ public class CustomHeadListener implements Listener {
         }
 
         ItemMeta itemMeta = item.getItemMeta();
-        PersistentDataContainer blockPdc = skull.getPersistentDataContainer();
 
         harvestManager.applyPersistentHeadData(
                 skull,
                 harvestManager.getStoredRarityFromMeta(itemMeta),
+                harvestManager.getStoredAnimalTypeKeyFromMeta(itemMeta),
                 harvestManager.getStoredAnimalNameFromMeta(itemMeta),
                 harvestManager.getStoredHeadOwnerFromMeta(itemMeta),
                 harvestManager.getStoredHeadTextureFromMeta(itemMeta)
@@ -80,22 +80,24 @@ public class CustomHeadListener implements Listener {
             return;
         }
 
-        String rarity = plugin.getHarvestManager().getStoredRarity(skull);
-        String animalName = plugin.getHarvestManager().getStoredAnimalName(skull);
-        String headOwner = plugin.getHarvestManager().getStoredHeadOwner(skull);
-        String headTexture = plugin.getHarvestManager().getStoredHeadTexture(skull);
-
         if (!skull.getPersistentDataContainer().has(
                 new org.bukkit.NamespacedKey(plugin, "lekkeranimal_head"),
-                org.bukkit.persistence.PersistentDataType.BYTE
+                PersistentDataType.BYTE
         )) {
             return;
         }
+
+        String rarity = plugin.getHarvestManager().getStoredRarity(skull);
+        String animalType = plugin.getHarvestManager().getStoredAnimalTypeKey(skull);
+        String animalName = plugin.getHarvestManager().getStoredAnimalName(skull);
+        String headOwner = plugin.getHarvestManager().getStoredHeadOwner(skull);
+        String headTexture = plugin.getHarvestManager().getStoredHeadTexture(skull);
 
         event.setDropItems(false);
 
         ItemStack item = plugin.getHarvestManager().createPersistentHeadItem(
                 rarity,
+                animalType,
                 animalName,
                 headOwner,
                 headTexture

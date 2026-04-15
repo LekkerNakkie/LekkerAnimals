@@ -57,76 +57,95 @@ animals:
       levels:
         1:
           drops:
-            LEATHER:
-              amount: 1
-              chance: 100.0
+            - item: "LEATHER"
+              guaranteed-amount: 1
+            - item: "PLAYER_HEAD"
+              rarity: "COMMON"
+              head-owner: "MHF_Cow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 10.0
         2:
           drops:
-            LEATHER:
-              amount: 2
-              chance: 75.0
+            - item: "LEATHER"
+              guaranteed-amount: 1
+              bonus-rolls:
+                - amount: 1
+                  chance: 75.0
+            - item: "PLAYER_HEAD"
+              rarity: "UNCOMMON"
+              head-owner: "MHF_Cow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 15.0
         3:
           drops:
-            LEATHER:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 25.0
-              head-owner: "MHF_Cow"
+            - item: "LEATHER"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "RARE"
+              head-owner: "MHF_Cow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 25.0
         4:
           drops:
-            LEATHER:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 60.0
-              head-owner: "MHF_Cow"
+            - item: "LEATHER"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "ULTRA"
+              head-owner: "MHF_Cow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 60.0
         5:
           drops:
-            LEATHER:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 80.0
-              head-owner: "MHF_Cow"
+            - item: "LEATHER"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "LEGENDARY"
-            COW_SPAWN_EGG:
-              amount: 1
-              chance: 1.0
+              head-owner: "MHF_Cow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 80.0
+            - item: "COW_SPAWN_EGG"
+              bonus-rolls:
+                - amount: 1
+                  chance: 1.0
 
     head-sell:
       enabled: true
       default-pricing:
-        type: "FIXED"
+        type: "RANGE"
         fixed: 20.0
-        min: 0.0
-        max: 0.0
+        min: 15
+        max: 30
       rarity-pricing:
         COMMON:
-          type: "FIXED"
+          type: "RANGE"
           fixed: 20.0
-          min: 0.0
-          max: 0.0
+          min: 15
+          max: 30
+        UNCOMMON:
+          type: "RANGE"
+          fixed: 30.0
+          min: 30
+          max: 45
         RARE:
-          type: "FIXED"
-          fixed: 45.0
-          min: 0.0
-          max: 0.0
+          type: "RANGE"
+          fixed: 45
+          min: 45
+          max: 60
         ULTRA:
           type: "RANGE"
           fixed: 0.0
-          min: 70.0
-          max: 90.0
+          min: 60
+          max: 75
         LEGENDARY:
-          type: "FIXED"
+          type: "RANGE"
           fixed: 100.0
-          min: 0.0
-          max: 0.0
+          min: 75
+          max: 90
 
   PIG:
     enabled: true
@@ -176,47 +195,61 @@ animals:
       levels:
         1:
           drops:
-            PORKCHOP:
-              amount: 1
-              chance: 100.0
+            - item: "PORKCHOP"
+              guaranteed-amount: 1
+            - item: "PLAYER_HEAD"
+              rarity: "COMMON"
+              head-owner: "MHF_Pig"
+              bonus-rolls:
+                - amount: 1
+                  chance: 10.0
         2:
           drops:
-            PORKCHOP:
-              amount: 2
-              chance: 100.0
+            - item: "PORKCHOP"
+              guaranteed-amount: 1
+              bonus-rolls:
+                - amount: 1
+                  chance: 100.0
+            - item: "PLAYER_HEAD"
+              rarity: "UNCOMMON"
+              head-owner: "MHF_Pig"
+              bonus-rolls:
+                - amount: 1
+                  chance: 15.0
         3:
           drops:
-            PORKCHOP:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 25.0
-              head-owner: "MHF_Pig"
+            - item: "PORKCHOP"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "RARE"
+              head-owner: "MHF_Pig"
+              bonus-rolls:
+                - amount: 1
+                  chance: 25.0
         4:
           drops:
-            PORKCHOP:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 60.0
-              head-owner: "MHF_Pig"
+            - item: "PORKCHOP"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "ULTRA"
+              head-owner: "MHF_Pig"
+              bonus-rolls:
+                - amount: 1
+                  chance: 60.0
         5:
           drops:
-            PORKCHOP:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 80.0
-              head-owner: "MHF_Pig"
+            - item: "PORKCHOP"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "LEGENDARY"
-            PIG_SPAWN_EGG:
-              amount: 1
-              chance: 1.0
+              head-owner: "MHF_Pig"
+              bonus-rolls:
+                - amount: 1
+                  chance: 80.0
+            - item: "PIG_SPAWN_EGG"
+              bonus-rolls:
+                - amount: 1
+                  chance: 1.0
 
     head-sell:
       enabled: true
@@ -229,6 +262,9 @@ animals:
         COMMON:
           type: "FIXED"
           fixed: 18.0
+        UNCOMMON:
+          type: "FIXED"
+          fixed: 27.0
         RARE:
           type: "FIXED"
           fixed: 40.0
@@ -288,47 +324,61 @@ animals:
       levels:
         1:
           drops:
-            EGG:
-              amount: 1
-              chance: 100.0
+            - item: "EGG"
+              guaranteed-amount: 1
+            - item: "PLAYER_HEAD"
+              rarity: "COMMON"
+              head-owner: "MHF_Chicken"
+              bonus-rolls:
+                - amount: 1
+                  chance: 10.0
         2:
           drops:
-            EGG:
-              amount: 2
-              chance: 75.0
+            - item: "EGG"
+              guaranteed-amount: 1
+              bonus-rolls:
+                - amount: 1
+                  chance: 75.0
+            - item: "PLAYER_HEAD"
+              rarity: "UNCOMMON"
+              head-owner: "MHF_Chicken"
+              bonus-rolls:
+                - amount: 1
+                  chance: 15.0
         3:
           drops:
-            EGG:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 25.0
-              head-owner: "MHF_Chicken"
+            - item: "EGG"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "RARE"
+              head-owner: "MHF_Chicken"
+              bonus-rolls:
+                - amount: 1
+                  chance: 25.0
         4:
           drops:
-            EGG:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 60.0
-              head-owner: "MHF_Chicken"
+            - item: "EGG"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "ULTRA"
+              head-owner: "MHF_Chicken"
+              bonus-rolls:
+                - amount: 1
+                  chance: 60.0
         5:
           drops:
-            EGG:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 80.0
-              head-owner: "MHF_Chicken"
+            - item: "EGG"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "LEGENDARY"
-            CHICKEN_SPAWN_EGG:
-              amount: 1
-              chance: 1.0
+              head-owner: "MHF_Chicken"
+              bonus-rolls:
+                - amount: 1
+                  chance: 80.0
+            - item: "CHICKEN_SPAWN_EGG"
+              bonus-rolls:
+                - amount: 1
+                  chance: 1.0
 
     head-sell:
       enabled: true
@@ -341,6 +391,9 @@ animals:
         COMMON:
           type: "FIXED"
           fixed: 15.0
+        UNCOMMON:
+          type: "FIXED"
+          fixed: 24.0
         RARE:
           type: "FIXED"
           fixed: 35.0
@@ -400,47 +453,61 @@ animals:
       levels:
         1:
           drops:
-            RED_MUSHROOM:
-              amount: 1
-              chance: 100.0
+            - item: "RED_MUSHROOM"
+              guaranteed-amount: 1
+            - item: "PLAYER_HEAD"
+              rarity: "COMMON"
+              head-owner: "MHF_MushroomCow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 10.0
         2:
           drops:
-            RED_MUSHROOM:
-              amount: 2
-              chance: 75.0
+            - item: "RED_MUSHROOM"
+              guaranteed-amount: 1
+              bonus-rolls:
+                - amount: 1
+                  chance: 75.0
+            - item: "PLAYER_HEAD"
+              rarity: "UNCOMMON"
+              head-owner: "MHF_MushroomCow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 15.0
         3:
           drops:
-            RED_MUSHROOM:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 25.0
-              head-owner: "MHF_MushroomCow"
+            - item: "RED_MUSHROOM"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "RARE"
+              head-owner: "MHF_MushroomCow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 25.0
         4:
           drops:
-            RED_MUSHROOM:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 60.0
-              head-owner: "MHF_MushroomCow"
+            - item: "RED_MUSHROOM"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "ULTRA"
+              head-owner: "MHF_MushroomCow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 60.0
         5:
           drops:
-            RED_MUSHROOM:
-              amount: 2
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 80.0
-              head-owner: "MHF_MushroomCow"
+            - item: "RED_MUSHROOM"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
               rarity: "LEGENDARY"
-            MOOSHROOM_SPAWN_EGG:
-              amount: 1
-              chance: 1.0
+              head-owner: "MHF_MushroomCow"
+              bonus-rolls:
+                - amount: 1
+                  chance: 80.0
+            - item: "MOOSHROOM_SPAWN_EGG"
+              bonus-rolls:
+                - amount: 1
+                  chance: 1.0
 
     head-sell:
       enabled: true
@@ -453,6 +520,9 @@ animals:
         COMMON:
           type: "FIXED"
           fixed: 25.0
+        UNCOMMON:
+          type: "FIXED"
+          fixed: 38.0
         RARE:
           type: "FIXED"
           fixed: 55.0
@@ -508,47 +578,61 @@ animals:
       levels:
         1:
           drops:
-            WHITE_WOOL:
-              amount: 2
-              chance: 100.0
+            - item: "WHITE_WOOL"
+              guaranteed-amount: 2
+            - item: "PLAYER_HEAD"
+              rarity: "COMMON"
+              head-owner: "MHF_Sheep"
+              bonus-rolls:
+                - amount: 1
+                  chance: 10.0
         2:
           drops:
-            WHITE_WOOL:
-              amount: 3
-              chance: 75.0
+            - item: "WHITE_WOOL"
+              guaranteed-amount: 2
+              bonus-rolls:
+                - amount: 1
+                  chance: 75.0
+            - item: "PLAYER_HEAD"
+              rarity: "UNCOMMON"
+              head-owner: "MHF_Sheep"
+              bonus-rolls:
+                - amount: 1
+                  chance: 15.0
         3:
           drops:
-            WHITE_WOOL:
-              amount: 3
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 25.0
-              head-owner: "MHF_Sheep"
+            - item: "WHITE_WOOL"
+              guaranteed-amount: 3
+            - item: "PLAYER_HEAD"
               rarity: "RARE"
+              head-owner: "MHF_Sheep"
+              bonus-rolls:
+                - amount: 1
+                  chance: 25.0
         4:
           drops:
-            WHITE_WOOL:
-              amount: 3
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 60.0
-              head-owner: "MHF_Sheep"
+            - item: "WHITE_WOOL"
+              guaranteed-amount: 3
+            - item: "PLAYER_HEAD"
               rarity: "ULTRA"
+              head-owner: "MHF_Sheep"
+              bonus-rolls:
+                - amount: 1
+                  chance: 60.0
         5:
           drops:
-            WHITE_WOOL:
-              amount: 3
-              chance: 100.0
-            PLAYER_HEAD:
-              amount: 1
-              chance: 80.0
-              head-owner: "MHF_Sheep"
+            - item: "WHITE_WOOL"
+              guaranteed-amount: 3
+            - item: "PLAYER_HEAD"
               rarity: "LEGENDARY"
-            SHEEP_SPAWN_EGG:
-              amount: 1
-              chance: 1.0
+              head-owner: "MHF_Sheep"
+              bonus-rolls:
+                - amount: 1
+                  chance: 80.0
+            - item: "SHEEP_SPAWN_EGG"
+              bonus-rolls:
+                - amount: 1
+                  chance: 1.0
 
     head-sell:
       enabled: true
@@ -561,6 +645,9 @@ animals:
         COMMON:
           type: "FIXED"
           fixed: 17.0
+        UNCOMMON:
+          type: "FIXED"
+          fixed: 26.0
         RARE:
           type: "FIXED"
           fixed: 38.0

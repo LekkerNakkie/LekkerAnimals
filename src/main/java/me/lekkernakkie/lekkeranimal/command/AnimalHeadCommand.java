@@ -81,10 +81,16 @@ public class AnimalHeadCommand implements CommandExecutor {
         String headOwner = "";
         String headTexture = "";
 
+        HarvestDrop fallbackHeadDrop = null;
+
         for (HarvestLevelProfile harvestLevelProfile : profile.getHarvestProfiles().values()) {
             for (HarvestDrop drop : harvestLevelProfile.getDrops()) {
                 if (drop.getMaterial() != Material.PLAYER_HEAD) {
                     continue;
+                }
+
+                if (fallbackHeadDrop == null) {
+                    fallbackHeadDrop = drop;
                 }
 
                 if (!drop.getRarity().equalsIgnoreCase(rarity)) {
@@ -93,8 +99,18 @@ public class AnimalHeadCommand implements CommandExecutor {
 
                 headOwner = drop.getHeadOwner();
                 headTexture = drop.getHeadTexture();
+                fallbackHeadDrop = drop;
                 break;
             }
+
+            if (!headOwner.isBlank() || !headTexture.isBlank()) {
+                break;
+            }
+        }
+
+        if ((headOwner.isBlank() && headTexture.isBlank()) && fallbackHeadDrop != null) {
+            headOwner = fallbackHeadDrop.getHeadOwner();
+            headTexture = fallbackHeadDrop.getHeadTexture();
         }
 
         ItemStack item = plugin.getHarvestManager().createPersistentHeadItem(

@@ -4,6 +4,7 @@ import me.lekkernakkie.lekkeranimal.LekkerAnimal;
 import me.lekkernakkie.lekkeranimal.config.MainSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalData;
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
+import me.lekkernakkie.lekkeranimal.data.BonusRoll;
 import me.lekkernakkie.lekkeranimal.data.HarvestDrop;
 import me.lekkernakkie.lekkeranimal.data.HarvestLevelProfile;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
@@ -70,10 +71,6 @@ public class HarvestManager {
         }
 
         for (HarvestDrop drop : levelProfile.getDrops()) {
-            if (!roll(drop.getChance())) {
-                continue;
-            }
-
             ItemStack item = createDrop(drop, entity, profile);
             if (item == null || item.getType() == Material.AIR) {
                 continue;
@@ -153,14 +150,30 @@ public class HarvestManager {
                 name = formatMaterial(drop.getMaterial());
             }
 
-            if (drop.isGuaranteed()) {
-                parts.add(drop.getAmount() + "x " + name);
-            } else {
-                parts.add((int) drop.getChance() + "% " + drop.getAmount() + "x " + name);
-            }
+            parts.add(ColorUtil.colorize("&7- &f" + buildPreviewAmountText(drop) + " " + name));
         }
 
-        return String.join(", ", parts);
+        return String.join("\n", parts);
+    }
+
+    private String buildPreviewAmountText(HarvestDrop drop) {
+        int min = drop.getMinimumAmount();
+        int max = drop.getMaximumAmount();
+
+        if (min > 0 && min == max) {
+            return min + "x";
+        }
+
+        if (min == 0 && drop.getBonusRolls().size() == 1) {
+            BonusRoll roll = drop.getBonusRolls().get(0);
+            return ((int) roll.getChance()) + "% " + roll.getAmount() + "x";
+        }
+
+        if (min == 0) {
+            return "0-" + max + "x";
+        }
+
+        return min + "-" + max + "x";
     }
 
     public boolean isPluginCustomHead(ItemStack item) {
@@ -463,6 +476,18 @@ public class HarvestManager {
         return null;
     }
 
+    private int calculateDropAmount(HarvestDrop drop) {
+        int total = Math.max(0, drop.getGuaranteedAmount());
+
+        for (BonusRoll bonusRoll : drop.getBonusRolls()) {
+            if (roll(bonusRoll.getChance())) {
+                total += Math.max(0, bonusRoll.getAmount());
+            }
+        }
+
+        return total;
+    }
+
     private boolean roll(double chance) {
         if (chance >= 100.0D) {
             return true;
@@ -474,6 +499,11 @@ public class HarvestManager {
     }
 
     private ItemStack createDrop(HarvestDrop drop, Entity entity, AnimalProfile profile) {
+        int amount = calculateDropAmount(drop);
+        if (amount <= 0) {
+            return null;
+        }
+
         Material material = drop.getMaterial();
 
         if (material == Material.WHITE_WOOL && entity instanceof Sheep sheep) {
@@ -481,16 +511,18 @@ public class HarvestManager {
         }
 
         if (material == Material.PLAYER_HEAD && plugin.getConfigManager().getMainSettings().isCustomHeadsEnabled()) {
-            return createPersistentHeadItem(
+            ItemStack item = createPersistentHeadItem(
                     normalizeRarity(drop.getRarity()),
                     profile.getEntityType().name(),
                     profile.getDisplayName(),
                     drop.getHeadOwner(),
                     drop.getHeadTexture()
             );
+            item.setAmount(Math.min(64, amount));
+            return item;
         }
 
-        ItemStack item = new ItemStack(material, Math.max(1, drop.getAmount()));
+        ItemStack item = new ItemStack(material, Math.min(64, amount));
 
         if (drop.getDisplayName() != null && !drop.getDisplayName().isBlank()) {
             ItemMeta meta = item.getItemMeta();

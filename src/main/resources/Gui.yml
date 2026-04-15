@@ -37,29 +37,29 @@ gui:
         material: "EXPERIENCE_BOTTLE"
         name: "&bLevel &f{level}"
         lore:
-          - "&7XP: &f{xp}&8/&f{required_xp}"
-          - "&7Progress: {xp_bar}"
-          - ""
-          - "&bVolgende upgrade:"
-          - "&7Level: &f{next_level}"
-          - "&7Item: &f{next_upgrade_item}"
-          - "&7Hoeveel: &f{next_upgrade_amount}"
-          - ""
-          - "{next_upgrade_status}"
+        - "&7XP: &f{xp}&7/&f{required_xp}"
+        - "&7Progress: {xp_bar}"
+        - ""
+        - "&bVolgende upgrade:"
+        - "&7Level: &f{next_level}"
+        - "&7Item: &f{next_upgrade_item}"
+        - "&7Hoeveel: &f{next_upgrade_amount}"
+        - ""
+        - "{next_upgrade_status}"
 
       harvest:
         slot: 16
         material: "CHEST"
         name: "&bHarvest"
         lore:
-          - "&7Status: {harvest_status}"
-          - "&7Cooldown: &f{harvest_time_left}"
-          - "&7Progress: &f{harvest_progress_percent}%"
-          - ""
-          - "&bMogelijke drops:"
-          - "&f{harvest_preview}"
-          - ""
-          - "&bKlik om te harvesten"
+        - "&7Status: {harvest_status}"
+        - "&7Cooldown: {harvest_time_left}"
+        - "&7Progress: {harvest_progress_percent}%"
+        - ""
+        - "&bMogelijke drops:"
+        - "{harvest_preview}"
+        - ""
+        - "&bKlik om te harvesten"
 
       co-owners:
         slot: 22

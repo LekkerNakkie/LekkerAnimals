@@ -65,7 +65,12 @@ public class GuiManager {
         );
 
         if (gui.isFillerEnabled()) {
-            ItemStack filler = createItem(gui.getFillerItemId(), Material.LIGHT_BLUE_STAINED_GLASS_PANE, gui.getFillerName(), List.of());
+            ItemStack filler = createItem(
+                    gui.getFillerItemId(),
+                    Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                    gui.getFillerName(),
+                    List.of()
+            );
             for (int i = 0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, filler);
             }
@@ -107,7 +112,12 @@ public class GuiManager {
         );
 
         if (gui.isCoOwnerFillerEnabled()) {
-            ItemStack filler = createItem(gui.getCoOwnerFillerItemId(), Material.LIGHT_BLUE_STAINED_GLASS_PANE, gui.getCoOwnerFillerName(), List.of());
+            ItemStack filler = createItem(
+                    gui.getCoOwnerFillerItemId(),
+                    Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                    gui.getCoOwnerFillerName(),
+                    List.of()
+            );
             for (int i = 0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, filler);
             }
@@ -179,7 +189,12 @@ public class GuiManager {
         );
 
         if (gui.isCoOwnerFillerEnabled()) {
-            ItemStack filler = createItem(gui.getCoOwnerFillerItemId(), Material.LIGHT_BLUE_STAINED_GLASS_PANE, gui.getCoOwnerFillerName(), List.of());
+            ItemStack filler = createItem(
+                    gui.getCoOwnerFillerItemId(),
+                    Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                    gui.getCoOwnerFillerName(),
+                    List.of()
+            );
             for (int i = 0; i < inventory.getSize(); i++) {
                 inventory.setItem(i, filler);
             }
@@ -262,7 +277,9 @@ public class GuiManager {
     }
 
     private ItemStack createHungerItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
-        int percent = profile.getMaxHunger() <= 0 ? 0 : (int) Math.round((data.getHunger() * 100.0) / profile.getMaxHunger());
+        int percent = profile.getMaxHunger() <= 0
+                ? 0
+                : (int) Math.round((data.getHunger() * 100.0) / profile.getMaxHunger());
 
         return createItem(
                 gui.getHungerItemId(),
@@ -289,19 +306,23 @@ public class GuiManager {
         int nextLevel = data.getLevel() + 1;
         DirectLevelUpgrade upgrade = profile.getDirectLevelUpgrade(nextLevel);
 
+        String nextLevelDisplay;
         String nextUpgradeItem;
         String nextUpgradeAmount;
         String nextUpgradeStatus;
 
         if (data.getLevel() >= profile.getMaxLevel()) {
-            nextUpgradeItem = "MAX";
-            nextUpgradeAmount = "0";
+            nextLevelDisplay = "MAX";
+            nextUpgradeItem = "-";
+            nextUpgradeAmount = "-";
             nextUpgradeStatus = ColorUtil.colorize("&aMaximum level bereikt");
         } else if (upgrade == null) {
-            nextUpgradeItem = "None";
-            nextUpgradeAmount = "0";
+            nextLevelDisplay = String.valueOf(nextLevel);
+            nextUpgradeItem = "-";
+            nextUpgradeAmount = "-";
             nextUpgradeStatus = ColorUtil.colorize("&cGeen directe upgrade ingesteld");
         } else {
+            nextLevelDisplay = String.valueOf(nextLevel);
             nextUpgradeItem = formatMaterial(upgrade.getItem());
             nextUpgradeAmount = String.valueOf(upgrade.getAmount());
             nextUpgradeStatus = ColorUtil.colorize("&eKlik om direct te upgraden");
@@ -324,7 +345,7 @@ public class GuiManager {
                                 gui.getXpBarEmptyColor(),
                                 gui.getXpBarSymbol()
                         ),
-                        "{next_level}", String.valueOf(nextLevel),
+                        "{next_level}", nextLevelDisplay,
                         "{next_upgrade_item}", nextUpgradeItem,
                         "{next_upgrade_amount}", nextUpgradeAmount,
                         "{next_upgrade_status}", nextUpgradeStatus
@@ -347,17 +368,20 @@ public class GuiManager {
 
         String preview = plugin.getHarvestManager().getPreview(profile, data.getLevel());
 
+        List<String> lore = applyPlaceholders(
+                gui.getHarvestLore(),
+                "{harvest_status}", status,
+                "{harvest_time_left}", timeLeft,
+                "{harvest_progress_percent}", String.valueOf(plugin.getHarvestManager().getProgressPercent(data, profile))
+        );
+
+        lore = expandMultilinePlaceholder(lore, "{harvest_preview}", preview);
+
         return createItem(
                 gui.getHarvestItemId(),
                 gui.getHarvestMaterial(),
                 gui.getHarvestName(),
-                applyPlaceholders(
-                        gui.getHarvestLore(),
-                        "{harvest_status}", status,
-                        "{harvest_time_left}", timeLeft,
-                        "{harvest_preview}", preview,
-                        "{harvest_progress_percent}", String.valueOf(plugin.getHarvestManager().getProgressPercent(data, profile))
-                )
+                lore
         );
     }
 
@@ -456,6 +480,29 @@ public class GuiManager {
         return result;
     }
 
+    private List<String> expandMultilinePlaceholder(List<String> input, String placeholder, String value) {
+        List<String> result = new ArrayList<>();
+        String[] split = value != null ? value.split("\n") : new String[0];
+
+        for (String line : input) {
+            if (!line.contains(placeholder)) {
+                result.add(line);
+                continue;
+            }
+
+            if (split.length == 0) {
+                result.add(line.replace(placeholder, ""));
+                continue;
+            }
+
+            for (String part : split) {
+                result.add(line.replace(placeholder, part));
+            }
+        }
+
+        return result;
+    }
+
     private List<String> colorizeList(List<String> input) {
         List<String> result = new ArrayList<>();
         for (String line : input) {
@@ -481,7 +528,10 @@ public class GuiManager {
             fullColor = "&a";
         }
 
-        return ColorUtil.colorize(fullColor + symbol.repeat(filled) + emptyColor + symbol.repeat(Math.max(0, length - filled)));
+        return ColorUtil.colorize(
+                fullColor + symbol.repeat(filled) +
+                        emptyColor + symbol.repeat(Math.max(0, length - filled))
+        );
     }
 
     private String createBar(int current, int max, int length, String fullColor, String emptyColor, String symbol) {
@@ -492,7 +542,10 @@ public class GuiManager {
         double progress = Math.max(0.0, Math.min(1.0, current / (double) max));
         int filled = (int) Math.round(progress * length);
 
-        return ColorUtil.colorize(fullColor + symbol.repeat(filled) + emptyColor + symbol.repeat(Math.max(0, length - filled)));
+        return ColorUtil.colorize(
+                fullColor + symbol.repeat(filled) +
+                        emptyColor + symbol.repeat(Math.max(0, length - filled))
+        );
     }
 
     private String formatMaterial(Material material) {

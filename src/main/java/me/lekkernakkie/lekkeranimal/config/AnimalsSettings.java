@@ -1,6 +1,7 @@
 package me.lekkernakkie.lekkeranimal.config;
 
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
+import me.lekkernakkie.lekkeranimal.data.BonusRoll;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.data.HarvestDrop;
@@ -186,48 +187,129 @@ public class AnimalsSettings {
                 continue;
             }
 
-            ConfigurationSection dropsSection = config.getConfigurationSection(
-                    basePath + ".harvesting.levels." + levelKey + ".drops"
-            );
-            if (dropsSection == null) {
-                continue;
+            String dropsPath = basePath + ".harvesting.levels." + levelKey + ".drops";
+            List<HarvestDrop> drops = loadDropList(dropsPath, animalKey, level);
+
+            if (!drops.isEmpty()) {
+                result.put(level, new HarvestLevelProfile(level, drops));
             }
-
-            List<HarvestDrop> drops = new ArrayList<>();
-
-            for (String dropKey : dropsSection.getKeys(false)) {
-                String path = basePath + ".harvesting.levels." + levelKey + ".drops." + dropKey;
-
-                Material material;
-                try {
-                    material = Material.valueOf(dropKey.toUpperCase());
-                } catch (IllegalArgumentException ex) {
-                    warn("Skipping invalid harvest material for " + animalKey + " level " + level + ": " + dropKey);
-                    continue;
-                }
-
-                int amount = Math.max(1, config.getInt(path + ".amount", 1));
-                double chance = Math.max(0.0D, Math.min(100.0D, config.getDouble(path + ".chance", 100.0D)));
-                String displayName = config.getString(path + ".name", "");
-                String headTexture = config.getString(path + ".head-texture", "");
-                String headOwner = config.getString(path + ".head-owner", "");
-                String rarity = config.getString(path + ".rarity", "COMMON");
-
-                drops.add(new HarvestDrop(
-                        material,
-                        amount,
-                        chance,
-                        displayName,
-                        headTexture,
-                        headOwner,
-                        rarity
-                ));
-            }
-
-            result.put(level, new HarvestLevelProfile(level, drops));
         }
 
         return result;
+    }
+
+    private List<HarvestDrop> loadDropList(String dropsPath, String animalKey, int level) {
+        List<HarvestDrop> drops = new ArrayList<>();
+
+        List<Map<?, ?>> listEntries = config.getMapList(dropsPath);
+        if (!listEntries.isEmpty()) {
+            for (Map<?, ?> rawEntry : listEntries) {
+                HarvestDrop drop = parseListDrop(rawEntry, animalKey, level);
+                if (drop != null) {
+                    drops.add(drop);
+                }
+            }
+            return drops;
+        }
+
+        ConfigurationSection oldDropsSection = config.getConfigurationSection(dropsPath);
+        if (oldDropsSection != null) {
+            for (String dropKey : oldDropsSection.getKeys(false)) {
+                HarvestDrop drop = parseLegacyDrop(dropsPath + "." + dropKey, dropKey, animalKey, level);
+                if (drop != null) {
+                    drops.add(drop);
+                }
+            }
+        }
+
+        return drops;
+    }
+
+    private HarvestDrop parseListDrop(Map<?, ?> rawEntry, String animalKey, int level) {
+        Object itemObject = rawEntry.get("item");
+        if (!(itemObject instanceof String itemName) || itemName.isBlank()) {
+            warn("Skipping harvest drop without valid item for " + animalKey + " level " + level);
+            return null;
+        }
+
+        Material material;
+        try {
+            material = Material.valueOf(itemName.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            warn("Skipping invalid harvest material for " + animalKey + " level " + level + ": " + itemName);
+            return null;
+        }
+
+        int guaranteedAmount = Math.max(0, getInt(rawEntry.get("guaranteed-amount"), 0));
+        String displayName = getString(rawEntry.get("display-name"), "");
+        if (displayName.isBlank()) {
+            displayName = getString(rawEntry.get("name"), "");
+        }
+
+        String headTexture = getString(rawEntry.get("head-texture"), "");
+        String headOwner = getString(rawEntry.get("head-owner"), "");
+        String rarity = getString(rawEntry.get("rarity"), "COMMON");
+
+        List<BonusRoll> bonusRolls = new ArrayList<>();
+        Object bonusObject = rawEntry.get("bonus-rolls");
+        if (bonusObject instanceof List<?> rawBonusList) {
+            for (Object rawBonus : rawBonusList) {
+                if (!(rawBonus instanceof Map<?, ?> bonusMap)) {
+                    continue;
+                }
+
+                int amount = Math.max(0, getInt(bonusMap.get("amount"), 0));
+                double chance = clampChance(getDouble(bonusMap.get("chance"), 0.0D));
+
+                if (amount <= 0 || chance <= 0.0D) {
+                    continue;
+                }
+
+                bonusRolls.add(new BonusRoll(amount, chance));
+            }
+        }
+
+        return new HarvestDrop(
+                material,
+                guaranteedAmount,
+                bonusRolls,
+                displayName,
+                headTexture,
+                headOwner,
+                rarity
+        );
+    }
+
+    private HarvestDrop parseLegacyDrop(String path, String dropKey, String animalKey, int level) {
+        Material material;
+        try {
+            material = Material.valueOf(dropKey.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            warn("Skipping invalid harvest material for " + animalKey + " level " + level + ": " + dropKey);
+            return null;
+        }
+
+        int amount = Math.max(1, config.getInt(path + ".amount", 1));
+        double chance = clampChance(config.getDouble(path + ".chance", 100.0D));
+        String displayName = config.getString(path + ".display-name", config.getString(path + ".name", ""));
+        String headTexture = config.getString(path + ".head-texture", "");
+        String headOwner = config.getString(path + ".head-owner", "");
+        String rarity = config.getString(path + ".rarity", "COMMON");
+
+        List<BonusRoll> bonusRolls = new ArrayList<>();
+        if (chance > 0.0D) {
+            bonusRolls.add(new BonusRoll(amount, chance));
+        }
+
+        return new HarvestDrop(
+                material,
+                0,
+                bonusRolls,
+                displayName,
+                headTexture,
+                headOwner,
+                rarity
+        );
     }
 
     private HeadPriceRule loadPriceRule(String path) {
@@ -278,6 +360,47 @@ public class AnimalsSettings {
             warn(warning);
             return fallback;
         }
+    }
+
+    private int getInt(Object value, int fallback) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+
+        if (value instanceof String string) {
+            try {
+                return Integer.parseInt(string);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        return fallback;
+    }
+
+    private double getDouble(Object value, double fallback) {
+        if (value instanceof Number number) {
+            return number.doubleValue();
+        }
+
+        if (value instanceof String string) {
+            try {
+                return Double.parseDouble(string);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        return fallback;
+    }
+
+    private String getString(Object value, String fallback) {
+        if (value == null) {
+            return fallback;
+        }
+        return String.valueOf(value);
+    }
+
+    private double clampChance(double chance) {
+        return Math.max(0.0D, Math.min(100.0D, chance));
     }
 
     private void warn(String message) {

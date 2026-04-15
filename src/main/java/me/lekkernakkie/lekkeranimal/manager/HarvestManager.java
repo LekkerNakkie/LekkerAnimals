@@ -54,7 +54,7 @@ public class HarvestManager {
             giveOrDrop(player, item);
         }
 
-        data.setLastHarvestAt(System.currentTimeMillis());
+        data.setHarvestProgressMillis(0L);
         plugin.getDataManager().saveAnimal(data);
 
         return HarvestResult.SUCCESS;
@@ -66,9 +66,7 @@ public class HarvestManager {
         }
 
         long cooldownMillis = profile.getHarvestCooldownSeconds() * 1000L;
-        long now = System.currentTimeMillis();
-
-        return data.getLastHarvestAt() <= 0L || now >= data.getLastHarvestAt() + cooldownMillis;
+        return data.getHarvestProgressMillis() >= cooldownMillis;
     }
 
     public long getTimeLeftMillis(AnimalData data, AnimalProfile profile) {
@@ -77,8 +75,21 @@ public class HarvestManager {
         }
 
         long cooldownMillis = profile.getHarvestCooldownSeconds() * 1000L;
-        long readyAt = data.getLastHarvestAt() + cooldownMillis;
-        return Math.max(0L, readyAt - System.currentTimeMillis());
+        return Math.max(0L, cooldownMillis - data.getHarvestProgressMillis());
+    }
+
+    public int getProgressPercent(AnimalData data, AnimalProfile profile) {
+        if (!profile.isHarvestingEnabled()) {
+            return 0;
+        }
+
+        long cooldownMillis = profile.getHarvestCooldownSeconds() * 1000L;
+        if (cooldownMillis <= 0L) {
+            return 100;
+        }
+
+        double progress = Math.min(1.0D, data.getHarvestProgressMillis() / (double) cooldownMillis);
+        return (int) Math.round(progress * 100.0D);
     }
 
     public String formatTimeLeft(long millis) {
@@ -128,19 +139,16 @@ public class HarvestManager {
     private ItemStack createDrop(HarvestDrop drop, Entity entity) {
         Material material = drop.getMaterial();
 
-        // 🔥 Sheep kleur → juiste wool
         if (material == Material.WHITE_WOOL && entity instanceof Sheep sheep) {
             material = getWoolFromColor(sheep.getColor());
         }
 
         ItemStack item = new ItemStack(material, Math.max(1, drop.getAmount()));
 
-        // Head support (MHF)
         if (material == Material.PLAYER_HEAD) {
             applyHeadMeta(item, drop);
         }
 
-        // Display name
         if (drop.getDisplayName() != null && !drop.getDisplayName().isBlank()) {
             ItemMeta meta = item.getItemMeta();
             if (meta != null) {

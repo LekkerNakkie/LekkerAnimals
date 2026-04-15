@@ -3,7 +3,11 @@ package me.lekkernakkie.lekkeranimal.database;
 import me.lekkernakkie.lekkeranimal.data.AnimalData;
 import org.bukkit.entity.EntityType;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +52,7 @@ public class AnimalRepository {
 
         String sql = """
                 SELECT id, entity_uuid, owner_uuid, owner_name, animal_type, level, xp, bond, hunger, max_hunger,
-                       world, x, y, z, created_at, updated_at, last_harvest_at
+                       world, x, y, z, created_at, updated_at, harvest_progress_millis, co_owners, co_owners_keep_active
                 FROM bonded_animals
                 """;
 
@@ -75,8 +79,11 @@ public class AnimalRepository {
                             rs.getDouble("z"),
                             rs.getLong("created_at"),
                             rs.getLong("updated_at"),
-                            rs.getLong("last_harvest_at")
+                            rs.getLong("harvest_progress_millis"),
+                            rs.getString("co_owners")
                     );
+
+                    data.setCoOwnersKeepActive(rs.getInt("co_owners_keep_active") == 1);
                     data.setDirty(false);
                     animals.add(data);
                 } catch (Exception ignored) {
@@ -91,7 +98,8 @@ public class AnimalRepository {
         String sql = """
                 UPDATE bonded_animals
                 SET owner_uuid = ?, owner_name = ?, animal_type = ?, level = ?, xp = ?, bond = ?, hunger = ?,
-                    max_hunger = ?, world = ?, x = ?, y = ?, z = ?, updated_at = ?, last_harvest_at = ?
+                    max_hunger = ?, world = ?, x = ?, y = ?, z = ?, updated_at = ?, harvest_progress_millis = ?,
+                    co_owners = ?, co_owners_keep_active = ?
                 WHERE entity_uuid = ?
                 """;
 
@@ -111,8 +119,10 @@ public class AnimalRepository {
             statement.setDouble(11, data.getY());
             statement.setDouble(12, data.getZ());
             statement.setLong(13, System.currentTimeMillis());
-            statement.setLong(14, data.getLastHarvestAt());
-            statement.setString(15, data.getEntityUuid().toString());
+            statement.setLong(14, data.getHarvestProgressMillis());
+            statement.setString(15, data.getSerializedCoOwners());
+            statement.setInt(16, data.isCoOwnersKeepActive() ? 1 : 0);
+            statement.setString(17, data.getEntityUuid().toString());
 
             return statement.executeUpdate();
         }
@@ -121,8 +131,8 @@ public class AnimalRepository {
     private void insert(AnimalData data) throws SQLException {
         String sql = """
                 INSERT INTO bonded_animals
-                (entity_uuid, owner_uuid, owner_name, animal_type, level, xp, bond, hunger, max_hunger, world, x, y, z, created_at, updated_at, last_harvest_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (entity_uuid, owner_uuid, owner_name, animal_type, level, xp, bond, hunger, max_hunger, world, x, y, z, created_at, updated_at, harvest_progress_millis, co_owners, co_owners_keep_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         long now = System.currentTimeMillis();
@@ -149,7 +159,9 @@ public class AnimalRepository {
             statement.setDouble(13, data.getZ());
             statement.setLong(14, data.getCreatedAt());
             statement.setLong(15, data.getUpdatedAt());
-            statement.setLong(16, data.getLastHarvestAt());
+            statement.setLong(16, data.getHarvestProgressMillis());
+            statement.setString(17, data.getSerializedCoOwners());
+            statement.setInt(18, data.isCoOwnersKeepActive() ? 1 : 0);
 
             statement.executeUpdate();
 

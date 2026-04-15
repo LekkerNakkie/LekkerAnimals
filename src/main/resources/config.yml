@@ -21,6 +21,22 @@ main:
   autosave-interval-seconds: 300
   save-on-disable: true
 
+modules:
+  online-owner-activity:
+    enabled: true
+
+  co-owners:
+    enabled: true
+    max-per-animal: 3
+    allow-feed: true
+    allow-harvest: true
+    allow-gui-access: true
+    allow-direct-upgrades: false
+
+  co-owner-gui:
+    enabled: true
+    use-chat-input: true
+
 hunger:
   enabled: true
   task-interval-seconds: 60

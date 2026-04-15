@@ -5,6 +5,7 @@ import me.lekkernakkie.lekkeranimal.config.ConfigManager;
 import me.lekkernakkie.lekkeranimal.data.DataManager;
 import me.lekkernakkie.lekkeranimal.listener.AnimalDeathListener;
 import me.lekkernakkie.lekkeranimal.listener.AnimalInteractListener;
+import me.lekkernakkie.lekkeranimal.listener.CoOwnerChatListener;
 import me.lekkernakkie.lekkeranimal.listener.GuiClickListener;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import me.lekkernakkie.lekkeranimal.manager.BondManager;
@@ -29,6 +30,7 @@ public class LekkerAnimal extends JavaPlugin {
     private HologramManager hologramManager;
     private GuiManager guiManager;
     private HarvestManager harvestManager;
+    private CoOwnerChatListener coOwnerChatListener;
 
     @Override
     public void onEnable() {
@@ -47,6 +49,7 @@ public class LekkerAnimal extends JavaPlugin {
         this.hologramManager = new HologramManager(this, animalManager);
         this.guiManager = new GuiManager(this);
         this.harvestManager = new HarvestManager(this);
+        this.coOwnerChatListener = new CoOwnerChatListener(this);
 
         this.dataManager.loadAllIntoMemory(animalManager);
 
@@ -66,6 +69,11 @@ public class LekkerAnimal extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(
                 new GuiClickListener(this),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                coOwnerChatListener,
                 this
         );
 
@@ -130,5 +138,9 @@ public class LekkerAnimal extends JavaPlugin {
 
     public HarvestManager getHarvestManager() {
         return harvestManager;
+    }
+
+    public CoOwnerChatListener getCoOwnerChatListener() {
+        return coOwnerChatListener;
     }
 }

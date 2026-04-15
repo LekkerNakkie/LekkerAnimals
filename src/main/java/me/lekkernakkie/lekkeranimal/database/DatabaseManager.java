@@ -111,7 +111,9 @@ public class DatabaseManager {
                         z DOUBLE,
                         created_at BIGINT NOT NULL,
                         updated_at BIGINT NOT NULL,
-                        last_harvest_at BIGINT NOT NULL DEFAULT 0
+                        harvest_progress_millis BIGINT NOT NULL DEFAULT 0,
+                        co_owners TEXT,
+                        co_owners_keep_active TINYINT(1) NOT NULL DEFAULT 0
                     )
                     """;
         } else {
@@ -133,7 +135,9 @@ public class DatabaseManager {
                         z REAL,
                         created_at INTEGER NOT NULL,
                         updated_at INTEGER NOT NULL,
-                        last_harvest_at INTEGER NOT NULL DEFAULT 0
+                        harvest_progress_millis INTEGER NOT NULL DEFAULT 0,
+                        co_owners TEXT,
+                        co_owners_keep_active INTEGER NOT NULL DEFAULT 0
                     )
                     """;
         }
@@ -145,8 +149,24 @@ public class DatabaseManager {
 
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {
+
             try {
-                statement.executeUpdate("ALTER TABLE bonded_animals ADD COLUMN last_harvest_at BIGINT NOT NULL DEFAULT 0");
+                statement.executeUpdate("ALTER TABLE bonded_animals ADD COLUMN harvest_progress_millis BIGINT NOT NULL DEFAULT 0");
+            } catch (SQLException ignored) {
+            }
+
+            try {
+                statement.executeUpdate("ALTER TABLE bonded_animals ADD COLUMN co_owners TEXT");
+            } catch (SQLException ignored) {
+            }
+
+            try {
+                statement.executeUpdate("ALTER TABLE bonded_animals ADD COLUMN co_owners_keep_active INTEGER NOT NULL DEFAULT 0");
+            } catch (SQLException ignored) {
+            }
+
+            try {
+                statement.executeUpdate("ALTER TABLE bonded_animals DROP COLUMN last_harvest_at");
             } catch (SQLException ignored) {
             }
         }

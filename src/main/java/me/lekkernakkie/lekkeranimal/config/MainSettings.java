@@ -36,6 +36,18 @@ public class MainSettings {
     private final int startBond;
     private final int startLevel;
 
+    private final boolean onlineOwnerActivityEnabled;
+
+    private final boolean coOwnersEnabled;
+    private final int coOwnersMaxPerAnimal;
+    private final boolean coOwnersAllowFeed;
+    private final boolean coOwnersAllowHarvest;
+    private final boolean coOwnersAllowGuiAccess;
+    private final boolean coOwnersAllowDirectUpgrades;
+
+    private final boolean coOwnerGuiEnabled;
+    private final boolean coOwnerChatInputEnabled;
+
     public MainSettings(FileConfiguration config) {
         this.debug = config.getBoolean("debug", false);
         this.languageFile = config.getString("language-file", "lang_NL.yml");
@@ -68,6 +80,18 @@ public class MainSettings {
         this.maxBond = config.getInt("bond.max-bond", 100);
         this.startBond = config.getInt("bond.start-bond", 10);
         this.startLevel = config.getInt("bond.start-level", 1);
+
+        this.onlineOwnerActivityEnabled = config.getBoolean("modules.online-owner-activity.enabled", true);
+
+        this.coOwnersEnabled = config.getBoolean("modules.co-owners.enabled", true);
+        this.coOwnersMaxPerAnimal = Math.max(1, config.getInt("modules.co-owners.max-per-animal", 3));
+        this.coOwnersAllowFeed = config.getBoolean("modules.co-owners.allow-feed", true);
+        this.coOwnersAllowHarvest = config.getBoolean("modules.co-owners.allow-harvest", true);
+        this.coOwnersAllowGuiAccess = config.getBoolean("modules.co-owners.allow-gui-access", true);
+        this.coOwnersAllowDirectUpgrades = config.getBoolean("modules.co-owners.allow-direct-upgrades", false);
+
+        this.coOwnerGuiEnabled = config.getBoolean("modules.co-owner-gui.enabled", true);
+        this.coOwnerChatInputEnabled = config.getBoolean("modules.co-owner-gui.use-chat-input", true);
     }
 
     public boolean isDebug() {
@@ -168,5 +192,41 @@ public class MainSettings {
 
     public int getStartLevel() {
         return startLevel;
+    }
+
+    public boolean isOnlineOwnerActivityEnabled() {
+        return onlineOwnerActivityEnabled;
+    }
+
+    public boolean isCoOwnersEnabled() {
+        return coOwnersEnabled;
+    }
+
+    public int getCoOwnersMaxPerAnimal() {
+        return coOwnersMaxPerAnimal;
+    }
+
+    public boolean isCoOwnersAllowFeed() {
+        return coOwnersAllowFeed;
+    }
+
+    public boolean isCoOwnersAllowHarvest() {
+        return coOwnersAllowHarvest;
+    }
+
+    public boolean isCoOwnersAllowGuiAccess() {
+        return coOwnersAllowGuiAccess;
+    }
+
+    public boolean isCoOwnersAllowDirectUpgrades() {
+        return coOwnersAllowDirectUpgrades;
+    }
+
+    public boolean isCoOwnerGuiEnabled() {
+        return coOwnerGuiEnabled;
+    }
+
+    public boolean isCoOwnerChatInputEnabled() {
+        return coOwnerChatInputEnabled;
     }
 }

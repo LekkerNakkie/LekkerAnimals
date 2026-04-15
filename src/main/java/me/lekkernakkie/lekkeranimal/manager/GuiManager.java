@@ -2,6 +2,7 @@ package me.lekkernakkie.lekkeranimal.manager;
 
 import me.lekkernakkie.lekkeranimal.LekkerAnimal;
 import me.lekkernakkie.lekkeranimal.config.GuiSettings;
+import me.lekkernakkie.lekkeranimal.config.MainSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalData;
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
@@ -9,6 +10,7 @@ import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -18,6 +20,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class GuiManager {
 
@@ -43,6 +47,8 @@ public class GuiManager {
         }
 
         GuiSettings gui = plugin.getConfigManager().getGuiSettings();
+        MainSettings main = plugin.getConfigManager().getMainSettings();
+
         if (!gui.isAnimalInfoEnabled()) {
             return;
         }
@@ -52,7 +58,7 @@ public class GuiManager {
         );
 
         Inventory inventory = Bukkit.createInventory(
-                new AnimalGuiHolder(entity.getUniqueId()),
+                new AnimalGuiHolder(entity.getUniqueId(), AnimalGuiHolder.ScreenType.MAIN),
                 gui.getAnimalInfoRows() * 9,
                 title
         );
@@ -68,6 +74,114 @@ public class GuiManager {
         inventory.setItem(gui.getHungerSlot(), createHungerItem(data, profile, gui));
         inventory.setItem(gui.getLevelSlot(), createLevelItem(data, profile, gui));
         inventory.setItem(gui.getHarvestSlot(), createHarvestItem(data, profile, gui));
+
+        if (main.isCoOwnersEnabled() && main.isCoOwnerGuiEnabled()) {
+            inventory.setItem(gui.getCoOwnerManageSlot(), createCoOwnerManageItem(data, gui));
+        }
+
+        player.openInventory(inventory);
+    }
+
+    public void openCoOwnerMenu(org.bukkit.entity.Player player, Entity entity) {
+        if (player == null || entity == null) {
+            return;
+        }
+
+        AnimalData data = plugin.getAnimalManager().getAnimalData(entity);
+        if (data == null) {
+            return;
+        }
+
+        GuiSettings gui = plugin.getConfigManager().getGuiSettings();
+        MainSettings main = plugin.getConfigManager().getMainSettings();
+
+        if (!main.isCoOwnersEnabled() || !main.isCoOwnerGuiEnabled()) {
+            return;
+        }
+
+        Inventory inventory = Bukkit.createInventory(
+                new AnimalGuiHolder(entity.getUniqueId(), AnimalGuiHolder.ScreenType.CO_OWNERS),
+                gui.getCoOwnerRows() * 9,
+                ColorUtil.colorize(gui.getCoOwnerTitle())
+        );
+
+        if (gui.isCoOwnerFillerEnabled()) {
+            ItemStack filler = createItem(gui.getCoOwnerFillerMaterial(), gui.getCoOwnerFillerName(), List.of());
+            for (int i = 0; i < inventory.getSize(); i++) {
+                inventory.setItem(i, filler);
+            }
+        }
+
+        List<UUID> coOwners = new ArrayList<>(data.getCoOwnerUuids());
+        List<Integer> slots = gui.getCoOwnerSlots();
+
+        for (int i = 0; i < slots.size(); i++) {
+            int slot = slots.get(i);
+
+            if (i < coOwners.size()) {
+                UUID uuid = coOwners.get(i);
+                inventory.setItem(slot, createCoOwnerHead(uuid, gui));
+            } else {
+                inventory.setItem(slot, createItem(
+                        gui.getEmptyCoOwnerMaterial(),
+                        gui.getEmptyCoOwnerName(),
+                        gui.getEmptyCoOwnerLore()
+                ));
+            }
+        }
+
+        inventory.setItem(gui.getCoOwnerAddSlot(), createItem(
+                gui.getCoOwnerAddMaterial(),
+                gui.getCoOwnerAddName(),
+                applyPlaceholders(gui.getCoOwnerAddLore(),
+                        "{current}", String.valueOf(data.getCoOwnerCount()),
+                        "{max}", String.valueOf(main.getCoOwnersMaxPerAnimal()))
+        ));
+
+        inventory.setItem(gui.getCoOwnerBackSlot(), createItem(
+                gui.getCoOwnerBackMaterial(),
+                gui.getCoOwnerBackName(),
+                gui.getCoOwnerBackLore()
+        ));
+
+        inventory.setItem(gui.getCoOwnerToggleSlot(), createCoOwnerActiveToggleItem(data, gui));
+
+        player.openInventory(inventory);
+    }
+
+    public void openRemoveCoOwnerConfirm(org.bukkit.entity.Player player, Entity entity, UUID targetCoOwnerUuid) {
+        if (player == null || entity == null || targetCoOwnerUuid == null) {
+            return;
+        }
+
+        GuiSettings gui = plugin.getConfigManager().getGuiSettings();
+        OfflinePlayer target = Bukkit.getOfflinePlayer(targetCoOwnerUuid);
+        String targetName = target.getName() != null ? target.getName() : targetCoOwnerUuid.toString();
+
+        Inventory inventory = Bukkit.createInventory(
+                new AnimalGuiHolder(entity.getUniqueId(), AnimalGuiHolder.ScreenType.REMOVE_CO_OWNER_CONFIRM, targetCoOwnerUuid),
+                gui.getCoOwnerRemoveConfirmRows() * 9,
+                ColorUtil.colorize(gui.getCoOwnerRemoveConfirmTitle().replace("{player}", targetName))
+        );
+
+        if (gui.isCoOwnerFillerEnabled()) {
+            ItemStack filler = createItem(gui.getCoOwnerFillerMaterial(), gui.getCoOwnerFillerName(), List.of());
+            for (int i = 0; i < inventory.getSize(); i++) {
+                inventory.setItem(i, filler);
+            }
+        }
+
+        inventory.setItem(gui.getCoOwnerRemoveConfirmTargetSlot(), createCoOwnerHead(targetCoOwnerUuid, gui));
+        inventory.setItem(gui.getCoOwnerRemoveConfirmYesSlot(), createItem(
+                gui.getCoOwnerRemoveConfirmYesMaterial(),
+                gui.getCoOwnerRemoveConfirmYesName(),
+                applyPlaceholders(gui.getCoOwnerRemoveConfirmYesLore(), "{player}", targetName)
+        ));
+        inventory.setItem(gui.getCoOwnerRemoveConfirmNoSlot(), createItem(
+                gui.getCoOwnerRemoveConfirmNoMaterial(),
+                gui.getCoOwnerRemoveConfirmNoName(),
+                applyPlaceholders(gui.getCoOwnerRemoveConfirmNoLore(), "{player}", targetName)
+        ));
 
         player.openInventory(inventory);
     }
@@ -85,7 +199,15 @@ public class GuiManager {
             return;
         }
 
-        openAnimalInfo(player, entity);
+        switch (holder.getScreenType()) {
+            case MAIN -> openAnimalInfo(player, entity);
+            case CO_OWNERS -> openCoOwnerMenu(player, entity);
+            case REMOVE_CO_OWNER_CONFIRM -> {
+                if (holder.getTargetCoOwnerUuid() != null) {
+                    openRemoveCoOwnerConfirm(player, entity, holder.getTargetCoOwnerUuid());
+                }
+            }
+        }
     }
 
     private ItemStack createOwnerItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
@@ -188,6 +310,7 @@ public class GuiManager {
 
     private ItemStack createHarvestItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
         boolean ready = plugin.getHarvestManager().isReady(data, profile);
+
         String status = ready
                 ? ColorUtil.colorize("&aKlaar om te harvesten")
                 : ColorUtil.colorize("&eNog niet klaar");
@@ -207,7 +330,60 @@ public class GuiManager {
                         gui.getHarvestLore(),
                         "{harvest_status}", status,
                         "{harvest_time_left}", timeLeft,
-                        "{harvest_preview}", preview
+                        "{harvest_preview}", preview,
+                        "{harvest_progress_percent}", String.valueOf(plugin.getHarvestManager().getProgressPercent(data, profile))
+                )
+        );
+    }
+
+    private ItemStack createCoOwnerManageItem(AnimalData data, GuiSettings gui) {
+        String names = data.getCoOwnerUuids().stream()
+                .map(Bukkit::getOfflinePlayer)
+                .map(player -> player.getName() != null ? player.getName() : player.getUniqueId().toString())
+                .collect(Collectors.joining(", "));
+
+        if (names.isBlank()) {
+            names = "Geen";
+        }
+
+        return createItem(
+                gui.getCoOwnerManageMaterial(),
+                gui.getCoOwnerManageName(),
+                applyPlaceholders(
+                        gui.getCoOwnerManageLore(),
+                        "{count}", String.valueOf(data.getCoOwnerCount()),
+                        "{list}", names
+                )
+        );
+    }
+
+    private ItemStack createCoOwnerHead(UUID uuid, GuiSettings gui) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        ItemMeta baseMeta = item.getItemMeta();
+        if (!(baseMeta instanceof SkullMeta meta)) {
+            return item;
+        }
+
+        OfflinePlayer target = Bukkit.getOfflinePlayer(uuid);
+        String name = target.getName() != null ? target.getName() : uuid.toString();
+
+        meta.setOwningPlayer(target);
+        meta.setDisplayName(ColorUtil.colorize(gui.getCoOwnerHeadName().replace("{player}", name)));
+        meta.setLore(colorizeList(applyPlaceholders(gui.getCoOwnerHeadLore(), "{player}", name)));
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private ItemStack createCoOwnerActiveToggleItem(AnimalData data, GuiSettings gui) {
+        String status = data.isCoOwnersKeepActive() ? "&aAAN" : "&cUIT";
+
+        return createItem(
+                gui.getCoOwnerToggleMaterial(),
+                gui.getCoOwnerToggleName().replace("{status}", ColorUtil.colorize(status)),
+                applyPlaceholders(
+                        gui.getCoOwnerToggleLore(),
+                        "{status}", ColorUtil.colorize(status)
                 )
         );
     }

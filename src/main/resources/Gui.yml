@@ -46,15 +46,91 @@ gui:
       harvest:
         slot: 16
         material: "CHEST"
-        name: "&BHarvest"
+        name: "&bHarvest"
         lore:
-          - "&7Status: &F{harvest_status}"
+          - "&7Status: {harvest_status}"
           - "&7Cooldown: &f{harvest_time_left}"
+          - "&7Progress: &f{harvest_progress_percent}%"
           - ""
-          - "&BMogelijke drops:"
+          - "&bMogelijke drops:"
           - "&f{harvest_preview}"
           - ""
-          - "&BKlik om te harvesten"
+          - "&bKlik om te harvesten"
+
+      co-owners:
+        slot: 22
+        material: "NAME_TAG"
+        name: "&bMede-eigenaars"
+        lore:
+          - "&7Aantal: &f{count}"
+          - "&7Lijst: &f{list}"
+          - ""
+          - "&bKlik om te beheren"
+
+  co-owner-menu:
+    title: "&bMede-eigenaars"
+    rows: 3
+
+    filler:
+      enabled: true
+      material: "LIGHT_BLUE_STAINED_GLASS_PANE"
+      name: " "
+
+    items:
+      co-owner-slots:
+        - "11"
+        - "13"
+        - "15"
+
+      empty-slot:
+        material: "GRAY_DYE"
+        name: "&7Leeg slot"
+        lore:
+          - "&7Hier is nog geen mede-eigenaar."
+
+      co-owner-head:
+        name: "&b{player}"
+        lore:
+          - "&7Klik om deze mede-eigenaar"
+          - "&7te verwijderen."
+
+      add:
+        slot: 22
+        material: "LIME_WOOL"
+        name: "&aVoeg mede-eigenaar toe"
+        lore:
+          - "&7Huidig: &f{current}&8/&f{max}"
+          - ""
+          - "&aKlik en typ daarna"
+          - "&aeen naam in de chat."
+
+      back:
+        slot: 26
+        material: "BARRIER"
+        name: "&cTerug"
+        lore:
+          - "&7Ga terug naar het dier menu."
+
+  co-owner-remove-confirm:
+    title: "&cVerwijder {player}?"
+    rows: 3
+    items:
+      target:
+        slot: 13
+      yes:
+        slot: 11
+        material: "LIME_WOOL"
+        name: "&aBevestigen"
+        lore:
+          - "&7Verwijder &f{player}"
+          - "&7als mede-eigenaar."
+      no:
+        slot: 15
+        material: "RED_WOOL"
+        name: "&cAnnuleren"
+        lore:
+          - "&7Ga terug zonder iets"
+          - "&7te verwijderen."
 
 bars:
   hunger:

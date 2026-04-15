@@ -50,6 +50,7 @@ public class AnimalInteractListener implements Listener {
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
         LangSettings lang = plugin.getConfigManager().getLangSettings();
+        MainSettings mainSettings = plugin.getConfigManager().getMainSettings();
 
         if (!animalManager.isSupported(entity)) {
             return;
@@ -58,7 +59,12 @@ public class AnimalInteractListener implements Listener {
         if (player.isSneaking() && animalManager.isBonded(entity)) {
             AnimalData data = animalManager.getAnimalData(entity);
 
-            if (data != null && data.getOwnerUuid().equals(player.getUniqueId())) {
+            boolean canOpen = data != null && (
+                    data.isOwner(player.getUniqueId())
+                            || (mainSettings.isCoOwnersEnabled() && mainSettings.isCoOwnersAllowGuiAccess() && data.isCoOwner(player.getUniqueId()))
+            );
+
+            if (canOpen) {
                 GuiSettings guiSettings = plugin.getConfigManager().getGuiSettings();
                 if (guiSettings.isAnimalInfoEnabled()) {
                     plugin.getGuiManager().openAnimalInfo(player, entity);
@@ -83,13 +89,16 @@ public class AnimalInteractListener implements Listener {
             return;
         }
 
-        if (!data.getOwnerUuid().equals(player.getUniqueId())) {
+        boolean isOwner = data.isOwner(player.getUniqueId());
+        boolean isCoOwner = mainSettings.isCoOwnersEnabled() && data.isCoOwner(player.getUniqueId());
+
+        if (!isOwner && !isCoOwner) {
             lang.send(player, "general.not-your-animal");
             event.setCancelled(true);
             return;
         }
 
-        if (!player.getName().equalsIgnoreCase(data.getOwnerName())) {
+        if (isOwner && !player.getName().equalsIgnoreCase(data.getOwnerName())) {
             data.setOwnerName(player.getName());
         }
 
@@ -98,11 +107,16 @@ public class AnimalInteractListener implements Listener {
             return;
         }
 
-        if (tryDirectUpgrade(player, entity, item, data, profile, lang, event)) {
+        boolean canDirectUpgrade = isOwner || (isCoOwner && mainSettings.isCoOwnersAllowDirectUpgrades());
+        boolean canFeed = isOwner || (isCoOwner && mainSettings.isCoOwnersAllowFeed());
+
+        if (canDirectUpgrade && tryDirectUpgrade(player, entity, item, data, profile, lang, event)) {
             return;
         }
 
-        tryFeeding(player, entity, item, data, profile, lang, event);
+        if (canFeed) {
+            tryFeeding(player, entity, item, data, profile, lang, event);
+        }
     }
 
     private void handleBonding(Player player,

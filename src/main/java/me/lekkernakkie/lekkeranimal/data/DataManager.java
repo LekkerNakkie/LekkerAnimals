@@ -46,14 +46,15 @@ public class DataManager {
             List<AnimalData> loadedAnimals = animalRepository.loadAll();
 
             int loaded = 0;
-            int deferred = 0;
+            int pending = 0;
             int removed = 0;
 
             for (AnimalData data : loadedAnimals) {
                 Entity entity = plugin.getServer().getEntity(data.getEntityUuid());
 
                 if (entity == null) {
-                    deferred++;
+                    animalManager.registerPendingAnimal(data);
+                    pending++;
                     continue;
                 }
 
@@ -69,7 +70,7 @@ public class DataManager {
 
             plugin.getLogger().info(
                     "Loaded " + loaded + " bonded animals from database. " +
-                            "Deferred " + deferred + " unloaded animals. " +
+                            "Pending " + pending + " unloaded animals. " +
                             "Removed " + removed + " invalid entries."
             );
         } catch (SQLException ex) {
@@ -112,6 +113,12 @@ public class DataManager {
         }
 
         for (AnimalData data : animalManager.getAllBondedAnimals()) {
+            if (data.isDirty()) {
+                saveAnimal(data);
+            }
+        }
+
+        for (AnimalData data : animalManager.getAllPendingAnimals()) {
             if (data.isDirty()) {
                 saveAnimal(data);
             }

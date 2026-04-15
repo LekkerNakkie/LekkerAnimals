@@ -9,12 +9,17 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
+import me.lekkernakkie.lekkeranimal.gui.AnimalInfoDetailGuiHolder;
+import me.lekkernakkie.lekkeranimal.gui.AnimalsHomeGuiHolder;
+import me.lekkernakkie.lekkeranimal.gui.AnimalsInfoListGuiHolder;
 import me.lekkernakkie.lekkeranimal.gui.AnimalsListGuiHolder;
 import me.lekkernakkie.lekkeranimal.manager.HarvestManager;
 import me.lekkernakkie.lekkeranimal.manager.LevelManager;
+import me.lekkernakkie.lekkeranimal.util.ColorUtil;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -32,15 +37,32 @@ public class GuiClickListener implements Listener {
 
     private final LekkerAnimal plugin;
     private final NamespacedKey animalsListEntityKey;
+    private final NamespacedKey animalsInfoTypeKey;
 
     public GuiClickListener(LekkerAnimal plugin) {
         this.plugin = plugin;
         this.animalsListEntityKey = new NamespacedKey(plugin, "animals_list_entity");
+        this.animalsInfoTypeKey = new NamespacedKey(plugin, "animals_info_type");
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+
+        if (event.getInventory().getHolder() instanceof AnimalsHomeGuiHolder) {
+            handleAnimalsHomeClick(event, player);
+            return;
+        }
+
+        if (event.getInventory().getHolder() instanceof AnimalsInfoListGuiHolder) {
+            handleAnimalsInfoListClick(event, player);
+            return;
+        }
+
+        if (event.getInventory().getHolder() instanceof AnimalInfoDetailGuiHolder holder) {
+            handleAnimalInfoDetailClick(event, player, holder);
             return;
         }
 
@@ -86,6 +108,61 @@ public class GuiClickListener implements Listener {
             case MAIN -> handleMainMenuClick(event, player, entity, data, profile, holder);
             case CO_OWNERS -> handleCoOwnerMenuClick(event, player, entity, data);
             case REMOVE_CO_OWNER_CONFIRM -> handleRemoveConfirmClick(event, player, entity, data, holder);
+        }
+    }
+
+    private void handleAnimalsHomeClick(InventoryClickEvent event, Player player) {
+        event.setCancelled(true);
+
+        int rawSlot = event.getRawSlot();
+
+        if (rawSlot == 11) {
+            plugin.getGuiManager().openAnimalsInfoList(player);
+            return;
+        }
+
+        if (rawSlot == 15) {
+            plugin.getGuiManager().openAnimalsList(player, false, 0);
+        }
+    }
+
+    private void handleAnimalsInfoListClick(InventoryClickEvent event, Player player) {
+        event.setCancelled(true);
+
+        int rawSlot = event.getRawSlot();
+
+        if (rawSlot == 22) {
+            plugin.getGuiManager().openAnimalsHome(player);
+            return;
+        }
+
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || !clicked.hasItemMeta()) {
+            return;
+        }
+
+        String typeName = clicked.getItemMeta().getPersistentDataContainer().get(
+                animalsInfoTypeKey,
+                PersistentDataType.STRING
+        );
+
+        if (typeName == null || typeName.isBlank()) {
+            return;
+        }
+
+        try {
+            EntityType entityType = EntityType.valueOf(typeName);
+            plugin.getGuiManager().openAnimalInfoDetail(player, entityType);
+        } catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    private void handleAnimalInfoDetailClick(InventoryClickEvent event, Player player, AnimalInfoDetailGuiHolder holder) {
+        event.setCancelled(true);
+
+        int rawSlot = event.getRawSlot();
+        if (rawSlot == 36) {
+            plugin.getGuiManager().openAnimalsInfoList(player);
         }
     }
 

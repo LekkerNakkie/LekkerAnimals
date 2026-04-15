@@ -26,7 +26,7 @@ public class AnimalsCommand implements CommandExecutor {
             return true;
         }
 
-        plugin.getGuiManager().openAnimalsList(player, false, 0);
+        plugin.getGuiManager().openAnimalsHome(player);
         return true;
     }
 }

@@ -6,7 +6,11 @@ import me.lekkernakkie.lekkeranimal.config.MainSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalData;
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
+import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
+import me.lekkernakkie.lekkeranimal.gui.AnimalInfoDetailGuiHolder;
+import me.lekkernakkie.lekkeranimal.gui.AnimalsHomeGuiHolder;
+import me.lekkernakkie.lekkeranimal.gui.AnimalsInfoListGuiHolder;
 import me.lekkernakkie.lekkeranimal.gui.AnimalsListGuiHolder;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
 import me.lekkernakkie.lekkeranimal.util.ItemsAdderUtil;
@@ -15,6 +19,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -26,6 +31,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,10 +42,207 @@ public class GuiManager {
 
     private final LekkerAnimal plugin;
     private final NamespacedKey animalsListEntityKey;
+    private final NamespacedKey animalsInfoTypeKey;
 
     public GuiManager(LekkerAnimal plugin) {
         this.plugin = plugin;
         this.animalsListEntityKey = new NamespacedKey(plugin, "animals_list_entity");
+        this.animalsInfoTypeKey = new NamespacedKey(plugin, "animals_info_type");
+    }
+
+    public void openAnimalsHome(Player player) {
+        if (player == null) {
+            return;
+        }
+
+        Inventory inventory = Bukkit.createInventory(
+                new AnimalsHomeGuiHolder(),
+                27,
+                ColorUtil.colorize("&bAnimals")
+        );
+
+        ItemStack filler = createItem(
+                "LIGHT_BLUE_STAINED_GLASS_PANE",
+                Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                " ",
+                List.of()
+        );
+
+        for (int i = 0; i < inventory.getSize(); i++) {
+            inventory.setItem(i, filler);
+        }
+
+        inventory.setItem(11, createItem(
+                "BOOK",
+                Material.BOOK,
+                "&bInformatie",
+                List.of(
+                        "&7Bekijk per dier:",
+                        "&7- Bond food",
+                        "&7- Feed items",
+                        "&7- Max level",
+                        "&7- Level costs"
+                )
+        ));
+
+        inventory.setItem(15, createItem(
+                "LEAD",
+                Material.LEAD,
+                "&bMijn Animals",
+                List.of(
+                        "&7Bekijk jouw dieren",
+                        "&7en je co-owner dieren"
+                )
+        ));
+
+        player.openInventory(inventory);
+    }
+
+    public void openAnimalsInfoList(Player player) {
+        if (player == null) {
+            return;
+        }
+
+        Inventory inventory = Bukkit.createInventory(
+                new AnimalsInfoListGuiHolder(),
+                27,
+                ColorUtil.colorize("&bAnimals Informatie")
+        );
+
+        ItemStack filler = createItem(
+                "LIGHT_BLUE_STAINED_GLASS_PANE",
+                Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                " ",
+                List.of()
+        );
+
+        for (int i = 0; i < inventory.getSize(); i++) {
+            inventory.setItem(i, filler);
+        }
+
+        List<AnimalProfile> profiles = plugin.getConfigManager().getAnimalsSettings().getProfiles().values().stream()
+                .filter(AnimalProfile::isEnabled)
+                .sorted(Comparator.comparing(AnimalProfile::getDisplayName, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toList());
+
+        int[] slots = {10, 11, 12, 13, 14, 15, 16};
+
+        int index = 0;
+        for (AnimalProfile profile : profiles) {
+            if (index >= slots.length) {
+                break;
+            }
+
+            inventory.setItem(slots[index++], createAnimalInfoMenuItem(profile));
+        }
+
+        inventory.setItem(22, createItem(
+                "ARROW",
+                Material.ARROW,
+                "&cTerug",
+                List.of("&7Terug naar het hoofdmenu")
+        ));
+
+        player.openInventory(inventory);
+    }
+
+    public void openAnimalInfoDetail(Player player, EntityType entityType) {
+        if (player == null || entityType == null) {
+            return;
+        }
+
+        AnimalProfile profile = plugin.getConfigManager().getAnimalsSettings().getProfile(entityType);
+        if (profile == null || !profile.isEnabled()) {
+            return;
+        }
+
+        Inventory inventory = Bukkit.createInventory(
+                new AnimalInfoDetailGuiHolder(entityType.name()),
+                45,
+                ColorUtil.colorize("&bInfo &8• &f" + profile.getDisplayName())
+        );
+
+        ItemStack filler = createItem(
+                "LIGHT_BLUE_STAINED_GLASS_PANE",
+                Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                " ",
+                List.of()
+        );
+
+        for (int i = 0; i < inventory.getSize(); i++) {
+            inventory.setItem(i, filler);
+        }
+
+        inventory.setItem(13, createAnimalDisplayHead(profile));
+
+        List<String> bondLore = new ArrayList<>();
+        bondLore.add("&7Item: &f" + formatMaterial(profile.getBondItem()));
+        bondLore.add("&7Hoeveelheid: &f" + profile.getRequiredBondAmount());
+        bondLore.add("&7Max level: &f" + profile.getMaxLevel());
+
+        inventory.setItem(20, createItem(
+                "LEAD",
+                Material.LEAD,
+                "&bBond Informatie",
+                bondLore
+        ));
+
+        List<String> feedLore = new ArrayList<>();
+        if (profile.getFeedingRewards().isEmpty()) {
+            feedLore.add("&7Geen feed items ingesteld.");
+        } else {
+            for (Map.Entry<Material, FeedingReward> entry : profile.getFeedingRewards().entrySet()) {
+                FeedingReward reward = entry.getValue();
+                feedLore.add("&f" + formatMaterial(entry.getKey())
+                        + " &8- &7Hunger: &f" + reward.getHungerRestore()
+                        + " &8| &7XP: &f" + reward.getXp()
+                        + " &8| &7Bond: &f" + reward.getBondGain());
+            }
+        }
+
+        inventory.setItem(22, createItem(
+                "GOLDEN_CARROT",
+                Material.GOLDEN_CARROT,
+                "&bFeed Items",
+                feedLore
+        ));
+
+        List<String> levelLore = new ArrayList<>();
+        levelLore.add("&7Max level: &f" + profile.getMaxLevel());
+        levelLore.add("");
+
+        if (profile.getDirectLevelUpgrades().isEmpty()) {
+            levelLore.add("&7Geen directe upgrades ingesteld.");
+        } else {
+            List<Integer> levels = new ArrayList<>(profile.getDirectLevelUpgrades().keySet());
+            levels.sort(Integer::compareTo);
+
+            for (int level : levels) {
+                DirectLevelUpgrade upgrade = profile.getDirectLevelUpgrade(level);
+                if (upgrade == null) {
+                    continue;
+                }
+
+                levelLore.add("&7Level &f" + level + " &8→ &f"
+                        + formatMaterial(upgrade.getItem()) + " x" + upgrade.getAmount());
+            }
+        }
+
+        inventory.setItem(24, createItem(
+                "EXPERIENCE_BOTTLE",
+                Material.EXPERIENCE_BOTTLE,
+                "&bLevel Kosten",
+                levelLore
+        ));
+
+        inventory.setItem(36, createItem(
+                "ARROW",
+                Material.ARROW,
+                "&cTerug",
+                List.of("&7Terug naar diereninformatie")
+        ));
+
+        player.openInventory(inventory);
     }
 
     public void openAnimalInfo(Player player, Entity entity) {
@@ -393,6 +596,58 @@ public class GuiManager {
         }
     }
 
+    private ItemStack createAnimalInfoMenuItem(AnimalProfile profile) {
+        String typeName = profile.getEntityType().name();
+        String headOwner = getHeadOwnerForType(typeName);
+
+        ItemStack item;
+        if (!headOwner.isBlank()) {
+            item = plugin.getHarvestManager().createPersistentHeadItem(
+                    "COMMON",
+                    typeName,
+                    profile.getDisplayName(),
+                    headOwner,
+                    ""
+            );
+        } else {
+            item = new ItemStack(Material.BOOK);
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorUtil.colorize("&b" + profile.getDisplayName()));
+            meta.setLore(colorizeList(List.of(
+                    "&7Klik om alle info te bekijken"
+            )));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            meta.getPersistentDataContainer().set(
+                    animalsInfoTypeKey,
+                    PersistentDataType.STRING,
+                    typeName
+            );
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    private ItemStack createAnimalDisplayHead(AnimalProfile profile) {
+        String typeName = profile.getEntityType().name();
+        String headOwner = getHeadOwnerForType(typeName);
+
+        if (!headOwner.isBlank()) {
+            return plugin.getHarvestManager().createPersistentHeadItem(
+                    "COMMON",
+                    typeName,
+                    profile.getDisplayName(),
+                    headOwner,
+                    ""
+            );
+        }
+
+        return createItem("BOOK", Material.BOOK, "&b" + profile.getDisplayName(), List.of());
+    }
+
     private ItemStack createAnimalListItem(AnimalData data, boolean coOwnerView) {
         Entity entity = plugin.getServer().getEntity(data.getEntityUuid());
         boolean loaded = entity != null && entity.isValid() && !entity.isDead();
@@ -404,15 +659,7 @@ public class GuiManager {
         String world = data.getWorldName() != null ? data.getWorldName() : "Onbekend";
         String coords = (int) Math.floor(data.getX()) + ", " + (int) Math.floor(data.getY()) + ", " + (int) Math.floor(data.getZ());
 
-        String headOwner = switch (typeName) {
-            case "COW" -> "MHF_Cow";
-            case "PIG" -> "MHF_Pig";
-            case "CHICKEN" -> "MHF_Chicken";
-            case "SHEEP" -> "MHF_Sheep";
-            case "MUSHROOMCOW", "MUSHROOM_COW" -> "MHF_MushroomCow";
-            default -> "";
-        };
-
+        String headOwner = getHeadOwnerForType(typeName);
         String animalDisplay = formatMaterialFromEntityType(typeName);
         String displayName = (coOwnerView ? "&d" : "&b") + animalDisplay;
 
@@ -455,6 +702,17 @@ public class GuiManager {
         }
 
         return item;
+    }
+
+    private String getHeadOwnerForType(String typeName) {
+        return switch (typeName) {
+            case "COW" -> "MHF_Cow";
+            case "PIG" -> "MHF_Pig";
+            case "CHICKEN" -> "MHF_Chicken";
+            case "SHEEP" -> "MHF_Sheep";
+            case "MUSHROOMCOW", "MUSHROOM_COW" -> "MHF_MushroomCow";
+            default -> "";
+        };
     }
 
     private ItemStack createTabItem(boolean selected, String name, Material material) {

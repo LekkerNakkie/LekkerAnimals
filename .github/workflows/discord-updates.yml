@@ -1,0 +1,68 @@
+name: Discord Updates
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send embed to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          python3 - <<'PY' > payload.json
+          import json
+          import os
+          from datetime import datetime, timezone
+
+          payload = {
+              "username": "LekkerAnimals",
+              "avatar_url": "https://i.imgur.com/REPLACE_ME.png",
+              "embeds": [
+                  {
+                      "title": "🐾 LekkerAnimals Update",
+                      "description": "**Nieuwe push op GitHub**",
+                      "color": 5763719,
+                      "fields": [
+                          {
+                              "name": "👤 Auteur",
+                              "value": os.environ.get("ACTOR", "Onbekend"),
+                              "inline": True
+                          },
+                          {
+                              "name": "🌿 Branch",
+                              "value": os.environ.get("BRANCH", "Onbekend"),
+                              "inline": True
+                          },
+                          {
+                              "name": "💬 Commit",
+                              "value": (os.environ.get("COMMIT_MESSAGE") or "Geen commit")[:1024]
+                          }
+                      ],
+                      "url": os.environ.get("COMMIT_URL", ""),
+                      "footer": {
+                          "text": "LekkerAnimals Dev Logs"
+                      },
+                      "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+                  }
+              ]
+          }
+
+          print(json.dumps(payload))
+          PY
+
+          curl -sS -H "Content-Type: application/json" \
+            -X POST \
+            -d @payload.json \
+            "https://discord.com/api/webhooks/1493979570951557272/yN0dH0YpNSSu90VXnZvnPirOZin3TL6mOcwJGABvOrcciyNm-i8BXh9F9iBdDUt02cPi"

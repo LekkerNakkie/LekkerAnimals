@@ -6,11 +6,14 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.HarvestDrop;
 import me.lekkernakkie.lekkeranimal.data.HarvestLevelProfile;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Sheep;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +46,11 @@ public class HarvestManager {
                 continue;
             }
 
-            ItemStack item = createDrop(drop);
+            ItemStack item = createDrop(drop, entity);
+            if (item == null || item.getType() == Material.AIR) {
+                continue;
+            }
+
             giveOrDrop(player, item);
         }
 
@@ -118,9 +125,22 @@ public class HarvestManager {
         return ThreadLocalRandom.current().nextDouble(100.0D) < chance;
     }
 
-    private ItemStack createDrop(HarvestDrop drop) {
-        ItemStack item = new ItemStack(drop.getMaterial(), Math.max(1, drop.getAmount()));
+    private ItemStack createDrop(HarvestDrop drop, Entity entity) {
+        Material material = drop.getMaterial();
 
+        // 🔥 Sheep kleur → juiste wool
+        if (material == Material.WHITE_WOOL && entity instanceof Sheep sheep) {
+            material = getWoolFromColor(sheep.getColor());
+        }
+
+        ItemStack item = new ItemStack(material, Math.max(1, drop.getAmount()));
+
+        // Head support (MHF)
+        if (material == Material.PLAYER_HEAD) {
+            applyHeadMeta(item, drop);
+        }
+
+        // Display name
         if (drop.getDisplayName() != null && !drop.getDisplayName().isBlank()) {
             ItemMeta meta = item.getItemMeta();
             if (meta != null) {
@@ -130,6 +150,43 @@ public class HarvestManager {
         }
 
         return item;
+    }
+
+    private Material getWoolFromColor(org.bukkit.DyeColor color) {
+        return switch (color) {
+            case BLACK -> Material.BLACK_WOOL;
+            case BLUE -> Material.BLUE_WOOL;
+            case BROWN -> Material.BROWN_WOOL;
+            case CYAN -> Material.CYAN_WOOL;
+            case GRAY -> Material.GRAY_WOOL;
+            case GREEN -> Material.GREEN_WOOL;
+            case LIGHT_BLUE -> Material.LIGHT_BLUE_WOOL;
+            case LIGHT_GRAY -> Material.LIGHT_GRAY_WOOL;
+            case LIME -> Material.LIME_WOOL;
+            case MAGENTA -> Material.MAGENTA_WOOL;
+            case ORANGE -> Material.ORANGE_WOOL;
+            case PINK -> Material.PINK_WOOL;
+            case PURPLE -> Material.PURPLE_WOOL;
+            case RED -> Material.RED_WOOL;
+            case YELLOW -> Material.YELLOW_WOOL;
+            case WHITE -> Material.WHITE_WOOL;
+        };
+    }
+
+    private void applyHeadMeta(ItemStack item, HarvestDrop drop) {
+        if (!(item.getItemMeta() instanceof SkullMeta meta)) {
+            return;
+        }
+
+        if (drop.hasHeadOwner()) {
+            try {
+                meta.setOwningPlayer(Bukkit.getOfflinePlayer(drop.getHeadOwner()));
+            } catch (Throwable throwable) {
+                plugin.getLogger().warning("Failed to apply head owner '" + drop.getHeadOwner() + "': " + throwable.getMessage());
+            }
+        }
+
+        item.setItemMeta(meta);
     }
 
     private void giveOrDrop(Player player, ItemStack item) {

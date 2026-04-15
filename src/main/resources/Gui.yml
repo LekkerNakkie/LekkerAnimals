@@ -41,20 +41,20 @@ gui:
           - "&7Item: &f{next_upgrade_item}"
           - "&7Hoeveel: &f{next_upgrade_amount}"
           - ""
-          - "&eKlik om direct te upgraden"
+          - "&bKlik om direct te upgraden"
 
       harvest:
         slot: 16
         material: "CHEST"
-        name: "&6Harvest"
+        name: "&BHarvest"
         lore:
-          - "&7Status: {harvest_status}"
+          - "&7Status: &F{harvest_status}"
           - "&7Cooldown: &f{harvest_time_left}"
           - ""
-          - "&7Mogelijke drops:"
+          - "&BMogelijke drops:"
           - "&f{harvest_preview}"
           - ""
-          - "&eKlik om te harvesten"
+          - "&BKlik om te harvesten"
 
 bars:
   hunger:

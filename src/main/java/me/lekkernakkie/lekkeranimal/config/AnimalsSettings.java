@@ -160,7 +160,9 @@ public class AnimalsSettings {
                 continue;
             }
 
-            ConfigurationSection dropsSection = config.getConfigurationSection(basePath + ".harvesting.levels." + levelKey + ".drops");
+            ConfigurationSection dropsSection = config.getConfigurationSection(
+                    basePath + ".harvesting.levels." + levelKey + ".drops"
+            );
             if (dropsSection == null) {
                 continue;
             }
@@ -180,8 +182,17 @@ public class AnimalsSettings {
                 int amount = config.getInt(path + ".amount", 1);
                 double chance = config.getDouble(path + ".chance", 100.0D);
                 String displayName = config.getString(path + ".name", "");
+                String headTexture = config.getString(path + ".head-texture", "");
+                String headOwner = config.getString(path + ".head-owner", "");
 
-                drops.add(new HarvestDrop(material, amount, chance, displayName));
+                drops.add(new HarvestDrop(
+                        material,
+                        amount,
+                        chance,
+                        displayName,
+                        headTexture,
+                        headOwner
+                ));
             }
 
             result.put(level, new HarvestLevelProfile(level, drops));

@@ -7,15 +7,15 @@ hologram:
 animals:
   COW:
     enabled: true
-    display-name: "&fCow"
+    display-name: "&fKoe"
 
     bonding:
-      item: "GOLDEN_CARROT"
+      item: "BREAD"
       required-amount: 1
 
     hunger:
       max: 100
-      drain: 2
+      drain: 1
 
     feeding:
       WHEAT:
@@ -28,18 +28,20 @@ animals:
         bond: 3
 
     leveling:
-      max-level: 25
+      max-level: 5
       direct-upgrades:
         2:
           item: "GOLDEN_CARROT"
-          amount: 10
+          amount: 16
         3:
           item: "DIAMOND"
-          amount: 5
+          amount: 8
         4:
           item: "EMERALD"
-          amount: 8
-
+          amount: 16
+        5:
+          item: "EMERALDS"
+          amount: 32
     harvesting:
       enabled: true
       cooldown-seconds: 1800
@@ -48,38 +50,48 @@ animals:
           drops:
             LEATHER:
               amount: 1
-            MILK_BUCKET:
-              amount: 1
+              chance: 100.0
         2:
           drops:
             LEATHER:
               amount: 2
-            MILK_BUCKET:
-              amount: 1
+              chance: 75.0
         3:
           drops:
             LEATHER:
               amount: 2
-            MILK_BUCKET:
-              amount: 1
+              chance: 100.0
             PLAYER_HEAD:
               amount: 1
-              chance: 25.0
-              name: "&fCow Head"
+              chance: 25
+              name: "&7Cow Head"
+              head-owner: "MHF_Cow"
         4:
           drops:
             LEATHER:
               amount: 2
-            MILK_BUCKET:
-              amount: 1
+              chance: 100.0
             PLAYER_HEAD:
               amount: 1
+              chance: 60
+              name: "&7Cow Head"
+              head-owner: "MHF_Cow"
+        5:
+          drops:
+            LEATHER:
+              amount: 2
               chance: 100.0
-              name: "&fCow Head"
-
+            PLAYER_HEAD:
+              amount: 1
+              chance: 80
+              name: "&7Cow Head"
+              head-owner: "MHF_Cow"
+            COW_SPAWN_EGG:
+              amount: 1
+              chance: 1.0
   PIG:
     enabled: true
-    display-name: "&fPig"
+    display-name: "&fVarken"
 
     bonding:
       item: "GOLDEN_CARROT"
@@ -87,7 +99,7 @@ animals:
 
     hunger:
       max: 100
-      drain: 3
+      drain: 1
 
     feeding:
       CARROT:
@@ -104,45 +116,329 @@ animals:
         bond: 1
 
     leveling:
-      max-level: 25
+      max-level: 5
       direct-upgrades:
         2:
           item: "GOLDEN_CARROT"
-          amount: 10
+          amount: 16
         3:
           item: "DIAMOND"
-          amount: 5
+          amount: 8
+        4:
+          item: "EMERALD"
+          amount: 16
+        5:
+          item: "EMERALDS"
+          amount: 32
+    harvesting:
+      enabled: true
+      cooldown-seconds: 1800
+      levels:
+        1:
+          drops:
+            PORKCHOP:
+              amount: 1
+              chance: 100.0
+        2:
+          drops:
+            PORKCHOP:
+              amount: 2
+              chance: 100.0
+        3:
+          drops:
+            PORKCHOP:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 25.0
+              name: "&fPig Head"
+              head-owner: "MHF_Pig"
+        4:
+          drops:
+            PORKCHOP:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 60
+              name: "&fPig Head"
+              head-owner: "MHF_Pig"
+        5:
+          drops:
+            PORKCHOP:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 80
+              name: "&fPig Head"
+              head-owner: "MHF_Pig"
+            PIG_SPAWN_EGG:
+              amount: 1
+              chance: 1.0
+  CHICKEN:
+    enabled: true
+    display-name: "&fKip"
+
+    bonding:
+      item: "WHEAT_SEEDS"
+      required-amount: 1
+
+    hunger:
+      max: 100
+      drain: 1
+
+    feeding:
+      WHEAT_SEEDS:
+        hunger: 20
+        xp: 3
+        bond: 1
+      BEETROOT_SEEDS:
+        hunger: 15
+        xp: 2
+        bond: 1
+      PUMPKIN_SEEDS:
+        hunger: 15
+        xp: 2
+        bond: 1
+
+    leveling:
+      max-level: 5
+      direct-upgrades:
+        2:
+          item: "GOLDEN_CARROT"
+          amount: 16
+        3:
+          item: "DIAMOND"
+          amount: 8
+        4:
+          item: "EMERALD"
+          amount: 16
+        5:
+          item: "EMERALD"
+          amount: 32
 
     harvesting:
-      enabled: false
+      enabled: true
+      cooldown-seconds: 1800
+      levels:
+        1:
+          drops:
+            EGG:
+              amount: 1
+              chance: 100.0
+        2:
+          drops:
+            EGG:
+              amount: 2
+              chance: 75.0
+        3:
+          drops:
+            EGG:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 25.0
+              name: "&7Chicken Head"
+              head-owner: "MHF_Chicken"
+        4:
+          drops:
+            EGG:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 60.0
+              name: "&7Chicken Head"
+              head-owner: "MHF_Chicken"
+        5:
+          drops:
+            EGG:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 80.0
+              name: "&7Chicken Head"
+              head-owner: "MHF_Chicken"
+            CHICKEN_SPAWN_EGG:
+              amount: 1
+              chance: 1.0
+
+  MUSHROOMCOW:
+    enabled: true
+    display-name: "&fMooshroom"
+
+    bonding:
+      item: "RED_MUSHROOM"
+      required-amount: 1
+
+    hunger:
+      max: 100
+      drain: 1
+
+    feeding:
+      RED_MUSHROOM:
+        hunger: 20
+        xp: 3
+        bond: 1
+      BROWN_MUSHROOM:
+        hunger: 20
+        xp: 3
+        bond: 1
+      HAY_BLOCK:
+        hunger: 40
+        xp: 8
+        bond: 3
+
+    leveling:
+      max-level: 5
+      direct-upgrades:
+        2:
+          item: "GOLDEN_CARROT"
+          amount: 16
+        3:
+          item: "DIAMOND"
+          amount: 8
+        4:
+          item: "EMERALD"
+          amount: 16
+        5:
+          item: "EMERALD"
+          amount: 32
+
+    harvesting:
+      enabled: true
+      cooldown-seconds: 1800
+      levels:
+        1:
+          drops:
+            RED_MUSHROOM:
+              amount: 1
+              chance: 100.0
+        2:
+          drops:
+            RED_MUSHROOM:
+              amount: 2
+              chance: 75.0
+        3:
+          drops:
+            RED_MUSHROOM:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 25.0
+              name: "&7Mooshroom Head"
+              head-owner: "MHF_MushroomCow"
+        4:
+          drops:
+            RED_MUSHROOM:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 60.0
+              name: "&7Mooshroom Head"
+              head-owner: "MHF_MushroomCow"
+        5:
+          drops:
+            RED_MUSHROOM:
+              amount: 2
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 80.0
+              name: "&7Mooshroom Head"
+              head-owner: "MHF_MushroomCow"
+            MOOSHROOM_SPAWN_EGG:
+              amount: 1
+              chance: 1.0
 
   SHEEP:
     enabled: true
-    display-name: "&fSheep"
+    display-name: "&fSchaap"
 
     bonding:
       item: "WHEAT"
       required-amount: 1
 
     hunger:
-      max: 90
-      drain: 2
+      max: 100
+      drain: 1
 
     feeding:
       WHEAT:
         hunger: 20
         xp: 3
         bond: 1
+      HAY_BLOCK:
+        hunger: 40
+        xp: 8
+        bond: 3
 
     leveling:
-      max-level: 25
+      max-level: 5
       direct-upgrades:
         2:
-          item: "GOLD_INGOT"
-          amount: 8
+          item: "GOLDEN_CARROT"
+          amount: 16
         3:
           item: "DIAMOND"
-          amount: 4
+          amount: 8
+        4:
+          item: "EMERALD"
+          amount: 16
+        5:
+          item: "EMERALD"
+          amount: 32
 
     harvesting:
-      enabled: false
+      enabled: true
+      cooldown-seconds: 1800
+      levels:
+        1:
+          drops:
+            WHITE_WOOL:
+              amount: 2
+              chance: 100.0
+        2:
+          drops:
+            WHITE_WOOL:
+              amount: 3
+              chance: 75.0
+        3:
+          drops:
+            WHITE_WOOL:
+              amount: 3
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 25.0
+              name: "&7Sheep Head"
+              head-owner: "MHF_Sheep"
+        4:
+          drops:
+            WHITE_WOOL:
+              amount: 3
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 3
+              chance: 60.0
+              name: "&7Sheep Head"
+              head-owner: "MHF_Sheep"
+        5:
+          drops:
+            WHITE_WOOL:
+              amount: 3
+              chance: 100.0
+            PLAYER_HEAD:
+              amount: 1
+              chance: 80.0
+              name: "&7Sheep Head"
+              head-owner: "MHF_Sheep"
+            SHEEP_SPAWN_EGG:
+              amount: 1
+              chance: 1.0

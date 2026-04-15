@@ -32,7 +32,9 @@ public class DataManager {
     }
 
     public void shutdown(AnimalManager animalManager) {
-        saveAll(animalManager);
+        if (plugin.getConfigManager().getMainSettings().isSaveOnDisable()) {
+            saveAll(animalManager);
+        }
 
         if (databaseManager != null) {
             databaseManager.close();
@@ -43,18 +45,33 @@ public class DataManager {
         try {
             List<AnimalData> loadedAnimals = animalRepository.loadAll();
 
+            int loaded = 0;
+            int deferred = 0;
+            int removed = 0;
+
             for (AnimalData data : loadedAnimals) {
                 Entity entity = plugin.getServer().getEntity(data.getEntityUuid());
 
-                if (entity == null || !entity.isValid() || entity.isDead()) {
+                if (entity == null) {
+                    deferred++;
+                    continue;
+                }
+
+                if (!entity.isValid() || entity.isDead()) {
                     animalRepository.delete(data.getEntityUuid());
+                    removed++;
                     continue;
                 }
 
                 animalManager.registerAnimal(data);
+                loaded++;
             }
 
-            plugin.getLogger().info("Loaded " + animalManager.getBondedCount() + " bonded animals from database.");
+            plugin.getLogger().info(
+                    "Loaded " + loaded + " bonded animals from database. " +
+                            "Deferred " + deferred + " unloaded animals. " +
+                            "Removed " + removed + " invalid entries."
+            );
         } catch (SQLException ex) {
             plugin.getLogger().severe("Failed to load bonded animals from database: " + ex.getMessage());
         }

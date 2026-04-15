@@ -13,11 +13,15 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HungerManager {
 
+    private static final long WARNING_COOLDOWN_MILLIS = 5L * 60L * 1000L;
+
     private final LekkerAnimal plugin;
     private final AnimalManager animalManager;
+    private final Map<UUID, Long> lastWarningTimes = new ConcurrentHashMap<>();
 
     private BukkitTask task;
 
@@ -43,6 +47,8 @@ public class HungerManager {
             task.cancel();
             task = null;
         }
+
+        lastWarningTimes.clear();
     }
 
     private void tick() {
@@ -55,14 +61,19 @@ public class HungerManager {
         for (AnimalData data : animals) {
             Entity entity = plugin.getServer().getEntity(data.getEntityUuid());
 
-            if (entity == null || !entity.isValid() || entity.isDead()) {
+            if (entity == null) {
+                continue;
+            }
+
+            if (!entity.isValid() || entity.isDead()) {
                 animalManager.unregisterAnimal(data.getEntityUuid());
+                lastWarningTimes.remove(data.getEntityUuid());
                 plugin.getDataManager().deleteAnimal(data.getEntityUuid());
                 continue;
             }
 
             AnimalProfile profile = plugin.getConfigManager().getAnimalsSettings().getProfile(entity.getType());
-            if (profile == null) {
+            if (profile == null || !profile.isEnabled()) {
                 continue;
             }
 
@@ -114,11 +125,19 @@ public class HungerManager {
             int warningThreshold = (int) Math.ceil(profile.getMaxHunger() * (mainSettings.getHungerWarningThresholdPercent() / 100.0));
 
             if (data.getHunger() <= warningThreshold && data.getHunger() > 0 && ownerOnline) {
-                lang.send(owner, "hunger.warning", Map.of(
-                        "animal", profile.getDisplayName(),
-                        "hunger", String.valueOf(data.getHunger()),
-                        "max_hunger", String.valueOf(profile.getMaxHunger())
-                ));
+                long now = System.currentTimeMillis();
+                long lastWarning = lastWarningTimes.getOrDefault(data.getEntityUuid(), 0L);
+
+                if (now - lastWarning >= WARNING_COOLDOWN_MILLIS) {
+                    lang.send(owner, "hunger.warning", Map.of(
+                            "animal", profile.getDisplayName(),
+                            "hunger", String.valueOf(data.getHunger()),
+                            "max_hunger", String.valueOf(profile.getMaxHunger())
+                    ));
+                    lastWarningTimes.put(data.getEntityUuid(), now);
+                }
+            } else if (data.getHunger() > warningThreshold) {
+                lastWarningTimes.remove(data.getEntityUuid());
             }
 
             if (data.getHunger() <= 0 && mainSettings.isHungerKillOnZero() && entity instanceof LivingEntity livingEntity) {
@@ -128,6 +147,7 @@ public class HungerManager {
                     ));
                 }
 
+                lastWarningTimes.remove(data.getEntityUuid());
                 livingEntity.setHealth(0.0);
             }
         }

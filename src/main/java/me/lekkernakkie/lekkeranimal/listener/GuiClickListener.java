@@ -10,6 +10,7 @@ import me.lekkernakkie.lekkeranimal.data.DirectLevelUpgrade;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.gui.AnimalGuiHolder;
 import me.lekkernakkie.lekkeranimal.manager.HarvestManager;
+import me.lekkernakkie.lekkeranimal.manager.LevelManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -66,7 +67,7 @@ public class GuiClickListener implements Listener {
         }
 
         AnimalProfile profile = plugin.getConfigManager().getAnimalsSettings().getProfile(entity.getType());
-        if (profile == null) {
+        if (profile == null || !profile.isEnabled()) {
             player.closeInventory();
             return;
         }
@@ -157,10 +158,15 @@ public class GuiClickListener implements Listener {
 
         List<UUID> coOwners = new ArrayList<>(data.getCoOwnerUuids());
         List<Integer> slots = gui.getCoOwnerSlots();
+        int unlockedSlots = main.getEffectiveCoOwnersMax(player);
 
         for (int i = 0; i < slots.size(); i++) {
             if (rawSlot != slots.get(i)) {
                 continue;
+            }
+
+            if (i >= unlockedSlots) {
+                return;
             }
 
             if (i < coOwners.size()) {
@@ -268,6 +274,7 @@ public class GuiClickListener implements Listener {
 
     private void handleLevelClick(Player player, Entity entity, AnimalData data, AnimalProfile profile) {
         LangSettings lang = plugin.getConfigManager().getLangSettings();
+        LevelManager levelManager = plugin.getLevelManager();
 
         if (data.getLevel() >= profile.getMaxLevel()) {
             lang.send(player, "leveling.max-level");
@@ -284,7 +291,7 @@ public class GuiClickListener implements Listener {
             return;
         }
 
-        int have = countMaterial(player, upgrade.getItem());
+        int have = levelManager.countMaterial(player, upgrade.getItem());
         if (have < upgrade.getAmount()) {
             int missing = upgrade.getAmount() - have;
 
@@ -299,13 +306,11 @@ public class GuiClickListener implements Listener {
             return;
         }
 
-        ItemStack upgradeStack = findFirstMatchingStack(player, upgrade.getItem(), upgrade.getAmount());
-        if (upgradeStack == null) {
+        if (!levelManager.consumeMaterial(player, upgrade.getItem(), upgrade.getAmount())) {
             plugin.getGuiManager().refreshOpenAnimalGui(player, entity);
             return;
         }
 
-        consume(upgradeStack, upgrade.getAmount());
         data.setLevel(targetLevel);
         data.setXp(0);
 
@@ -355,39 +360,9 @@ public class GuiClickListener implements Listener {
         return null;
     }
 
-    private ItemStack findFirstMatchingStack(Player player, Material material, int amountNeeded) {
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (item == null || item.getType().isAir()) {
-                continue;
-            }
-
-            if (item.getType() == material && item.getAmount() >= amountNeeded) {
-                return item;
-            }
-        }
-
-        return null;
-    }
-
     private void consume(ItemStack item, int amount) {
         int newAmount = item.getAmount() - amount;
         item.setAmount(Math.max(newAmount, 0));
-    }
-
-    private int countMaterial(Player player, Material material) {
-        int amount = 0;
-
-        for (ItemStack stack : player.getInventory().getContents()) {
-            if (stack == null || stack.getType().isAir()) {
-                continue;
-            }
-
-            if (stack.getType() == material) {
-                amount += stack.getAmount();
-            }
-        }
-
-        return amount;
     }
 
     private String formatMaterial(Material material) {

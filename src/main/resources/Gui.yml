@@ -107,16 +107,16 @@ gui:
       toggle:
         slot: 24
         material: "REDSTONE"
-        name: "&bCo-owner activiteit: {status}"
+        name: "&bMede-eigenaars activiteit: {status}"
         lore:
           - "&7Als dit aan staat,"
-          - "&7blijft het dier actief"
+          - "&7blijft het dier actief (honger en harvesting)"
           - "&7wanneer een mede-eigenaar"
           - "&7online is."
           - ""
           - "&7Status: {status}"
           - ""
-          - "&eKlik om te veranderen"
+          - "&bKlik om te veranderen"
         status:
           enabled: "&aAAN"
           disabled: "&cUIT"

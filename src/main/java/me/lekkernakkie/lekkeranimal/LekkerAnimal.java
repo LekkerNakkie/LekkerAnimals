@@ -14,6 +14,8 @@ import me.lekkernakkie.lekkeranimal.manager.HarvestManager;
 import me.lekkernakkie.lekkeranimal.manager.HologramManager;
 import me.lekkernakkie.lekkeranimal.manager.HungerManager;
 import me.lekkernakkie.lekkeranimal.manager.LevelManager;
+import org.bukkit.entity.Entity;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class LekkerAnimal extends JavaPlugin {
@@ -31,6 +33,8 @@ public class LekkerAnimal extends JavaPlugin {
     private GuiManager guiManager;
     private HarvestManager harvestManager;
     private CoOwnerChatListener coOwnerChatListener;
+
+    private BukkitTask autosaveTask;
 
     @Override
     public void onEnable() {
@@ -77,14 +81,47 @@ public class LekkerAnimal extends JavaPlugin {
                 this
         );
 
-        hungerManager.start();
-        hologramManager.start();
-
+        startRuntimeTasks();
         getLogger().info("LekkerAnimal enabled successfully.");
     }
 
     @Override
     public void onDisable() {
+        stopRuntimeTasks();
+
+        if (dataManager != null) {
+            dataManager.shutdown(animalManager);
+        }
+
+        getLogger().info("LekkerAnimal disabled.");
+    }
+
+    public void reloadPluginState() {
+        stopRuntimeTasks();
+
+        if (configManager != null) {
+            configManager.reloadAll();
+        }
+
+        startRuntimeTasks();
+        refreshLoadedAnimalDisplays();
+    }
+
+    private void startRuntimeTasks() {
+        if (hungerManager != null) {
+            hungerManager.start();
+        }
+
+        if (hologramManager != null) {
+            hologramManager.start();
+        }
+
+        startAutosaveTask();
+    }
+
+    private void stopRuntimeTasks() {
+        stopAutosaveTask();
+
         if (hungerManager != null) {
             hungerManager.stop();
         }
@@ -92,12 +129,47 @@ public class LekkerAnimal extends JavaPlugin {
         if (hologramManager != null) {
             hologramManager.stop();
         }
+    }
 
-        if (dataManager != null) {
-            dataManager.shutdown(animalManager);
+    private void startAutosaveTask() {
+        stopAutosaveTask();
+
+        if (configManager == null || dataManager == null || animalManager == null) {
+            return;
         }
 
-        getLogger().info("LekkerAnimal disabled.");
+        int intervalSeconds = configManager.getMainSettings().getAutosaveIntervalSeconds();
+        if (intervalSeconds <= 0) {
+            return;
+        }
+
+        long intervalTicks = Math.max(20L, intervalSeconds * 20L);
+        this.autosaveTask = getServer().getScheduler().runTaskTimer(
+                this,
+                () -> dataManager.saveAll(animalManager),
+                intervalTicks,
+                intervalTicks
+        );
+    }
+
+    private void stopAutosaveTask() {
+        if (autosaveTask != null) {
+            autosaveTask.cancel();
+            autosaveTask = null;
+        }
+    }
+
+    private void refreshLoadedAnimalDisplays() {
+        if (animalManager == null || hologramManager == null) {
+            return;
+        }
+
+        for (var data : animalManager.getAllBondedAnimals()) {
+            Entity entity = getServer().getEntity(data.getEntityUuid());
+            if (entity != null && entity.isValid() && !entity.isDead()) {
+                hologramManager.refresh(entity);
+            }
+        }
     }
 
     public static LekkerAnimal getInstance() {

@@ -44,7 +44,7 @@ public class ConfigManager {
         guiConfig = YamlConfiguration.loadConfiguration(guiFile);
 
         mainSettings = new MainSettings(plugin.getConfig());
-        animalsSettings = new AnimalsSettings(animalsConfig);
+        animalsSettings = new AnimalsSettings(plugin, animalsConfig);
         langSettings = new LangSettings(langConfig);
         guiSettings = new GuiSettings(guiConfig);
     }

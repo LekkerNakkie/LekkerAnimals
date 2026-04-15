@@ -64,23 +64,23 @@ public class MainSettings {
         this.mysqlSsl = config.getBoolean("database.mysql.ssl", false);
         this.mysqlPoolSize = config.getInt("database.mysql.pool-size", 10);
 
-        this.autosaveIntervalSeconds = config.getInt("main.autosave-interval-seconds", 300);
+        this.autosaveIntervalSeconds = Math.max(0, config.getInt("main.autosave-interval-seconds", 300));
         this.saveOnDisable = config.getBoolean("main.save-on-disable", true);
 
         this.hungerEnabled = config.getBoolean("hunger.enabled", true);
-        this.hungerTaskIntervalSeconds = config.getInt("hunger.task-interval-seconds", 60);
-        this.hungerWarningThresholdPercent = config.getInt("hunger.warning-threshold-percent", 25);
+        this.hungerTaskIntervalSeconds = Math.max(1, config.getInt("hunger.task-interval-seconds", 60));
+        this.hungerWarningThresholdPercent = Math.max(0, Math.min(100, config.getInt("hunger.warning-threshold-percent", 25)));
         this.hungerKillOnZero = config.getBoolean("hunger.kill-on-zero", true);
 
         this.levelingEnabled = config.getBoolean("leveling.enabled", true);
-        this.maxLevel = config.getInt("leveling.max-level", 50);
-        this.baseXp = config.getInt("leveling.base-xp", 100);
-        this.xpScale = config.getDouble("leveling.xp-scale", 1.15D);
+        this.maxLevel = Math.max(1, config.getInt("leveling.max-level", 50));
+        this.baseXp = Math.max(1, config.getInt("leveling.base-xp", 100));
+        this.xpScale = Math.max(1.0D, config.getDouble("leveling.xp-scale", 1.15D));
 
         this.bondEnabled = config.getBoolean("bond.enabled", true);
-        this.maxBond = config.getInt("bond.max-bond", 100);
-        this.startBond = config.getInt("bond.start-bond", 10);
-        this.startLevel = config.getInt("bond.start-level", 1);
+        this.maxBond = Math.max(1, config.getInt("bond.max-bond", 100));
+        this.startBond = Math.max(0, config.getInt("bond.start-bond", 10));
+        this.startLevel = Math.max(1, config.getInt("bond.start-level", 1));
 
         this.onlineOwnerActivityEnabled = config.getBoolean("modules.online-owner-activity.enabled", true);
 

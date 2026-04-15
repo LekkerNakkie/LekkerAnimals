@@ -31,8 +31,7 @@ public class LekkerAnimalsCommand implements CommandExecutor {
                 return true;
             }
 
-            plugin.getConfigManager().reloadAll();
-            plugin.reloadConfig();
+            plugin.reloadPluginState();
             lang.send(sender, "general.reload");
             return true;
         }

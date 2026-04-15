@@ -31,7 +31,10 @@ public class GuiSettings {
     }
 
     public Material getFillerMaterial() {
-        return parseMaterial(config.getString("gui.animal-info.filler.material", "LIGHT_BLUE_STAINED_GLASS_PANE"), Material.LIGHT_BLUE_STAINED_GLASS_PANE);
+        return parseMaterial(
+                config.getString("gui.animal-info.filler.material", "LIGHT_BLUE_STAINED_GLASS_PANE"),
+                Material.LIGHT_BLUE_STAINED_GLASS_PANE
+        );
     }
 
     public String getFillerName() {
@@ -43,7 +46,10 @@ public class GuiSettings {
     }
 
     public Material getOwnerMaterial() {
-        return parseMaterial(config.getString("gui.animal-info.items.owner.material", "PLAYER_HEAD"), Material.PLAYER_HEAD);
+        return parseMaterial(
+                config.getString("gui.animal-info.items.owner.material", "PLAYER_HEAD"),
+                Material.PLAYER_HEAD
+        );
     }
 
     public String getOwnerName() {
@@ -59,11 +65,14 @@ public class GuiSettings {
     }
 
     public Material getHungerMaterial() {
-        return parseMaterial(config.getString("gui.animal-info.items.hunger.material", "GOLDEN_CARROT"), Material.GOLDEN_CARROT);
+        return parseMaterial(
+                config.getString("gui.animal-info.items.hunger.material", "GOLDEN_CARROT"),
+                Material.GOLDEN_CARROT
+        );
     }
 
     public String getHungerName() {
-        return config.getString("gui.animal-info.items.hunger.name", "&cHunger");
+        return config.getString("gui.animal-info.items.hunger.name", "&bHonger");
     }
 
     public List<String> getHungerLore() {
@@ -75,11 +84,14 @@ public class GuiSettings {
     }
 
     public Material getLevelMaterial() {
-        return parseMaterial(config.getString("gui.animal-info.items.level.material", "EXPERIENCE_BOTTLE"), Material.EXPERIENCE_BOTTLE);
+        return parseMaterial(
+                config.getString("gui.animal-info.items.level.material", "EXPERIENCE_BOTTLE"),
+                Material.EXPERIENCE_BOTTLE
+        );
     }
 
     public String getLevelName() {
-        return config.getString("gui.animal-info.items.level.name", "&eLevel");
+        return config.getString("gui.animal-info.items.level.name", "&bLevel &f{level}");
     }
 
     public List<String> getLevelLore() {
@@ -91,11 +103,14 @@ public class GuiSettings {
     }
 
     public Material getHarvestMaterial() {
-        return parseMaterial(config.getString("gui.animal-info.items.harvest.material", "CHEST"), Material.CHEST);
+        return parseMaterial(
+                config.getString("gui.animal-info.items.harvest.material", "CHEST"),
+                Material.CHEST
+        );
     }
 
     public String getHarvestName() {
-        return config.getString("gui.animal-info.items.harvest.name", "&6Harvest");
+        return config.getString("gui.animal-info.items.harvest.name", "&bHarvest");
     }
 
     public List<String> getHarvestLore() {
@@ -107,7 +122,10 @@ public class GuiSettings {
     }
 
     public Material getCoOwnerManageMaterial() {
-        return parseMaterial(config.getString("gui.animal-info.items.co-owners.material", "NAME_TAG"), Material.NAME_TAG);
+        return parseMaterial(
+                config.getString("gui.animal-info.items.co-owners.material", "NAME_TAG"),
+                Material.NAME_TAG
+        );
     }
 
     public String getCoOwnerManageName() {
@@ -131,7 +149,10 @@ public class GuiSettings {
     }
 
     public Material getCoOwnerFillerMaterial() {
-        return parseMaterial(config.getString("gui.co-owner-menu.filler.material", "LIGHT_BLUE_STAINED_GLASS_PANE"), Material.LIGHT_BLUE_STAINED_GLASS_PANE);
+        return parseMaterial(
+                config.getString("gui.co-owner-menu.filler.material", "LIGHT_BLUE_STAINED_GLASS_PANE"),
+                Material.LIGHT_BLUE_STAINED_GLASS_PANE
+        );
     }
 
     public String getCoOwnerFillerName() {
@@ -140,7 +161,9 @@ public class GuiSettings {
 
     public List<Integer> getCoOwnerSlots() {
         List<Integer> result = new ArrayList<>();
-        for (String value : config.getStringList("gui.co-owner-menu.items.co-owner-slots")) {
+        List<String> raw = config.getStringList("gui.co-owner-menu.items.co-owner-slots");
+
+        for (String value : raw) {
             try {
                 result.add(Integer.parseInt(value));
             } catch (NumberFormatException ignored) {
@@ -157,7 +180,10 @@ public class GuiSettings {
     }
 
     public Material getEmptyCoOwnerMaterial() {
-        return parseMaterial(config.getString("gui.co-owner-menu.items.empty-slot.material", "GRAY_DYE"), Material.GRAY_DYE);
+        return parseMaterial(
+                config.getString("gui.co-owner-menu.items.empty-slot.material", "GRAY_DYE"),
+                Material.GRAY_DYE
+        );
     }
 
     public String getEmptyCoOwnerName() {
@@ -181,7 +207,10 @@ public class GuiSettings {
     }
 
     public Material getCoOwnerAddMaterial() {
-        return parseMaterial(config.getString("gui.co-owner-menu.items.add.material", "LIME_WOOL"), Material.LIME_WOOL);
+        return parseMaterial(
+                config.getString("gui.co-owner-menu.items.add.material", "LIME_WOOL"),
+                Material.LIME_WOOL
+        );
     }
 
     public String getCoOwnerAddName() {
@@ -197,7 +226,10 @@ public class GuiSettings {
     }
 
     public Material getCoOwnerBackMaterial() {
-        return parseMaterial(config.getString("gui.co-owner-menu.items.back.material", "BARRIER"), Material.BARRIER);
+        return parseMaterial(
+                config.getString("gui.co-owner-menu.items.back.material", "BARRIER"),
+                Material.BARRIER
+        );
     }
 
     public String getCoOwnerBackName() {
@@ -208,8 +240,35 @@ public class GuiSettings {
         return config.getStringList("gui.co-owner-menu.items.back.lore");
     }
 
+    public int getCoOwnerToggleSlot() {
+        return config.getInt("gui.co-owner-menu.items.toggle.slot", 24);
+    }
+
+    public Material getCoOwnerToggleMaterial() {
+        return parseMaterial(
+                config.getString("gui.co-owner-menu.items.toggle.material", "REDSTONE"),
+                Material.REDSTONE
+        );
+    }
+
+    public String getCoOwnerToggleName() {
+        return config.getString("gui.co-owner-menu.items.toggle.name", "&bCo-owner activiteit: {status}");
+    }
+
+    public List<String> getCoOwnerToggleLore() {
+        return config.getStringList("gui.co-owner-menu.items.toggle.lore");
+    }
+
+    public String getCoOwnerToggleStatusEnabled() {
+        return config.getString("gui.co-owner-menu.items.toggle.status.enabled", "&aAAN");
+    }
+
+    public String getCoOwnerToggleStatusDisabled() {
+        return config.getString("gui.co-owner-menu.items.toggle.status.disabled", "&cUIT");
+    }
+
     public int getCoOwnerRemoveConfirmRows() {
-        return Math.max(1, Math.min(3, config.getInt("gui.co-owner-remove-confirm.rows", 3)));
+        return Math.max(1, Math.min(6, config.getInt("gui.co-owner-remove-confirm.rows", 3)));
     }
 
     public String getCoOwnerRemoveConfirmTitle() {
@@ -225,7 +284,10 @@ public class GuiSettings {
     }
 
     public Material getCoOwnerRemoveConfirmYesMaterial() {
-        return parseMaterial(config.getString("gui.co-owner-remove-confirm.items.yes.material", "LIME_WOOL"), Material.LIME_WOOL);
+        return parseMaterial(
+                config.getString("gui.co-owner-remove-confirm.items.yes.material", "LIME_WOOL"),
+                Material.LIME_WOOL
+        );
     }
 
     public String getCoOwnerRemoveConfirmYesName() {
@@ -241,7 +303,10 @@ public class GuiSettings {
     }
 
     public Material getCoOwnerRemoveConfirmNoMaterial() {
-        return parseMaterial(config.getString("gui.co-owner-remove-confirm.items.no.material", "RED_WOOL"), Material.RED_WOOL);
+        return parseMaterial(
+                config.getString("gui.co-owner-remove-confirm.items.no.material", "RED_WOOL"),
+                Material.RED_WOOL
+        );
     }
 
     public String getCoOwnerRemoveConfirmNoName() {

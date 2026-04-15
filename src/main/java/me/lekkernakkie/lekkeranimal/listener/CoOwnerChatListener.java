@@ -33,7 +33,8 @@ public class CoOwnerChatListener implements Listener {
 
         pendingAddByPlayer.put(player.getUniqueId(), entityUuid);
         player.closeInventory();
-        player.sendMessage("§8[§bLekkerAnimal§8] §7Typ de naam van de speler in de chat. Typ §ccancel §7om te stoppen.");
+
+        plugin.getConfigManager().getLangSettings().send(player, "co-owners.chat-enter-name");
     }
 
     public boolean isWaiting(UUID playerUuid) {
@@ -55,10 +56,13 @@ public class CoOwnerChatListener implements Listener {
         event.setCancelled(true);
 
         String message = event.getMessage().trim();
+        LangSettings lang = plugin.getConfigManager().getLangSettings();
+
         if (message.equalsIgnoreCase("cancel")) {
             pendingAddByPlayer.remove(player.getUniqueId());
+
             Bukkit.getScheduler().runTask(plugin, () ->
-                    player.sendMessage("§8[§bLekkerAnimal§8] §7Toevoegen van mede-eigenaar geannuleerd.")
+                    lang.send(player, "co-owners.chat-cancelled")
             );
             return;
         }
@@ -78,13 +82,13 @@ public class CoOwnerChatListener implements Listener {
 
         Entity entity = plugin.getServer().getEntity(entityUuid);
         if (entity == null || !entity.isValid() || entity.isDead()) {
-            player.sendMessage("§8[§bLekkerAnimal§8] §7Dit dier bestaat niet meer.");
+            lang.send(player, "co-owners.animal-missing");
             return;
         }
 
         AnimalData data = plugin.getAnimalManager().getAnimalData(entity);
         if (data == null) {
-            player.sendMessage("§8[§bLekkerAnimal§8] §7Geen dierdata gevonden.");
+            lang.send(player, "co-owners.animal-missing");
             return;
         }
 
@@ -95,41 +99,53 @@ public class CoOwnerChatListener implements Listener {
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
         if (!target.isOnline() && !target.hasPlayedBefore()) {
-            player.sendMessage("§8[§bLekkerAnimal§8] §7Speler niet gevonden.");
+            lang.send(player, "co-owners.player-not-found");
             plugin.getGuiManager().openCoOwnerMenu(player, entity);
             return;
         }
 
         UUID targetUuid = target.getUniqueId();
         if (targetUuid == null) {
-            player.sendMessage("§8[§bLekkerAnimal§8] §7Speler niet gevonden.");
+            lang.send(player, "co-owners.player-not-found");
             plugin.getGuiManager().openCoOwnerMenu(player, entity);
             return;
         }
 
+        String resolvedName = target.getName() != null ? target.getName() : targetUuid.toString();
+
         if (data.isOwner(targetUuid)) {
-            player.sendMessage("§8[§bLekkerAnimal§8] §7Deze speler is al de eigenaar.");
+            lang.send(player, "co-owners.already-owner", Map.of(
+                    "player", resolvedName
+            ));
             plugin.getGuiManager().openCoOwnerMenu(player, entity);
             return;
         }
 
         if (data.isCoOwner(targetUuid)) {
-            player.sendMessage("§8[§bLekkerAnimal§8] §7Deze speler is al mede-eigenaar.");
+            lang.send(player, "co-owners.already-co-owner", Map.of(
+                    "player", resolvedName
+            ));
             plugin.getGuiManager().openCoOwnerMenu(player, entity);
             return;
         }
 
         if (data.getCoOwnerCount() >= settings.getCoOwnersMaxPerAnimal()) {
-            player.sendMessage("§8[§bLekkerAnimal§8] §7Je hebt al het maximum aantal mede-eigenaars bereikt.");
+            lang.send(player, "co-owners.max-reached", Map.of(
+                    "max", String.valueOf(settings.getCoOwnersMaxPerAnimal())
+            ));
             plugin.getGuiManager().openCoOwnerMenu(player, entity);
             return;
         }
 
         if (data.addCoOwner(targetUuid, settings.getCoOwnersMaxPerAnimal())) {
             plugin.getDataManager().saveAnimal(data);
-            player.sendMessage("§8[§bLekkerAnimal§8] §7" + (target.getName() != null ? target.getName() : targetUuid) + " §7werd toegevoegd als mede-eigenaar.");
+            lang.send(player, "co-owners.added", Map.of(
+                    "player", resolvedName
+            ));
         } else {
-            player.sendMessage("§8[§bLekkerAnimal§8] §7Toevoegen mislukt.");
+            lang.send(player, "co-owners.add-failed", Map.of(
+                    "player", resolvedName
+            ));
         }
 
         plugin.getGuiManager().openCoOwnerMenu(player, entity);

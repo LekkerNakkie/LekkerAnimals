@@ -51,3 +51,16 @@ harvesting:
   not-ready: "{prefix}&eDit dier is nog niet klaar. Nog &f{time}&e."
   disabled: "{prefix}&cHarvesting staat niet aan voor dit dier."
   no-drops: "{prefix}&cEr zijn geen harvest drops ingesteld voor dit level."
+
+co-owners:
+  chat-enter-name: "{prefix}&7Typ de naam van de speler in de chat. Typ &ccancel &7om te stoppen."
+  chat-cancelled: "{prefix}&7Toevoegen van mede-eigenaar geannuleerd."
+  animal-missing: "{prefix}&7Dit dier bestaat niet meer of kon niet gevonden worden."
+  player-not-found: "{prefix}&7Speler niet gevonden."
+  already-owner: "{prefix}&7{player} is al de eigenaar van dit dier."
+  already-co-owner: "{prefix}&7{player} is al mede-eigenaar van dit dier."
+  max-reached: "{prefix}&7Je hebt al het maximum aantal mede-eigenaars bereikt. Max: &b{max}&7."
+  added: "{prefix}&7{player} werd toegevoegd als mede-eigenaar."
+  add-failed: "{prefix}&7Kon {player} niet toevoegen als mede-eigenaar."
+  removed: "{prefix}&7{player} werd verwijderd als mede-eigenaar."
+  toggle-updated: "{prefix}&7Co-owner activiteit is nu {status}&7."

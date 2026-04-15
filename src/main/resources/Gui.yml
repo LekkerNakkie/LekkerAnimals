@@ -104,6 +104,23 @@ gui:
           - "&aKlik en typ daarna"
           - "&aeen naam in de chat."
 
+      toggle:
+        slot: 24
+        material: "REDSTONE"
+        name: "&bCo-owner activiteit: {status}"
+        lore:
+          - "&7Als dit aan staat,"
+          - "&7blijft het dier actief"
+          - "&7wanneer een mede-eigenaar"
+          - "&7online is."
+          - ""
+          - "&7Status: {status}"
+          - ""
+          - "&eKlik om te veranderen"
+        status:
+          enabled: "&aAAN"
+          disabled: "&cUIT"
+
       back:
         slot: 26
         material: "BARRIER"

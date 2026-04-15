@@ -119,8 +119,7 @@ public class GuiManager {
             int slot = slots.get(i);
 
             if (i < coOwners.size()) {
-                UUID uuid = coOwners.get(i);
-                inventory.setItem(slot, createCoOwnerHead(uuid, gui));
+                inventory.setItem(slot, createCoOwnerHead(coOwners.get(i), gui));
             } else {
                 inventory.setItem(slot, createItem(
                         gui.getEmptyCoOwnerMaterial(),
@@ -133,9 +132,11 @@ public class GuiManager {
         inventory.setItem(gui.getCoOwnerAddSlot(), createItem(
                 gui.getCoOwnerAddMaterial(),
                 gui.getCoOwnerAddName(),
-                applyPlaceholders(gui.getCoOwnerAddLore(),
+                applyPlaceholders(
+                        gui.getCoOwnerAddLore(),
                         "{current}", String.valueOf(data.getCoOwnerCount()),
-                        "{max}", String.valueOf(main.getCoOwnersMaxPerAnimal()))
+                        "{max}", String.valueOf(main.getCoOwnersMaxPerAnimal())
+                )
         ));
 
         inventory.setItem(gui.getCoOwnerBackSlot(), createItem(
@@ -376,15 +377,14 @@ public class GuiManager {
     }
 
     private ItemStack createCoOwnerActiveToggleItem(AnimalData data, GuiSettings gui) {
-        String status = data.isCoOwnersKeepActive() ? "&aAAN" : "&cUIT";
+        String status = data.isCoOwnersKeepActive()
+                ? ColorUtil.colorize(gui.getCoOwnerToggleStatusEnabled())
+                : ColorUtil.colorize(gui.getCoOwnerToggleStatusDisabled());
 
         return createItem(
                 gui.getCoOwnerToggleMaterial(),
-                gui.getCoOwnerToggleName().replace("{status}", ColorUtil.colorize(status)),
-                applyPlaceholders(
-                        gui.getCoOwnerToggleLore(),
-                        "{status}", ColorUtil.colorize(status)
-                )
+                gui.getCoOwnerToggleName().replace("{status}", status),
+                applyPlaceholders(gui.getCoOwnerToggleLore(), "{status}", status)
         );
     }
 

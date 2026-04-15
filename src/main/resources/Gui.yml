@@ -99,11 +99,6 @@ gui:
         lore:
           - "&7Dit mede-eigenaar slot is nog"
           - "&7niet beschikbaar voor jou."
-          - ""
-          - "&7Slot: &f{slot}"
-          - "&7Benodigd:"
-          - "&fSlot 2 &8» &7lekkeranimal.coowners.slots.2"
-          - "&fSlot 3 &8» &7lekkeranimal.coowners.slots.3"
 
       co-owner-head:
         name: "&b{player}"

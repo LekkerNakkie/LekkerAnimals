@@ -1,5 +1,6 @@
 package me.lekkernakkie.lekkeranimal;
 
+import me.lekkernakkie.lekkeranimal.command.AnimalFeederCommand;
 import me.lekkernakkie.lekkeranimal.command.AnimalHeadCommand;
 import me.lekkernakkie.lekkeranimal.command.AnimalHeadSellCommand;
 import me.lekkernakkie.lekkeranimal.command.AnimalsCommand;
@@ -88,6 +89,10 @@ public class LekkerAnimal extends JavaPlugin {
 
         if (getCommand("animalheadsell") != null) {
             getCommand("animalheadsell").setExecutor(new AnimalHeadSellCommand(this));
+        }
+
+        if (getCommand("animalfeeder") != null) {
+            getCommand("animalfeeder").setExecutor(new AnimalFeederCommand(this));
         }
 
         getServer().getPluginManager().registerEvents(

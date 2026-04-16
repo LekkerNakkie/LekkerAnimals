@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.Map;
 
 public class AnimalFeederCommand implements CommandExecutor {
@@ -63,15 +64,16 @@ public class AnimalFeederCommand implements CommandExecutor {
             }
         }
 
-        ItemStack feederItem = FeederItemUtil.createFeederItem(
-                plugin,
-                target.getUniqueId(),
-                target.getName(),
-                tier
-        );
-
-        feederItem.setAmount(amount);
-        target.getInventory().addItem(feederItem);
+        for (int i = 0; i < amount; i++) {
+            ItemStack feederItem = FeederItemUtil.createFeederItem(
+                    plugin,
+                    target.getUniqueId(),
+                    target.getName(),
+                    tier,
+                    List.of()
+            );
+            target.getInventory().addItem(feederItem);
+        }
 
         String tierDisplay = settings.getTierSettings(tier) != null
                 ? settings.getTierSettings(tier).display()

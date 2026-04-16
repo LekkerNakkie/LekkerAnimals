@@ -12,6 +12,7 @@ import me.lekkernakkie.lekkeranimal.listener.AnimalInteractListener;
 import me.lekkernakkie.lekkeranimal.listener.AnimalLoadListener;
 import me.lekkernakkie.lekkeranimal.listener.CoOwnerChatListener;
 import me.lekkernakkie.lekkeranimal.listener.CustomHeadListener;
+import me.lekkernakkie.lekkeranimal.listener.FeedstationBlockListener;
 import me.lekkernakkie.lekkeranimal.listener.GuiClickListener;
 import me.lekkernakkie.lekkeranimal.listener.HeadSellListener;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
@@ -117,6 +118,11 @@ public class LekkerAnimal extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(
                 new HeadSellListener(this),
+                this
+        );
+
+        getServer().getPluginManager().registerEvents(
+                new FeedstationBlockListener(this),
                 this
         );
 

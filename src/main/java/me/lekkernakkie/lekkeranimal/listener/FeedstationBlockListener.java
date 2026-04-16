@@ -2,8 +2,10 @@ package me.lekkernakkie.lekkeranimal.listener;
 
 import me.lekkernakkie.lekkeranimal.LekkerAnimal;
 import me.lekkernakkie.lekkeranimal.config.FeederTier;
+import me.lekkernakkie.lekkeranimal.config.FeedstationSettings;
 import me.lekkernakkie.lekkeranimal.config.LangSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalFeederData;
+import me.lekkernakkie.lekkeranimal.gui.FeedstationMenuHolder;
 import me.lekkernakkie.lekkeranimal.util.FeederItemUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -12,10 +14,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,7 +44,7 @@ public class FeedstationBlockListener implements Listener {
         }
 
         Block block = event.getBlockPlaced();
-        if (block.getType() != Material.CAULDRON) {
+        if (block.getType() != plugin.getConfigManager().getFeedstationSettings().getItemMaterial()) {
             return;
         }
 
@@ -45,6 +54,7 @@ public class FeedstationBlockListener implements Listener {
         FeederTier tier = FeederItemUtil.getTier(plugin, item);
         UUID ownerUuid = FeederItemUtil.getOwnerUuid(plugin, item);
         String ownerName = FeederItemUtil.getOwnerName(plugin, item);
+        List<ItemStack> storedFood = FeederItemUtil.getStoredFood(plugin, item);
 
         if (tier == null || ownerUuid == null) {
             event.setCancelled(true);
@@ -56,13 +66,18 @@ public class FeedstationBlockListener implements Listener {
                 ownerUuid,
                 ownerName,
                 tier,
-                block.getLocation()
+                block.getLocation(),
+                storedFood
         );
 
         plugin.getFeedstationManager().registerFeeder(data);
 
+        FeedstationSettings.TierSettings tierSettings = plugin.getConfigManager()
+                .getFeedstationSettings()
+                .getTierSettings(tier);
+
         lang.send(player, "feedstation.feeder-created", Map.of(
-                "tier_display", plugin.getConfigManager().getFeedstationSettings().getTierSettings(tier).display()
+                "tier_display", tierSettings != null ? tierSettings.display() : tier.name()
         ));
     }
 
@@ -84,19 +99,148 @@ public class FeedstationBlockListener implements Listener {
                 plugin,
                 feeder.getOwnerUuid(),
                 feeder.getOwnerName(),
-                feeder.getTier()
+                feeder.getTier(),
+                feeder.getStoredFood()
         );
 
-        if (player.getGameMode() == GameMode.CREATIVE) {
-            // in creative niet dubbel spawnen
-        } else {
+        if (player.getGameMode() != GameMode.CREATIVE) {
             block.getWorld().dropItemNaturally(block.getLocation().add(0.5D, 0.5D, 0.5D), item);
         }
 
         plugin.getFeedstationManager().unregisterFeeder(feeder.getFeederUuid());
 
+        FeedstationSettings.TierSettings tierSettings = plugin.getConfigManager()
+                .getFeedstationSettings()
+                .getTierSettings(feeder.getTier());
+
         plugin.getConfigManager().getLangSettings().send(player, "feedstation.feeder-removed", Map.of(
-                "tier_display", plugin.getConfigManager().getFeedstationSettings().getTierSettings(feeder.getTier()).display()
+                "tier_display", tierSettings != null ? tierSettings.display() : feeder.getTier().name()
         ));
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+
+        AnimalFeederData feeder = plugin.getFeedstationManager().getFeederAt(block);
+        if (feeder == null) {
+            return;
+        }
+
+        event.setCancelled(true);
+        plugin.getFeedstationManager().openMenu(event.getPlayer(), feeder);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getView().getTopInventory().getHolder() instanceof FeedstationMenuHolder holder)) {
+            return;
+        }
+
+        Inventory top = event.getView().getTopInventory();
+        Inventory clicked = event.getClickedInventory();
+        if (clicked == null) {
+            return;
+        }
+
+        if (clicked.equals(top)) {
+            if (!plugin.getFeedstationManager().isStorageSlot(event.getSlot())) {
+                event.setCancelled(true);
+                return;
+            }
+
+            ItemStack cursor = event.getCursor();
+            if (FeederItemUtil.isFeederItem(plugin, cursor)) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (cursor != null && !cursor.getType().isAir() && !plugin.getFeedstationManager().isPotentialAnimalFood(cursor.getType())) {
+                event.setCancelled(true);
+                plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.invalid-food-item");
+            }
+            return;
+        }
+
+        if (event.isShiftClick()) {
+            ItemStack current = event.getCurrentItem();
+            if (current == null || current.getType().isAir()) {
+                return;
+            }
+
+            if (FeederItemUtil.isFeederItem(plugin, current)) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (!plugin.getFeedstationManager().isPotentialAnimalFood(current.getType())) {
+                event.setCancelled(true);
+                plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.invalid-food-item");
+                return;
+            }
+
+            ItemStack source = current.clone();
+            boolean moved = plugin.getFeedstationManager().moveToStorage(top, source);
+            if (moved) {
+                event.setCancelled(true);
+                if (source.getAmount() <= 0) {
+                    clicked.setItem(event.getSlot(), null);
+                } else {
+                    current.setAmount(source.getAmount());
+                    clicked.setItem(event.getSlot(), current);
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getView().getTopInventory().getHolder() instanceof FeedstationMenuHolder)) {
+            return;
+        }
+
+        for (int rawSlot : event.getRawSlots()) {
+            if (rawSlot >= event.getView().getTopInventory().getSize()) {
+                continue;
+            }
+
+            if (!plugin.getFeedstationManager().isStorageSlot(rawSlot)) {
+                event.setCancelled(true);
+                return;
+            }
+
+            ItemStack oldCursor = event.getOldCursor();
+            if (FeederItemUtil.isFeederItem(plugin, oldCursor)) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (oldCursor != null && !oldCursor.getType().isAir() && !plugin.getFeedstationManager().isPotentialAnimalFood(oldCursor.getType())) {
+                event.setCancelled(true);
+                plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.invalid-food-item");
+                return;
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getInventory().getHolder() instanceof FeedstationMenuHolder holder)) {
+            return;
+        }
+
+        AnimalFeederData feeder = plugin.getFeedstationManager().getFeeder(holder.getFeederUuid());
+        if (feeder == null) {
+            return;
+        }
+
+        plugin.getFeedstationManager().saveMenu(event.getInventory(), feeder);
     }
 }

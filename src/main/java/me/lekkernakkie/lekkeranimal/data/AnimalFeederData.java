@@ -25,7 +25,8 @@ public class AnimalFeederData {
                             UUID ownerUuid,
                             String ownerName,
                             FeederTier tier,
-                            Location location) {
+                            Location location,
+                            List<ItemStack> storedFood) {
         this.feederUuid = feederUuid;
         this.ownerUuid = ownerUuid;
         this.ownerName = ownerName;
@@ -34,6 +35,15 @@ public class AnimalFeederData {
         this.x = location.getX();
         this.y = location.getY();
         this.z = location.getZ();
+
+        if (storedFood != null) {
+            for (ItemStack stack : storedFood) {
+                if (stack == null || stack.getType().isAir()) {
+                    continue;
+                }
+                this.storedFood.add(stack.clone());
+            }
+        }
     }
 
     public UUID getFeederUuid() {
@@ -46,6 +56,10 @@ public class AnimalFeederData {
 
     public String getOwnerName() {
         return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 
     public FeederTier getTier() {
@@ -66,5 +80,16 @@ public class AnimalFeederData {
 
     public Location getLocation(World world) {
         return new Location(world, x, y, z);
+    }
+
+    public int getStoredFoodAmount() {
+        int total = 0;
+        for (ItemStack stack : storedFood) {
+            if (stack == null || stack.getType().isAir()) {
+                continue;
+            }
+            total += stack.getAmount();
+        }
+        return total;
     }
 }

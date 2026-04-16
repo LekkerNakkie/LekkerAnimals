@@ -82,3 +82,15 @@ heads:
   sell-none: "{prefix}&7Er zitten geen verkoopbare animal heads in het menu."
   sell-success: "{prefix}&7Je verkocht &b{amount} &7heads voor &a{money}&7."
   sell-opened-for: "{prefix}&7Animal head sell menu geopend voor &b{player}&7."
+
+feedstation:
+  no-permission: "&cGeen permissie."
+  invalid-player: "&cSpeler niet gevonden."
+  invalid-tier: "&cOngeldige tier."
+  gave-feeder: "&aJe gaf &f{player} &ax{amount} {tier_display} &avoederbak(ken)."
+  feeder-created: "&aVoederbak geplaatst."
+  feeder-removed: "&cVoederbak verwijderd."
+  no-food: "&cEr zit geen bruikbaar eten in deze voederbak."
+  upgrades-disabled: "&cUpgrades zijn uitgeschakeld."
+  already-max-tier: "&cDeze voederbak heeft al het hoogste tier."
+  upgrade-success: "&aVoederbak geupgrade naar {tier_display}&a."

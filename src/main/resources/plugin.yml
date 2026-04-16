@@ -22,7 +22,9 @@ commands:
   animals:
     description: Open your animals menu
     usage: /animals
-
+  animalfeeder:
+    description: Give an animal feeder
+    usage: /animalfeeder <player> <tier> [amount]
 permissions:
   lekkeranimal.admin:
     default: op
@@ -62,3 +64,6 @@ permissions:
 
   lekkeranimal.command.animals:
     default: true
+
+  lekkeranimal.command.animalfeeder:
+    default: op

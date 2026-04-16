@@ -15,6 +15,7 @@ import me.lekkernakkie.lekkeranimal.listener.GuiClickListener;
 import me.lekkernakkie.lekkeranimal.listener.HeadSellListener;
 import me.lekkernakkie.lekkeranimal.manager.AnimalManager;
 import me.lekkernakkie.lekkeranimal.manager.BondManager;
+import me.lekkernakkie.lekkeranimal.manager.FeedstationManager;
 import me.lekkernakkie.lekkeranimal.manager.GuiManager;
 import me.lekkernakkie.lekkeranimal.manager.HarvestManager;
 import me.lekkernakkie.lekkeranimal.manager.HeadSellManager;
@@ -42,6 +43,7 @@ public class LekkerAnimal extends JavaPlugin {
     private GuiManager guiManager;
     private HarvestManager harvestManager;
     private HeadSellManager headSellManager;
+    private FeedstationManager feedstationManager;
     private CoOwnerChatListener coOwnerChatListener;
 
     private Economy economy;
@@ -65,6 +67,7 @@ public class LekkerAnimal extends JavaPlugin {
         this.guiManager = new GuiManager(this);
         this.harvestManager = new HarvestManager(this);
         this.headSellManager = new HeadSellManager(this);
+        this.feedstationManager = new FeedstationManager(this);
         this.coOwnerChatListener = new CoOwnerChatListener(this);
 
         this.dataManager.loadAllIntoMemory(animalManager);
@@ -158,6 +161,10 @@ public class LekkerAnimal extends JavaPlugin {
             hologramManager.start();
         }
 
+        if (feedstationManager != null) {
+            feedstationManager.start();
+        }
+
         startAutosaveTask();
     }
 
@@ -170,6 +177,10 @@ public class LekkerAnimal extends JavaPlugin {
 
         if (hologramManager != null) {
             hologramManager.stop();
+        }
+
+        if (feedstationManager != null) {
+            feedstationManager.stop();
         }
     }
 
@@ -283,6 +294,10 @@ public class LekkerAnimal extends JavaPlugin {
 
     public HeadSellManager getHeadSellManager() {
         return headSellManager;
+    }
+
+    public FeedstationManager getFeedstationManager() {
+        return feedstationManager;
     }
 
     public CoOwnerChatListener getCoOwnerChatListener() {

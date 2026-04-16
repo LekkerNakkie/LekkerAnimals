@@ -1,0 +1,167 @@
+enabled: true
+
+item:
+  material: "CAULDRON"
+  name: "&b{tier_display} &7Voederbak"
+  lore:
+    - "&7Owner: &f{owner}"
+    - "&7Capaciteit: &f{max_animals} dieren"
+    - "&7Radius: &f{radius} blocks"
+    - ""
+    - "&ePlaats dit item om een voederbak te maken."
+
+hologram:
+  enabled: true
+  lines:
+    - "&b{owner} &7voederbak"
+    - "&7Tier: {tier_display}"
+    - "&7Animals: &f{nearby_animals}&7/&f{max_animals}"
+    - "&7Food: &f{food_amount}"
+  offset-y: 1.4
+  refresh-ticks: 40
+
+gui:
+  title: "&bVoederbak &8• &f{tier_display}"
+  rows: 3
+
+  filler:
+    enabled: true
+    material: "LIGHT_BLUE_STAINED_GLASS_PANE"
+    name: " "
+
+  slots:
+    info: 11
+    storage: [12, 13, 14, 15, 16]
+    upgrade: 22
+
+  info-item:
+    material: "CAULDRON"
+    name: "&bFeedstation Info"
+    lore:
+      - "&7Owner: &f{owner}"
+      - "&7Tier: {tier_display}"
+      - "&7Radius: &f{radius}"
+      - "&7Max animals: &f{max_animals}"
+      - "&7Nearby animals: &f{nearby_animals}"
+      - "&7Stored food: &f{food_amount}"
+
+  upgrade-item:
+    enabled-name: "&aUpgrade feedstation"
+    disabled-name: "&cUpgrades disabled"
+    enabled-lore:
+      - "&7Next tier: {next_tier_display}"
+      - "&7Cost: &f{upgrade_item} x{upgrade_amount}"
+      - ""
+      - "&eKlik om te upgraden."
+    disabled-lore:
+      - "&7Upgrades zijn uitgeschakeld"
+      - "&7in feedstation.yml"
+
+tiers:
+  COMMON:
+    display: "&fCommon"
+    max-animals: 2
+    radius: 8
+    attraction-range: 12
+    attraction-speed: 0.22
+    feed-interval-seconds: 20
+
+  UNCOMMON:
+    display: "&aUncommon"
+    max-animals: 5
+    radius: 10
+    attraction-range: 14
+    attraction-speed: 0.24
+    feed-interval-seconds: 18
+
+  RARE:
+    display: "&dRare"
+    max-animals: 7
+    radius: 12
+    attraction-range: 16
+    attraction-speed: 0.26
+    feed-interval-seconds: 16
+
+  ULTRA:
+    display: "&5Ultra"
+    max-animals: 10
+    radius: 14
+    attraction-range: 18
+    attraction-speed: 0.28
+    feed-interval-seconds: 14
+
+  LEGENDARY:
+    display: "&6Legendary"
+    max-animals: 15
+    radius: 16
+    attraction-range: 20
+    attraction-speed: 0.30
+    feed-interval-seconds: 12
+
+upgrades:
+  enabled: true
+  chain:
+    COMMON: "UNCOMMON"
+    UNCOMMON: "RARE"
+    RARE: "ULTRA"
+    ULTRA: "LEGENDARY"
+
+  costs:
+    UNCOMMON:
+      material: "IRON_INGOT"
+      amount: 16
+    RARE:
+      material: "GOLD_INGOT"
+      amount: 24
+    ULTRA:
+      material: "DIAMOND"
+      amount: 16
+    LEGENDARY:
+      material: "NETHERITE_INGOT"
+      amount: 4
+
+task:
+  tick-interval: 40
+
+feeding:
+  only-when-hungry: true
+  consume-one-item-per-feed: true
+  skip-full-animals: true
+  prioritize-lowest-hunger: true
+
+particles:
+  enabled: true
+
+  idle:
+    enabled: true
+    particle: "HAPPY_VILLAGER"
+    count: 2
+    spread-x: 0.25
+    spread-y: 0.15
+    spread-z: 0.25
+    extra: 0.0
+
+  feeding:
+    enabled: true
+    particle: "HEART"
+    count: 5
+    spread-x: 0.35
+    spread-y: 0.35
+    spread-z: 0.35
+    extra: 0.0
+
+  attraction:
+    enabled: true
+    particle: "END_ROD"
+    count: 2
+    spread-x: 0.15
+    spread-y: 0.15
+    spread-z: 0.15
+    extra: 0.0
+
+sounds:
+  enabled: true
+  open: "BLOCK_CHEST_OPEN"
+  deposit: "ENTITY_ITEM_PICKUP"
+  feed: "ENTITY_GENERIC_EAT"
+  upgrade: "ENTITY_PLAYER_LEVELUP"

@@ -476,6 +476,7 @@ public class FeedstationManager {
 
         for (AnimalFeederData feeder : new ArrayList<>(feeders.values())) {
             refreshHologram(feeder);
+            updateHologramVisibility(feeder);
             spawnIdleParticles(feeder);
             processFeeder(feeder);
         }
@@ -586,6 +587,7 @@ public class FeedstationManager {
         if (fedCount > 0) {
             lastFeedTimes.put(feeder.getFeederUuid(), now);
             refreshHologram(feeder);
+            updateHologramVisibility(feeder);
         }
     }
 
@@ -781,6 +783,45 @@ public class FeedstationManager {
         }
     }
 
+    private void updateHologramVisibility(AnimalFeederData feeder) {
+        if (feeder == null) {
+            return;
+        }
+
+        FeedstationSettings settings = plugin.getConfigManager().getFeedstationSettings();
+        if (settings == null || !settings.isEnabled() || !settings.isHologramEnabled() || !feeder.isHologramEnabled()) {
+            return;
+        }
+
+        TextDisplay display = holograms.get(feeder.getFeederUuid());
+        if (display == null || !display.isValid()) {
+            return;
+        }
+
+        World world = plugin.getServer().getWorld(feeder.getWorldName());
+        if (world == null) {
+            return;
+        }
+
+        Location center = feeder.getLocation(world).clone().add(0.5D, settings.getHologramOffsetY(), 0.5D);
+        double maxDistanceSquared = settings.getHologramVisibleRadiusBlocks() * settings.getHologramVisibleRadiusBlocks();
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            boolean sameWorld = player.getWorld().equals(world);
+            boolean inRange = false;
+
+            if (sameWorld) {
+                inRange = player.getLocation().distanceSquared(center) <= maxDistanceSquared;
+            }
+
+            if (inRange) {
+                player.showEntity(plugin, display);
+            } else {
+                player.hideEntity(plugin, display);
+            }
+        }
+    }
+
     private TextDisplay createTextDisplay(Location location, UUID feederUuid, String text) {
         return location.getWorld().spawn(location, TextDisplay.class, display -> {
             display.text(toComponent(text));
@@ -851,6 +892,7 @@ public class FeedstationManager {
                             .replace("{food_amount}", String.valueOf(feeder.getStoredFoodAmount()))
                             .replace("{storage_slots}", String.valueOf(tierSettings.storageSlots()))
                             .replace("{hologram_status}", hologramStatus)
+                            .replace("{hologram_visible_radius_blocks}", trimDouble(settings.getHologramVisibleRadiusBlocks()))
             ));
         }
 

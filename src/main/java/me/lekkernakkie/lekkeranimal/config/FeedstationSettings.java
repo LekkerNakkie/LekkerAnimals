@@ -25,6 +25,7 @@ public class FeedstationSettings {
     private final List<String> hologramLines;
     private final double hologramOffsetY;
     private final long hologramRefreshTicks;
+    private final double hologramVisibleRadiusBlocks;
 
     private final String guiTitle;
     private final int guiRows;
@@ -106,7 +107,8 @@ public class FeedstationSettings {
         this.hologramEnabled = config.getBoolean("hologram.enabled", true);
         this.hologramLines = new ArrayList<>(config.getStringList("hologram.lines"));
         this.hologramOffsetY = config.getDouble("hologram.offset-y", 1.4D);
-        this.hologramRefreshTicks = Math.max(20L, config.getLong("hologram.refresh-ticks", 40L));
+        this.hologramRefreshTicks = Math.max(5L, config.getLong("hologram.refresh-ticks", 20L));
+        this.hologramVisibleRadiusBlocks = Math.max(1.0D, config.getDouble("hologram.visible-radius-blocks", 16.0D));
 
         this.guiTitle = config.getString("gui.title", "&bVoederbak");
         this.guiRows = Math.max(1, Math.min(6, config.getInt("gui.rows", 3)));
@@ -348,6 +350,10 @@ public class FeedstationSettings {
 
     public long getHologramRefreshTicks() {
         return hologramRefreshTicks;
+    }
+
+    public double getHologramVisibleRadiusBlocks() {
+        return hologramVisibleRadiusBlocks;
     }
 
     public String getGuiTitle() {

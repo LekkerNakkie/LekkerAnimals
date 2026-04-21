@@ -70,7 +70,8 @@ public class AnimalFeederCommand implements CommandExecutor {
                     target.getUniqueId(),
                     target.getName(),
                     tier,
-                    List.of()
+                    List.of(),
+                    true
             );
             target.getInventory().addItem(feederItem);
         }

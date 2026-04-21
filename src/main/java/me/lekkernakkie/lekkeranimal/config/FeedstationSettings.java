@@ -34,12 +34,39 @@ public class FeedstationSettings {
     private final String fillerName;
 
     private final int infoSlot;
-    private final List<Integer> storageSlots;
+    private final int openStorageSlot;
+    private final int showRadiusSlot;
+    private final int toggleHologramSlot;
     private final int upgradeSlot;
 
     private final Material infoMaterial;
     private final String infoName;
     private final List<String> infoLore;
+
+    private final Material storageButtonMaterial;
+    private final String storageButtonName;
+    private final List<String> storageButtonLore;
+
+    private final Material radiusButtonMaterial;
+    private final String radiusButtonName;
+    private final List<String> radiusButtonLore;
+
+    private final Material hologramEnabledMaterial;
+    private final Material hologramDisabledMaterial;
+    private final String hologramButtonName;
+    private final List<String> hologramEnabledLore;
+    private final List<String> hologramDisabledLore;
+
+    private final String storageGuiTitle;
+    private final Material blockedSlotMaterial;
+    private final String blockedSlotName;
+    private final List<String> blockedSlotLore;
+
+    private final long radiusPreviewDurationTicks;
+    private final Particle radiusPreviewParticle;
+    private final int radiusPreviewCountPerPoint;
+    private final int radiusPreviewPoints;
+    private final double radiusPreviewYOffset;
 
     private final String upgradeEnabledName;
     private final String upgradeDisabledName;
@@ -88,13 +115,40 @@ public class FeedstationSettings {
         this.fillerMaterial = parseMaterial(config.getString("gui.filler.material"), Material.LIGHT_BLUE_STAINED_GLASS_PANE);
         this.fillerName = config.getString("gui.filler.name", " ");
 
-        this.infoSlot = config.getInt("gui.slots.info", 11);
-        this.storageSlots = new ArrayList<>(config.getIntegerList("gui.slots.storage"));
+        this.infoSlot = config.getInt("gui.slots.info", 10);
+        this.openStorageSlot = config.getInt("gui.slots.open-storage", 12);
+        this.showRadiusSlot = config.getInt("gui.slots.show-radius", 14);
+        this.toggleHologramSlot = config.getInt("gui.slots.toggle-hologram", 16);
         this.upgradeSlot = config.getInt("gui.slots.upgrade", 22);
 
         this.infoMaterial = parseMaterial(config.getString("gui.info-item.material"), Material.CAULDRON);
         this.infoName = config.getString("gui.info-item.name", "&bFeedstation Info");
         this.infoLore = new ArrayList<>(config.getStringList("gui.info-item.lore"));
+
+        this.storageButtonMaterial = parseMaterial(config.getString("gui.storage-button.material"), Material.CHEST);
+        this.storageButtonName = config.getString("gui.storage-button.name", "&bOpen inhoud");
+        this.storageButtonLore = new ArrayList<>(config.getStringList("gui.storage-button.lore"));
+
+        this.radiusButtonMaterial = parseMaterial(config.getString("gui.radius-button.material"), Material.BLAZE_POWDER);
+        this.radiusButtonName = config.getString("gui.radius-button.name", "&bToon radius");
+        this.radiusButtonLore = new ArrayList<>(config.getStringList("gui.radius-button.lore"));
+
+        this.hologramEnabledMaterial = parseMaterial(config.getString("gui.hologram-button.enabled-material"), Material.LIME_DYE);
+        this.hologramDisabledMaterial = parseMaterial(config.getString("gui.hologram-button.disabled-material"), Material.GRAY_DYE);
+        this.hologramButtonName = config.getString("gui.hologram-button.name", "&bHologram");
+        this.hologramEnabledLore = new ArrayList<>(config.getStringList("gui.hologram-button.enabled-lore"));
+        this.hologramDisabledLore = new ArrayList<>(config.getStringList("gui.hologram-button.disabled-lore"));
+
+        this.storageGuiTitle = config.getString("storage-gui.title", "&bFeedstation Inhoud");
+        this.blockedSlotMaterial = parseMaterial(config.getString("storage-gui.blocked-slot-item.material"), Material.RED_STAINED_GLASS_PANE);
+        this.blockedSlotName = config.getString("storage-gui.blocked-slot-item.name", "&cBlocked slot");
+        this.blockedSlotLore = new ArrayList<>(config.getStringList("storage-gui.blocked-slot-item.lore"));
+
+        this.radiusPreviewDurationTicks = Math.max(20L, config.getLong("radius-preview.duration-ticks", 100L));
+        this.radiusPreviewParticle = parseParticle(config.getString("radius-preview.particle"), Particle.END_ROD);
+        this.radiusPreviewCountPerPoint = Math.max(1, config.getInt("radius-preview.count-per-point", 1));
+        this.radiusPreviewPoints = Math.max(8, config.getInt("radius-preview.points", 80));
+        this.radiusPreviewYOffset = config.getDouble("radius-preview.y-offset", 0.15D);
 
         this.upgradeEnabledName = config.getString("gui.upgrade-item.enabled-name", "&aUpgrade");
         this.upgradeDisabledName = config.getString("gui.upgrade-item.disabled-name", "&cDisabled");
@@ -128,23 +182,8 @@ public class FeedstationSettings {
     private Map<FeederTier, TierSettings> loadTiers(ConfigurationSection section) {
         Map<FeederTier, TierSettings> result = new EnumMap<>(FeederTier.class);
 
-        if (section == null) {
-            for (FeederTier tier : FeederTier.values()) {
-                result.put(tier, new TierSettings(
-                        tier,
-                        tier.getDefaultDisplay(),
-                        tier.getDefaultMaxAnimals(),
-                        tier.getDefaultRadius(),
-                        tier.getDefaultAttractionRange(),
-                        tier.getDefaultAttractionSpeed(),
-                        tier.getDefaultFeedIntervalSeconds()
-                ));
-            }
-            return result;
-        }
-
         for (FeederTier tier : FeederTier.values()) {
-            ConfigurationSection tierSection = section.getConfigurationSection(tier.name());
+            ConfigurationSection tierSection = section != null ? section.getConfigurationSection(tier.name()) : null;
 
             if (tierSection == null) {
                 result.put(tier, new TierSettings(
@@ -154,7 +193,9 @@ public class FeedstationSettings {
                         tier.getDefaultRadius(),
                         tier.getDefaultAttractionRange(),
                         tier.getDefaultAttractionSpeed(),
-                        tier.getDefaultFeedIntervalSeconds()
+                        tier.getDefaultFeedIntervalSeconds(),
+                        9,
+                        2.0D
                 ));
                 continue;
             }
@@ -166,11 +207,17 @@ public class FeedstationSettings {
                     Math.max(1.0D, tierSection.getDouble("radius", tier.getDefaultRadius())),
                     Math.max(1.0D, tierSection.getDouble("attraction-range", tier.getDefaultAttractionRange())),
                     Math.max(0.01D, tierSection.getDouble("attraction-speed", tier.getDefaultAttractionSpeed())),
-                    Math.max(1, tierSection.getInt("feed-interval-seconds", tier.getDefaultFeedIntervalSeconds()))
+                    Math.max(1, tierSection.getInt("feed-interval-seconds", tier.getDefaultFeedIntervalSeconds())),
+                    clampStorageSlots(tierSection.getInt("storage-slots", 9)),
+                    Math.max(0.5D, tierSection.getDouble("eat-distance", 2.0D))
             ));
         }
 
         return result;
+    }
+
+    private int clampStorageSlots(int slots) {
+        return Math.max(1, Math.min(54, slots));
     }
 
     private Map<FeederTier, FeederTier> loadUpgradeChain(ConfigurationSection section) {
@@ -327,8 +374,16 @@ public class FeedstationSettings {
         return infoSlot;
     }
 
-    public List<Integer> getStorageSlots() {
-        return Collections.unmodifiableList(storageSlots);
+    public int getOpenStorageSlot() {
+        return openStorageSlot;
+    }
+
+    public int getShowRadiusSlot() {
+        return showRadiusSlot;
+    }
+
+    public int getToggleHologramSlot() {
+        return toggleHologramSlot;
     }
 
     public int getUpgradeSlot() {
@@ -345,6 +400,86 @@ public class FeedstationSettings {
 
     public List<String> getInfoLore() {
         return Collections.unmodifiableList(infoLore);
+    }
+
+    public Material getStorageButtonMaterial() {
+        return storageButtonMaterial;
+    }
+
+    public String getStorageButtonName() {
+        return storageButtonName;
+    }
+
+    public List<String> getStorageButtonLore() {
+        return Collections.unmodifiableList(storageButtonLore);
+    }
+
+    public Material getRadiusButtonMaterial() {
+        return radiusButtonMaterial;
+    }
+
+    public String getRadiusButtonName() {
+        return radiusButtonName;
+    }
+
+    public List<String> getRadiusButtonLore() {
+        return Collections.unmodifiableList(radiusButtonLore);
+    }
+
+    public Material getHologramEnabledMaterial() {
+        return hologramEnabledMaterial;
+    }
+
+    public Material getHologramDisabledMaterial() {
+        return hologramDisabledMaterial;
+    }
+
+    public String getHologramButtonName() {
+        return hologramButtonName;
+    }
+
+    public List<String> getHologramEnabledLore() {
+        return Collections.unmodifiableList(hologramEnabledLore);
+    }
+
+    public List<String> getHologramDisabledLore() {
+        return Collections.unmodifiableList(hologramDisabledLore);
+    }
+
+    public String getStorageGuiTitle() {
+        return storageGuiTitle;
+    }
+
+    public Material getBlockedSlotMaterial() {
+        return blockedSlotMaterial;
+    }
+
+    public String getBlockedSlotName() {
+        return blockedSlotName;
+    }
+
+    public List<String> getBlockedSlotLore() {
+        return Collections.unmodifiableList(blockedSlotLore);
+    }
+
+    public long getRadiusPreviewDurationTicks() {
+        return radiusPreviewDurationTicks;
+    }
+
+    public Particle getRadiusPreviewParticle() {
+        return radiusPreviewParticle;
+    }
+
+    public int getRadiusPreviewCountPerPoint() {
+        return radiusPreviewCountPerPoint;
+    }
+
+    public int getRadiusPreviewPoints() {
+        return radiusPreviewPoints;
+    }
+
+    public double getRadiusPreviewYOffset() {
+        return radiusPreviewYOffset;
     }
 
     public String getUpgradeEnabledName() {
@@ -442,7 +577,9 @@ public class FeedstationSettings {
             double radius,
             double attractionRange,
             double attractionSpeed,
-            int feedIntervalSeconds
+            int feedIntervalSeconds,
+            int storageSlots,
+            double eatDistance
     ) {}
 
     public record UpgradeCost(

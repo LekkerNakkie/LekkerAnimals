@@ -5,8 +5,11 @@ item:
   name: "&b{tier_display} &7Voederbak"
   lore:
     - "&7Owner: &f{owner}"
-    - "&7Capaciteit: &f{max_animals} dieren"
+    - "&7Dieren: &f{max_animals}"
     - "&7Radius: &f{radius} blocks"
+    - "&7Voedsel slots: &f{storage_slots}"
+    - "&7Voedsel in bak: &f{food_amount}"
+    - "&7Hologram: {hologram_status}"
     - ""
     - "&ePlaats dit item om een voederbak te maken."
 
@@ -25,13 +28,15 @@ gui:
   rows: 3
 
   filler:
-    enabled: true
+    enabled: false
     material: "LIGHT_BLUE_STAINED_GLASS_PANE"
     name: " "
 
   slots:
-    info: 11
-    storage: [12, 13, 14, 15, 16]
+    info: 10
+    open-storage: 12
+    show-radius: 14
+    toggle-hologram: 16
     upgrade: 22
 
   info-item:
@@ -41,9 +46,40 @@ gui:
       - "&7Owner: &f{owner}"
       - "&7Tier: {tier_display}"
       - "&7Radius: &f{radius}"
+      - "&7Eat distance: &f{eat_distance}"
       - "&7Max animals: &f{max_animals}"
       - "&7Nearby animals: &f{nearby_animals}"
       - "&7Stored food: &f{food_amount}"
+      - "&7Voedsel slots: &f{storage_slots}"
+      - "&7Hologram: {hologram_status}"
+
+  storage-button:
+    material: "CHEST"
+    name: "&bOpen inhoud"
+    lore:
+      - "&7Klik om de inhoud"
+      - "&7van deze voederbak te openen."
+      - "&7Slots: &f{storage_slots}"
+      - "&7Voedsel: &f{food_amount}"
+
+  radius-button:
+    material: "BLAZE_POWDER"
+    name: "&bToon radius"
+    lore:
+      - "&7Klik om tijdelijk"
+      - "&7de radius te tonen."
+      - "&7Radius: &f{radius}"
+
+  hologram-button:
+    enabled-material: "LIME_DYE"
+    disabled-material: "GRAY_DYE"
+    name: "&bHologram"
+    enabled-lore:
+      - "&7Status: &aAAN"
+      - "&eKlik om uit te zetten."
+    disabled-lore:
+      - "&7Status: &cUIT"
+      - "&eKlik om aan te zetten."
 
   upgrade-item:
     enabled-name: "&aUpgrade feedstation"
@@ -57,46 +93,73 @@ gui:
       - "&7Upgrades zijn uitgeschakeld"
       - "&7in feedstation.yml"
 
+storage-gui:
+  title: "&bFeedstation Inhoud &8• &f{tier_display}"
+
+  blocked-slot-item:
+    material: "RED_STAINED_GLASS_PANE"
+    name: "&cBlocked slot"
+    lore:
+      - "&7Deze slot is niet beschikbaar"
+      - "&7voor dit tier."
+
+radius-preview:
+  duration-ticks: 100
+  particle: "END_ROD"
+  count-per-point: 1
+  points: 80
+  y-offset: 0.15
+
 tiers:
   COMMON:
     display: "&fCommon"
     max-animals: 2
     radius: 8
+    storage-slots: 2
     attraction-range: 12
     attraction-speed: 0.22
     feed-interval-seconds: 20
+    eat-distance: 2.2
 
   UNCOMMON:
     display: "&aUncommon"
     max-animals: 5
     radius: 10
+    storage-slots: 5
     attraction-range: 14
     attraction-speed: 0.24
     feed-interval-seconds: 18
+    eat-distance: 2.2
 
   RARE:
     display: "&dRare"
     max-animals: 7
     radius: 12
+    storage-slots: 7
     attraction-range: 16
     attraction-speed: 0.26
     feed-interval-seconds: 16
+    eat-distance: 2.4
 
   ULTRA:
     display: "&5Ultra"
     max-animals: 10
     radius: 14
+    storage-slots: 10
     attraction-range: 18
     attraction-speed: 0.28
     feed-interval-seconds: 14
+    eat-distance: 2.5
 
   LEGENDARY:
     display: "&6Legendary"
     max-animals: 15
     radius: 16
+    storage-slots: 15
     attraction-range: 20
     attraction-speed: 0.30
     feed-interval-seconds: 12
+    eat-distance: 2.5
 
 upgrades:
   enabled: true
@@ -130,8 +193,6 @@ feeding:
   prioritize-lowest-hunger: true
 
 particles:
-  enabled: true
-
   idle:
     enabled: true
     particle: "HAPPY_VILLAGER"

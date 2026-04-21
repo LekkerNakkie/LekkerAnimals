@@ -95,4 +95,8 @@ feedstation:
   no-food: "{prefix}&cEr zit geen bruikbaar eten in deze voederbak."
   upgrades-disabled: "{prefix}&cUpgrades zijn uitgeschakeld."
   already-max-tier: "{prefix}&cDeze voederbak heeft al het hoogste tier."
+  not-enough-upgrade-items: "{prefix}&cJe hebt niet genoeg upgrade items."
   upgrade-success: "{prefix}&aVoederbak geupgrade naar {tier_display}&a."
+  radius-shown: "{prefix}&bDe radius van je voederbak wordt tijdelijk getoond."
+  hologram-enabled: "{prefix}&aHologram van de voederbak staat nu aan."
+  hologram-disabled: "{prefix}&cHologram van de voederbak staat nu uit."

@@ -6,7 +6,6 @@ import me.lekkernakkie.lekkeranimal.config.FeedstationSettings;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -31,7 +30,8 @@ public final class FeederItemUtil {
                                              UUID ownerUuid,
                                              String ownerName,
                                              FeederTier tier,
-                                             List<ItemStack> storedFood) {
+                                             List<ItemStack> storedFood,
+                                             boolean hologramEnabled) {
         FeedstationSettings settings = plugin.getConfigManager().getFeedstationSettings();
         FeedstationSettings.TierSettings tierSettings = settings.getTierSettings(tier);
 
@@ -46,7 +46,10 @@ public final class FeederItemUtil {
         String tierDisplay = tierSettings != null ? tierSettings.display() : tier.name();
         int maxAnimals = tierSettings != null ? tierSettings.maxAnimals() : 0;
         double radius = tierSettings != null ? tierSettings.radius() : 0.0D;
+        int storageSlots = tierSettings != null ? tierSettings.storageSlots() : 0;
         int foodAmount = countFood(storedFood);
+
+        String hologramStatus = hologramEnabled ? "&aAAN" : "&cUIT";
 
         String displayName = settings.getItemName()
                 .replace("{owner}", ownerName != null ? ownerName : "Unknown")
@@ -54,7 +57,9 @@ public final class FeederItemUtil {
                 .replace("{tier_display}", tierDisplay)
                 .replace("{max_animals}", String.valueOf(maxAnimals))
                 .replace("{radius}", trimDouble(radius))
-                .replace("{food_amount}", String.valueOf(foodAmount));
+                .replace("{storage_slots}", String.valueOf(storageSlots))
+                .replace("{food_amount}", String.valueOf(foodAmount))
+                .replace("{hologram_status}", hologramStatus);
 
         meta.setDisplayName(ColorUtil.colorize(displayName));
 
@@ -66,7 +71,9 @@ public final class FeederItemUtil {
                             .replace("{tier_display}", tierDisplay)
                             .replace("{max_animals}", String.valueOf(maxAnimals))
                             .replace("{radius}", trimDouble(radius))
+                            .replace("{storage_slots}", String.valueOf(storageSlots))
                             .replace("{food_amount}", String.valueOf(foodAmount))
+                            .replace("{hologram_status}", hologramStatus)
             ));
         }
         meta.setLore(lore);
@@ -106,6 +113,11 @@ public final class FeederItemUtil {
                 new NamespacedKey(plugin, "feeder_stored_food"),
                 PersistentDataType.STRING,
                 serializeItemList(storedFood)
+        );
+        meta.getPersistentDataContainer().set(
+                new NamespacedKey(plugin, "feeder_hologram_enabled"),
+                PersistentDataType.BYTE,
+                hologramEnabled ? (byte) 1 : (byte) 0
         );
 
         item.setItemMeta(meta);
@@ -171,6 +183,19 @@ public final class FeederItemUtil {
         );
 
         return raw != null ? raw : "";
+    }
+
+    public static boolean isHologramEnabled(LekkerAnimal plugin, ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return true;
+        }
+
+        Byte raw = item.getItemMeta().getPersistentDataContainer().get(
+                new NamespacedKey(plugin, "feeder_hologram_enabled"),
+                PersistentDataType.BYTE
+        );
+
+        return raw == null || raw == (byte) 1;
     }
 
     public static List<ItemStack> getStoredFood(LekkerAnimal plugin, ItemStack item) {

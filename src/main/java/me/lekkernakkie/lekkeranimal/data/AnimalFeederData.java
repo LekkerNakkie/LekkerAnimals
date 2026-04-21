@@ -15,6 +15,7 @@ public class AnimalFeederData {
     private final UUID ownerUuid;
     private String ownerName;
     private FeederTier tier;
+    private boolean hologramEnabled;
     private String worldName;
     private double x;
     private double y;
@@ -25,12 +26,14 @@ public class AnimalFeederData {
                             UUID ownerUuid,
                             String ownerName,
                             FeederTier tier,
+                            boolean hologramEnabled,
                             Location location,
                             List<ItemStack> storedFood) {
         this.feederUuid = feederUuid;
         this.ownerUuid = ownerUuid;
         this.ownerName = ownerName;
         this.tier = tier;
+        this.hologramEnabled = hologramEnabled;
         this.worldName = location.getWorld() != null ? location.getWorld().getName() : null;
         this.x = location.getX();
         this.y = location.getY();
@@ -68,6 +71,14 @@ public class AnimalFeederData {
 
     public void setTier(FeederTier tier) {
         this.tier = tier;
+    }
+
+    public boolean isHologramEnabled() {
+        return hologramEnabled;
+    }
+
+    public void setHologramEnabled(boolean hologramEnabled) {
+        this.hologramEnabled = hologramEnabled;
     }
 
     public String getWorldName() {

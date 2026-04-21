@@ -54,6 +54,7 @@ public class FeedstationBlockListener implements Listener {
         FeederTier tier = FeederItemUtil.getTier(plugin, item);
         UUID ownerUuid = FeederItemUtil.getOwnerUuid(plugin, item);
         String ownerName = FeederItemUtil.getOwnerName(plugin, item);
+        boolean hologramEnabled = FeederItemUtil.isHologramEnabled(plugin, item);
         List<ItemStack> storedFood = FeederItemUtil.getStoredFood(plugin, item);
 
         if (tier == null || ownerUuid == null) {
@@ -66,6 +67,7 @@ public class FeedstationBlockListener implements Listener {
                 ownerUuid,
                 ownerName,
                 tier,
+                hologramEnabled,
                 block.getLocation(),
                 storedFood
         );
@@ -95,12 +97,15 @@ public class FeedstationBlockListener implements Listener {
         Player player = event.getPlayer();
         block.setType(Material.AIR);
 
+        plugin.getFeedstationManager().dropStoredFood(block.getWorld(), block.getLocation(), feeder);
+
         ItemStack item = FeederItemUtil.createFeederItem(
                 plugin,
                 feeder.getOwnerUuid(),
                 feeder.getOwnerName(),
                 feeder.getTier(),
-                feeder.getStoredFood()
+                List.of(),
+                feeder.isHologramEnabled()
         );
 
         if (player.getGameMode() != GameMode.CREATIVE) {
@@ -135,12 +140,18 @@ public class FeedstationBlockListener implements Listener {
         }
 
         event.setCancelled(true);
-        plugin.getFeedstationManager().openMenu(event.getPlayer(), feeder);
+        plugin.getFeedstationManager().openMainMenu(event.getPlayer(), feeder);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getView().getTopInventory().getHolder() instanceof FeedstationMenuHolder holder)) {
+            return;
+        }
+
+        AnimalFeederData feeder = plugin.getFeedstationManager().getFeeder(holder.getFeederUuid());
+        if (feeder == null) {
+            event.setCancelled(true);
             return;
         }
 
@@ -150,8 +161,52 @@ public class FeedstationBlockListener implements Listener {
             return;
         }
 
+        if (holder.getScreen() == FeedstationMenuHolder.Screen.MAIN) {
+            event.setCancelled(true);
+
+            if (!clicked.equals(top)) {
+                return;
+            }
+
+            FeedstationSettings settings = plugin.getConfigManager().getFeedstationSettings();
+
+            if (event.getSlot() == settings.getOpenStorageSlot()) {
+                plugin.getFeedstationManager().openStorageMenu((Player) event.getWhoClicked(), feeder);
+                return;
+            }
+
+            if (event.getSlot() == settings.getShowRadiusSlot()) {
+                plugin.getFeedstationManager().showRadiusPreview((Player) event.getWhoClicked(), feeder);
+                plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.radius-shown");
+                return;
+            }
+
+            if (event.getSlot() == settings.getToggleHologramSlot()) {
+                feeder.setHologramEnabled(!feeder.isHologramEnabled());
+                plugin.getFeedstationManager().openMainMenu((Player) event.getWhoClicked(), feeder);
+
+                if (feeder.isHologramEnabled()) {
+                    plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.hologram-enabled");
+                } else {
+                    plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.hologram-disabled");
+                }
+                return;
+            }
+
+            if (event.getSlot() == settings.getUpgradeSlot()) {
+                plugin.getFeedstationManager().tryUpgrade((Player) event.getWhoClicked(), feeder);
+                plugin.getFeedstationManager().openMainMenu((Player) event.getWhoClicked(), feeder);
+            }
+
+            return;
+        }
+
+        if (holder.getScreen() != FeedstationMenuHolder.Screen.STORAGE) {
+            return;
+        }
+
         if (clicked.equals(top)) {
-            if (!plugin.getFeedstationManager().isStorageSlot(event.getSlot())) {
+            if (!plugin.getFeedstationManager().isStorageSlot(feeder, event.getSlot())) {
                 event.setCancelled(true);
                 return;
             }
@@ -183,26 +238,24 @@ public class FeedstationBlockListener implements Listener {
             if (!plugin.getFeedstationManager().isPotentialAnimalFood(current.getType())) {
                 event.setCancelled(true);
                 plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.invalid-food-item");
-                return;
-            }
-
-            ItemStack source = current.clone();
-            boolean moved = plugin.getFeedstationManager().moveToStorage(top, source);
-            if (moved) {
-                event.setCancelled(true);
-                if (source.getAmount() <= 0) {
-                    clicked.setItem(event.getSlot(), null);
-                } else {
-                    current.setAmount(source.getAmount());
-                    clicked.setItem(event.getSlot(), current);
-                }
             }
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getView().getTopInventory().getHolder() instanceof FeedstationMenuHolder)) {
+        if (!(event.getView().getTopInventory().getHolder() instanceof FeedstationMenuHolder holder)) {
+            return;
+        }
+
+        if (holder.getScreen() != FeedstationMenuHolder.Screen.STORAGE) {
+            event.setCancelled(true);
+            return;
+        }
+
+        AnimalFeederData feeder = plugin.getFeedstationManager().getFeeder(holder.getFeederUuid());
+        if (feeder == null) {
+            event.setCancelled(true);
             return;
         }
 
@@ -211,22 +264,21 @@ public class FeedstationBlockListener implements Listener {
                 continue;
             }
 
-            if (!plugin.getFeedstationManager().isStorageSlot(rawSlot)) {
+            if (!plugin.getFeedstationManager().isStorageSlot(feeder, rawSlot)) {
                 event.setCancelled(true);
                 return;
             }
+        }
 
-            ItemStack oldCursor = event.getOldCursor();
-            if (FeederItemUtil.isFeederItem(plugin, oldCursor)) {
-                event.setCancelled(true);
-                return;
-            }
+        ItemStack oldCursor = event.getOldCursor();
+        if (FeederItemUtil.isFeederItem(plugin, oldCursor)) {
+            event.setCancelled(true);
+            return;
+        }
 
-            if (oldCursor != null && !oldCursor.getType().isAir() && !plugin.getFeedstationManager().isPotentialAnimalFood(oldCursor.getType())) {
-                event.setCancelled(true);
-                plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.invalid-food-item");
-                return;
-            }
+        if (oldCursor != null && !oldCursor.getType().isAir() && !plugin.getFeedstationManager().isPotentialAnimalFood(oldCursor.getType())) {
+            event.setCancelled(true);
+            plugin.getConfigManager().getLangSettings().send((Player) event.getWhoClicked(), "feedstation.invalid-food-item");
         }
     }
 
@@ -236,11 +288,15 @@ public class FeedstationBlockListener implements Listener {
             return;
         }
 
+        if (holder.getScreen() != FeedstationMenuHolder.Screen.STORAGE) {
+            return;
+        }
+
         AnimalFeederData feeder = plugin.getFeedstationManager().getFeeder(holder.getFeederUuid());
         if (feeder == null) {
             return;
         }
 
-        plugin.getFeedstationManager().saveMenu(event.getInventory(), feeder);
+        plugin.getFeedstationManager().saveStorageMenu(event.getInventory(), feeder);
     }
 }

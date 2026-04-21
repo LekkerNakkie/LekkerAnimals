@@ -79,6 +79,10 @@ public class HarvestManager {
             giveOrDrop(player, item);
         }
 
+        if (entity instanceof Sheep sheep) {
+            sheep.setSheared(true);
+        }
+
         data.setHarvestProgressMillis(0L);
         plugin.getDataManager().saveAnimal(data);
 
@@ -144,6 +148,8 @@ public class HarvestManager {
                         normalizeRarity(drop.getRarity()),
                         profile.getDisplayName()
                 ));
+            } else if (isDynamicSheepWoolPreview(drop, profile)) {
+                name = ColorUtil.colorize("&fWool &7(matches sheep color)");
             } else if (drop.getDisplayName() != null && !drop.getDisplayName().isBlank()) {
                 name = ColorUtil.colorize(drop.getDisplayName());
             } else {
@@ -154,6 +160,15 @@ public class HarvestManager {
         }
 
         return String.join("\n", parts);
+    }
+
+    private boolean isDynamicSheepWoolPreview(HarvestDrop drop, AnimalProfile profile) {
+        if (drop == null || profile == null) {
+            return false;
+        }
+
+        return profile.getEntityType() == org.bukkit.entity.EntityType.SHEEP
+                && drop.getMaterial() == Material.WHITE_WOOL;
     }
 
     private String buildPreviewAmountText(HarvestDrop drop) {

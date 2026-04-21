@@ -7,6 +7,7 @@ import me.lekkernakkie.lekkeranimal.config.LangSettings;
 import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.HarvestDrop;
 import me.lekkernakkie.lekkeranimal.data.HarvestLevelProfile;
+import me.lekkernakkie.lekkeranimal.util.ColorUtil;
 import me.lekkernakkie.lekkeranimal.util.FeederItemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

@@ -30,6 +30,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -57,6 +58,7 @@ public class GuiManager {
     private final LekkerAnimal plugin;
     private final NamespacedKey animalsListEntityKey;
     private final NamespacedKey animalsInfoTypeKey;
+    private final Map<EntityType, ItemStack> cachedAnimalHeads = new EnumMap<>(EntityType.class);
 
     public GuiManager(LekkerAnimal plugin) {
         this.plugin = plugin;
@@ -173,7 +175,7 @@ public class GuiManager {
 
         fillInventory(inventory, filler);
 
-        inventory.setItem(13, createAnimalDisplayIcon(profile));
+        inventory.setItem(13, createAnimalDisplayHead(profile));
 
         List<String> bondLore = new ArrayList<>();
         bondLore.add("&7Item: &f" + formatMaterial(profile.getBondItem()));
@@ -572,10 +574,9 @@ public class GuiManager {
     }
 
     private ItemStack createAnimalInfoMenuItem(AnimalProfile profile) {
-        Material icon = getEntityIcon(profile.getEntityType());
-
-        ItemStack item = new ItemStack(icon);
+        ItemStack item = getCachedAnimalHead(profile.getEntityType()).clone();
         ItemMeta meta = item.getItemMeta();
+
         if (meta != null) {
             meta.setDisplayName(ColorUtil.colorize("&b" + profile.getDisplayName()));
             meta.setLore(colorizeList(List.of(
@@ -593,12 +594,18 @@ public class GuiManager {
         return item;
     }
 
-    private ItemStack createAnimalDisplayIcon(AnimalProfile profile) {
-        return createSimpleItem(
-                getEntityIcon(profile.getEntityType()),
-                "&b" + profile.getDisplayName(),
-                List.of()
-        );
+    private ItemStack createAnimalDisplayHead(AnimalProfile profile) {
+        ItemStack item = getCachedAnimalHead(profile.getEntityType()).clone();
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ColorUtil.colorize("&b" + profile.getDisplayName()));
+            meta.setLore(List.of());
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
+        }
+
+        return item;
     }
 
     private ItemStack createAnimalListItem(AnimalData data, boolean coOwnerView) {
@@ -625,8 +632,9 @@ public class GuiManager {
         lore.add("");
         lore.add(loaded ? "&aKlik om te openen" : "&cDit dier is momenteel niet geladen");
 
-        ItemStack item = new ItemStack(getEntityIcon(data.getEntityType()));
+        ItemStack item = getCachedAnimalHead(data.getEntityType()).clone();
         ItemMeta meta = item.getItemMeta();
+
         if (meta != null) {
             meta.setDisplayName(ColorUtil.colorize(displayName));
             meta.setLore(colorizeList(lore));
@@ -642,7 +650,54 @@ public class GuiManager {
         return item;
     }
 
-    private Material getEntityIcon(EntityType entityType) {
+    private ItemStack getCachedAnimalHead(EntityType entityType) {
+        ItemStack cached = cachedAnimalHeads.get(entityType);
+        if (cached != null) {
+            return cached;
+        }
+
+        String headOwner = getHeadOwnerForType(entityType);
+        String animalName = formatMaterialFromEntityType(entityType.name());
+
+        ItemStack built;
+        if (!headOwner.isBlank()) {
+            built = plugin.getHarvestManager().createPersistentHeadItem(
+                    "COMMON",
+                    entityType.name(),
+                    animalName,
+                    headOwner,
+                    ""
+            );
+        } else {
+            built = new ItemStack(getFallbackEntityIcon(entityType));
+        }
+
+        ItemMeta meta = built.getItemMeta();
+        if (meta != null) {
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            built.setItemMeta(meta);
+        }
+
+        cachedAnimalHeads.put(entityType, built);
+        return built;
+    }
+
+    private String getHeadOwnerForType(EntityType entityType) {
+        if (entityType == null) {
+            return "";
+        }
+
+        return switch (entityType) {
+            case COW -> "MHF_Cow";
+            case PIG -> "MHF_Pig";
+            case CHICKEN -> "MHF_Chicken";
+            case SHEEP -> "MHF_Sheep";
+            case MOOSHROOM -> "MHF_MushroomCow";
+            default -> "";
+        };
+    }
+
+    private Material getFallbackEntityIcon(EntityType entityType) {
         if (entityType == null) {
             return Material.WHEAT;
         }
@@ -653,7 +708,7 @@ public class GuiManager {
         }
 
         return switch (entityType) {
-            case COW, MUSHROOM_COW -> Material.HAY_BLOCK;
+            case COW, MOOSHROOM -> Material.HAY_BLOCK;
             case PIG -> Material.CARROT;
             case CHICKEN -> Material.EGG;
             case SHEEP -> Material.WHITE_WOOL;

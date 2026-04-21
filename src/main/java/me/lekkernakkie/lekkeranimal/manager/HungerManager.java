@@ -8,6 +8,7 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Sheep;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Collection;
@@ -95,6 +96,7 @@ public class HungerManager {
 
             if (mainSettings.isOnlineOwnerActivityEnabled() && !animalActive) {
                 plugin.getHologramManager().refresh(entity);
+                refreshSheepWoolVisual(data, profile, entity);
                 continue;
             }
 
@@ -121,6 +123,7 @@ public class HungerManager {
             }
 
             plugin.getHologramManager().refresh(entity);
+            refreshSheepWoolVisual(data, profile, entity);
 
             int warningThreshold = (int) Math.ceil(profile.getMaxHunger() * (mainSettings.getHungerWarningThresholdPercent() / 100.0));
 
@@ -149,6 +152,28 @@ public class HungerManager {
 
                 lastWarningTimes.remove(data.getEntityUuid());
                 livingEntity.setHealth(0.0);
+            }
+        }
+    }
+
+    private void refreshSheepWoolVisual(AnimalData data, AnimalProfile profile, Entity entity) {
+        if (!(entity instanceof Sheep sheep)) {
+            return;
+        }
+
+        if (profile == null || profile.getEntityType() != org.bukkit.entity.EntityType.SHEEP || !profile.isHarvestingEnabled()) {
+            return;
+        }
+
+        boolean ready = plugin.getHarvestManager().isReady(data, profile);
+
+        if (ready) {
+            if (sheep.isSheared()) {
+                sheep.setSheared(false);
+            }
+        } else {
+            if (!sheep.isSheared()) {
+                sheep.setSheared(true);
             }
         }
     }

@@ -7,24 +7,11 @@ description: Bond, feed and take care of your animals.
 softdepend: [Vault, ItemsAdder]
 
 commands:
-  lekkeranimals:
-    description: Main command
-    usage: /lekkeranimals
-    aliases: [la, lekkeranimal]
-
-  animalhead:
-    description: Give an animal head
-    usage: /animalhead <player> <animal> [amount] | /animalhead <player> <animal> <rarity> [amount]
-
-  animalheadsell:
-    description: Open the animal head sell menu
-    usage: /animalheadsell [player]
   animals:
-    description: Open your animals menu
+    description: Main animals command
     usage: /animals
-  animalfeeder:
-    description: Give an animal feeder
-    usage: /animalfeeder <player> <tier> [amount]
+    aliases: [lekkeranimals, lekkeranimal, la]
+
 permissions:
   lekkeranimal.admin:
     default: op
@@ -33,6 +20,7 @@ permissions:
       lekkeranimal.command.animalhead: true
       lekkeranimal.command.animalheadsell: true
       lekkeranimal.command.animalheadsell.others: true
+      lekkeranimal.command.animalfeeder: true
       lekkeranimal.coowners.slots.3: false
 
   lekkeranimal.command.help:

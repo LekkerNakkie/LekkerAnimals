@@ -1,10 +1,6 @@
 package me.lekkernakkie.lekkeranimal;
 
-import me.lekkernakkie.lekkeranimal.command.AnimalFeederCommand;
-import me.lekkernakkie.lekkeranimal.command.AnimalHeadCommand;
-import me.lekkernakkie.lekkeranimal.command.AnimalHeadSellCommand;
 import me.lekkernakkie.lekkeranimal.command.AnimalsCommand;
-import me.lekkernakkie.lekkeranimal.command.LekkerAnimalsCommand;
 import me.lekkernakkie.lekkeranimal.config.ConfigManager;
 import me.lekkernakkie.lekkeranimal.data.DataManager;
 import me.lekkernakkie.lekkeranimal.listener.AnimalDeathListener;
@@ -76,24 +72,11 @@ public class LekkerAnimal extends JavaPlugin {
 
         setupEconomy();
 
-        if (getCommand("lekkeranimals") != null) {
-            getCommand("lekkeranimals").setExecutor(new LekkerAnimalsCommand(this));
-        }
+        AnimalsCommand animalsCommand = new AnimalsCommand(this);
 
         if (getCommand("animals") != null) {
-            getCommand("animals").setExecutor(new AnimalsCommand(this));
-        }
-
-        if (getCommand("animalhead") != null) {
-            getCommand("animalhead").setExecutor(new AnimalHeadCommand(this));
-        }
-
-        if (getCommand("animalheadsell") != null) {
-            getCommand("animalheadsell").setExecutor(new AnimalHeadSellCommand(this));
-        }
-
-        if (getCommand("animalfeeder") != null) {
-            getCommand("animalfeeder").setExecutor(new AnimalFeederCommand(this));
+            getCommand("animals").setExecutor(animalsCommand);
+            getCommand("animals").setTabCompleter(animalsCommand);
         }
 
         getServer().getPluginManager().registerEvents(

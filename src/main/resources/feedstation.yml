@@ -16,7 +16,7 @@ item:
 hologram:
   enabled: true
   offset-y: 1.4
-  refresh-ticks: 40
+  refresh-ticks: 20
   visible-radius-blocks: 4.0
   lines:
     - "&b{tier_display} &7Voederbak"
@@ -47,10 +47,15 @@ gui:
       - "&7Owner: &f{owner}"
       - "&7Tier: {tier_display}"
       - "&7Radius: &f{radius}"
+      - "&7Eat distance: &f{eat_distance}"
       - "&7Max animals: &f{max_animals}"
+      - "&7Nearby animals: &f{nearby_animals}"
       - "&7Stored food: &f{food_amount}"
       - "&7Voedsel slots: &f{storage_slots}"
       - "&7Hologram: {hologram_status}"
+      - "&7Hologram zichtafstand: &f{hologram_visible_radius_blocks} blocks"
+      - "&7Walk repath: &f{walking_ai_repath_interval} ticks"
+      - "&7Walk hunger trigger: &f{walking_ai_hunger_threshold_percent}%"
 
   storage-button:
     material: "CHEST"
@@ -82,15 +87,15 @@ gui:
 
   upgrade-item:
     enabled-name: "&aUpgrade feedstation"
-    disabled-name: "&cUpgrades disabled"
     enabled-lore:
-      - "&7Next tier: {next_tier_display}"
-      - "&7Cost: &f{upgrade_item} x{upgrade_amount}"
+      - "&7Volgend tier: {next_tier_display}"
+      - "&7Benodigd: &f{upgrade_amount}x {upgrade_item}"
       - ""
       - "&eKlik om te upgraden."
+    disabled-name: "&cGeen upgrade beschikbaar"
     disabled-lore:
-      - "&7Upgrades zijn uitgeschakeld"
-      - "&7in feedstation.yml"
+      - "&7Deze voederbak zit al"
+      - "&7op het hoogste tier."
 
 storage-gui:
   title: "&bFeedstation Inhoud &8• &f{tier_display}"
@@ -108,6 +113,22 @@ radius-preview:
   count-per-point: 1
   points: 80
   y-offset: 0.15
+
+task:
+  tick-interval: 20
+
+feeding:
+  only-when-hungry: true
+  consume-one-item-per-feed: true
+  skip-full-animals: true
+  prioritize-lowest-hunger: true
+
+walking-ai:
+  enabled: true
+  repath-interval-ticks: 60
+  hunger-threshold-percent: 85.0
+  random-target-radius: 1.2
+  min-distance-to-start: 2.0
 
 tiers:
   COMMON:
@@ -162,6 +183,7 @@ tiers:
 
 upgrades:
   enabled: true
+
   chain:
     COMMON: "UNCOMMON"
     UNCOMMON: "RARE"
@@ -171,52 +193,43 @@ upgrades:
   costs:
     UNCOMMON:
       material: "IRON_INGOT"
-      amount: 16
+      amount: 8
     RARE:
       material: "GOLD_INGOT"
-      amount: 24
+      amount: 8
     ULTRA:
       material: "DIAMOND"
-      amount: 16
+      amount: 6
     LEGENDARY:
       material: "NETHERITE_INGOT"
-      amount: 4
-
-task:
-  tick-interval: 40
-
-feeding:
-  only-when-hungry: true
-  consume-one-item-per-feed: true
-  skip-full-animals: true
-  prioritize-lowest-hunger: true
+      amount: 2
 
 particles:
   idle:
     enabled: true
     particle: "HAPPY_VILLAGER"
     count: 2
-    spread-x: 0.25
-    spread-y: 0.15
-    spread-z: 0.25
+    spread-x: 0.2
+    spread-y: 0.1
+    spread-z: 0.2
     extra: 0.0
 
   feeding:
     enabled: true
     particle: "HEART"
-    count: 5
-    spread-x: 0.35
-    spread-y: 0.35
-    spread-z: 0.35
+    count: 2
+    spread-x: 0.2
+    spread-y: 0.2
+    spread-z: 0.2
     extra: 0.0
 
   attraction:
     enabled: true
     particle: "END_ROD"
     count: 2
-    spread-x: 0.15
-    spread-y: 0.15
-    spread-z: 0.15
+    spread-x: 0.2
+    spread-y: 0.2
+    spread-z: 0.2
     extra: 0.0
 
 sounds:

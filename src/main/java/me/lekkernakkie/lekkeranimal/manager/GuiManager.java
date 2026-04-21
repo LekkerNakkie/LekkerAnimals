@@ -40,6 +40,20 @@ public class GuiManager {
     private static final int ANIMALS_LIST_ROWS = 6;
     private static final int ANIMALS_LIST_PAGE_SIZE = 28;
 
+    private static final int[] ANIMALS_INFO_SLOTS = {10, 11, 12, 13, 14, 15, 16};
+    private static final int[] ANIMALS_LIST_SLOTS = {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24, 25,
+            28, 29, 30, 31, 32, 33, 34,
+            37, 38, 39, 40, 41, 42, 43
+    };
+
+    private static final Comparator<AnimalData> ANIMALS_LIST_COMPARATOR = Comparator
+            .comparing((AnimalData data) -> data.getWorldName() == null ? "" : data.getWorldName(), String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(data -> data.getEntityType().name(), String.CASE_INSENSITIVE_ORDER)
+            .thenComparingInt(AnimalData::getLevel)
+            .reversed();
+
     private final LekkerAnimal plugin;
     private final NamespacedKey animalsListEntityKey;
     private final NamespacedKey animalsInfoTypeKey;
@@ -61,19 +75,15 @@ public class GuiManager {
                 ColorUtil.colorize("&bAnimals")
         );
 
-        ItemStack filler = createItem(
-                "LIGHT_BLUE_STAINED_GLASS_PANE",
+        ItemStack filler = createSimpleItem(
                 Material.LIGHT_BLUE_STAINED_GLASS_PANE,
                 " ",
                 List.of()
         );
 
-        for (int i = 0; i < inventory.getSize(); i++) {
-            inventory.setItem(i, filler);
-        }
+        fillInventory(inventory, filler);
 
-        inventory.setItem(11, createItem(
-                "BOOK",
+        inventory.setItem(11, createSimpleItem(
                 Material.BOOK,
                 "&bInformatie",
                 List.of(
@@ -85,8 +95,7 @@ public class GuiManager {
                 )
         ));
 
-        inventory.setItem(15, createItem(
-                "LEAD",
+        inventory.setItem(15, createSimpleItem(
                 Material.LEAD,
                 "&bMijn Animals",
                 List.of(
@@ -109,35 +118,29 @@ public class GuiManager {
                 ColorUtil.colorize("&bAnimals Informatie")
         );
 
-        ItemStack filler = createItem(
-                "LIGHT_BLUE_STAINED_GLASS_PANE",
+        ItemStack filler = createSimpleItem(
                 Material.LIGHT_BLUE_STAINED_GLASS_PANE,
                 " ",
                 List.of()
         );
 
-        for (int i = 0; i < inventory.getSize(); i++) {
-            inventory.setItem(i, filler);
-        }
+        fillInventory(inventory, filler);
 
         List<AnimalProfile> profiles = plugin.getConfigManager().getAnimalsSettings().getProfiles().values().stream()
                 .filter(AnimalProfile::isEnabled)
                 .sorted(Comparator.comparing(AnimalProfile::getDisplayName, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
 
-        int[] slots = {10, 11, 12, 13, 14, 15, 16};
-
         int index = 0;
         for (AnimalProfile profile : profiles) {
-            if (index >= slots.length) {
+            if (index >= ANIMALS_INFO_SLOTS.length) {
                 break;
             }
 
-            inventory.setItem(slots[index++], createAnimalInfoMenuItem(profile));
+            inventory.setItem(ANIMALS_INFO_SLOTS[index++], createAnimalInfoMenuItem(profile));
         }
 
-        inventory.setItem(22, createItem(
-                "ARROW",
+        inventory.setItem(22, createSimpleItem(
                 Material.ARROW,
                 "&cTerug",
                 List.of("&7Terug naar het hoofdmenu")
@@ -162,26 +165,22 @@ public class GuiManager {
                 ColorUtil.colorize("&bInfo &8• &f" + profile.getDisplayName())
         );
 
-        ItemStack filler = createItem(
-                "LIGHT_BLUE_STAINED_GLASS_PANE",
+        ItemStack filler = createSimpleItem(
                 Material.LIGHT_BLUE_STAINED_GLASS_PANE,
                 " ",
                 List.of()
         );
 
-        for (int i = 0; i < inventory.getSize(); i++) {
-            inventory.setItem(i, filler);
-        }
+        fillInventory(inventory, filler);
 
-        inventory.setItem(13, createAnimalDisplayHead(profile));
+        inventory.setItem(13, createAnimalDisplayIcon(profile));
 
         List<String> bondLore = new ArrayList<>();
         bondLore.add("&7Item: &f" + formatMaterial(profile.getBondItem()));
         bondLore.add("&7Hoeveelheid: &f" + profile.getRequiredBondAmount());
         bondLore.add("&7Max level: &f" + profile.getMaxLevel());
 
-        inventory.setItem(20, createItem(
-                "LEAD",
+        inventory.setItem(20, createSimpleItem(
                 Material.LEAD,
                 "&bBond Informatie",
                 bondLore
@@ -200,8 +199,7 @@ public class GuiManager {
             }
         }
 
-        inventory.setItem(22, createItem(
-                "GOLDEN_CARROT",
+        inventory.setItem(22, createSimpleItem(
                 Material.GOLDEN_CARROT,
                 "&bFeed Items",
                 feedLore
@@ -228,15 +226,13 @@ public class GuiManager {
             }
         }
 
-        inventory.setItem(24, createItem(
-                "EXPERIENCE_BOTTLE",
+        inventory.setItem(24, createSimpleItem(
                 Material.EXPERIENCE_BOTTLE,
                 "&bLevel Kosten",
                 levelLore
         ));
 
-        inventory.setItem(36, createItem(
-                "ARROW",
+        inventory.setItem(36, createSimpleItem(
                 Material.ARROW,
                 "&cTerug",
                 List.of("&7Terug naar diereninformatie")
@@ -299,9 +295,7 @@ public class GuiManager {
                     gui.getFillerName(),
                     List.of()
             );
-            for (int i = 0; i < inventory.getSize(); i++) {
-                inventory.setItem(i, filler);
-            }
+            fillInventory(inventory, filler);
         }
 
         inventory.setItem(gui.getOwnerSlot(), createOwnerItem(data, profile, gui));
@@ -314,8 +308,7 @@ public class GuiManager {
         }
 
         if (openedFromAnimalsMenu) {
-            inventory.setItem(18, createItem(
-                    "ARROW",
+            inventory.setItem(18, createSimpleItem(
                     Material.ARROW,
                     "&cTerug",
                     List.of("&7Terug naar jouw dieren")
@@ -330,38 +323,8 @@ public class GuiManager {
             return;
         }
 
-        List<AnimalData> source = new ArrayList<>();
-
-        for (AnimalData data : plugin.getAnimalManager().getAllBondedAnimals()) {
-            if (coOwnerView) {
-                if (data.isCoOwner(player.getUniqueId())) {
-                    source.add(data);
-                }
-            } else {
-                if (data.isOwner(player.getUniqueId())) {
-                    source.add(data);
-                }
-            }
-        }
-
-        for (AnimalData data : plugin.getAnimalManager().getAllPendingAnimals()) {
-            if (coOwnerView) {
-                if (data.isCoOwner(player.getUniqueId())) {
-                    source.add(data);
-                }
-            } else {
-                if (data.isOwner(player.getUniqueId())) {
-                    source.add(data);
-                }
-            }
-        }
-
-        source.sort(Comparator
-                .comparing((AnimalData data) -> data.getWorldName() == null ? "" : data.getWorldName(), String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(data -> data.getEntityType().name(), String.CASE_INSENSITIVE_ORDER)
-                .thenComparingInt(AnimalData::getLevel)
-                .reversed()
-        );
+        List<AnimalData> source = collectAnimalsForPlayer(player, coOwnerView);
+        source.sort(ANIMALS_LIST_COMPARATOR);
 
         int maxPage = Math.max(0, (source.size() - 1) / ANIMALS_LIST_PAGE_SIZE);
         int currentPage = Math.max(0, Math.min(page, maxPage));
@@ -376,23 +339,18 @@ public class GuiManager {
                 ColorUtil.colorize(title)
         );
 
-        ItemStack filler = createItem(
-                "LIGHT_BLUE_STAINED_GLASS_PANE",
+        ItemStack filler = createSimpleItem(
                 Material.LIGHT_BLUE_STAINED_GLASS_PANE,
                 " ",
                 List.of()
         );
-
-        for (int i = 0; i < inventory.getSize(); i++) {
-            inventory.setItem(i, filler);
-        }
+        fillInventory(inventory, filler);
 
         inventory.setItem(45, createTabItem(!coOwnerView, "&bMijn dieren", Material.LEAD));
         inventory.setItem(46, createTabItem(coOwnerView, "&dCo-owner dieren", Material.NAME_TAG));
 
         if (currentPage > 0) {
-            inventory.setItem(48, createItem(
-                    "ARROW",
+            inventory.setItem(48, createSimpleItem(
                     Material.ARROW,
                     "&bVorige pagina",
                     List.of("&7Ga naar de vorige pagina")
@@ -400,16 +358,14 @@ public class GuiManager {
         }
 
         if (currentPage < maxPage) {
-            inventory.setItem(50, createItem(
-                    "ARROW",
+            inventory.setItem(50, createSimpleItem(
                     Material.ARROW,
                     "&bVolgende pagina",
                     List.of("&7Ga naar de volgende pagina")
             ));
         }
 
-        inventory.setItem(49, createItem(
-                "BOOK",
+        inventory.setItem(49, createSimpleItem(
                 Material.BOOK,
                 coOwnerView ? "&dCo-owner dieren" : "&bMijn dieren",
                 List.of(
@@ -421,17 +377,10 @@ public class GuiManager {
         int start = currentPage * ANIMALS_LIST_PAGE_SIZE;
         int end = Math.min(source.size(), start + ANIMALS_LIST_PAGE_SIZE);
 
-        int[] slots = {
-                10, 11, 12, 13, 14, 15, 16,
-                19, 20, 21, 22, 23, 24, 25,
-                28, 29, 30, 31, 32, 33, 34,
-                37, 38, 39, 40, 41, 42, 43
-        };
-
         int slotIndex = 0;
         for (int i = start; i < end; i++) {
             AnimalData data = source.get(i);
-            inventory.setItem(slots[slotIndex++], createAnimalListItem(data, coOwnerView));
+            inventory.setItem(ANIMALS_LIST_SLOTS[slotIndex++], createAnimalListItem(data, coOwnerView));
         }
 
         player.openInventory(inventory);
@@ -467,9 +416,7 @@ public class GuiManager {
                     gui.getCoOwnerFillerName(),
                     List.of()
             );
-            for (int i = 0; i < inventory.getSize(); i++) {
-                inventory.setItem(i, filler);
-            }
+            fillInventory(inventory, filler);
         }
 
         List<UUID> coOwners = new ArrayList<>(data.getCoOwnerUuids());
@@ -544,9 +491,7 @@ public class GuiManager {
                     gui.getCoOwnerFillerName(),
                     List.of()
             );
-            for (int i = 0; i < inventory.getSize(); i++) {
-                inventory.setItem(i, filler);
-            }
+            fillInventory(inventory, filler);
         }
 
         inventory.setItem(gui.getCoOwnerRemoveConfirmTargetSlot(), createCoOwnerHead(targetCoOwnerUuid, gui));
@@ -596,23 +541,40 @@ public class GuiManager {
         }
     }
 
-    private ItemStack createAnimalInfoMenuItem(AnimalProfile profile) {
-        String typeName = profile.getEntityType().name();
-        String headOwner = getHeadOwnerForType(typeName);
+    private List<AnimalData> collectAnimalsForPlayer(Player player, boolean coOwnerView) {
+        List<AnimalData> source = new ArrayList<>();
 
-        ItemStack item;
-        if (!headOwner.isBlank()) {
-            item = plugin.getHarvestManager().createPersistentHeadItem(
-                    "COMMON",
-                    typeName,
-                    profile.getDisplayName(),
-                    headOwner,
-                    ""
-            );
-        } else {
-            item = new ItemStack(Material.BOOK);
+        for (AnimalData data : plugin.getAnimalManager().getAllBondedAnimals()) {
+            if (coOwnerView) {
+                if (data.isCoOwner(player.getUniqueId())) {
+                    source.add(data);
+                }
+            } else {
+                if (data.isOwner(player.getUniqueId())) {
+                    source.add(data);
+                }
+            }
         }
 
+        for (AnimalData data : plugin.getAnimalManager().getAllPendingAnimals()) {
+            if (coOwnerView) {
+                if (data.isCoOwner(player.getUniqueId())) {
+                    source.add(data);
+                }
+            } else {
+                if (data.isOwner(player.getUniqueId())) {
+                    source.add(data);
+                }
+            }
+        }
+
+        return source;
+    }
+
+    private ItemStack createAnimalInfoMenuItem(AnimalProfile profile) {
+        Material icon = getEntityIcon(profile.getEntityType());
+
+        ItemStack item = new ItemStack(icon);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(ColorUtil.colorize("&b" + profile.getDisplayName()));
@@ -623,7 +585,7 @@ public class GuiManager {
             meta.getPersistentDataContainer().set(
                     animalsInfoTypeKey,
                     PersistentDataType.STRING,
-                    typeName
+                    profile.getEntityType().name()
             );
             item.setItemMeta(meta);
         }
@@ -631,36 +593,24 @@ public class GuiManager {
         return item;
     }
 
-    private ItemStack createAnimalDisplayHead(AnimalProfile profile) {
-        String typeName = profile.getEntityType().name();
-        String headOwner = getHeadOwnerForType(typeName);
-
-        if (!headOwner.isBlank()) {
-            return plugin.getHarvestManager().createPersistentHeadItem(
-                    "COMMON",
-                    typeName,
-                    profile.getDisplayName(),
-                    headOwner,
-                    ""
-            );
-        }
-
-        return createItem("BOOK", Material.BOOK, "&b" + profile.getDisplayName(), List.of());
+    private ItemStack createAnimalDisplayIcon(AnimalProfile profile) {
+        return createSimpleItem(
+                getEntityIcon(profile.getEntityType()),
+                "&b" + profile.getDisplayName(),
+                List.of()
+        );
     }
 
     private ItemStack createAnimalListItem(AnimalData data, boolean coOwnerView) {
         Entity entity = plugin.getServer().getEntity(data.getEntityUuid());
         boolean loaded = entity != null && entity.isValid() && !entity.isDead();
 
-        String typeName = data.getEntityType().name();
         String ownerName = data.getOwnerName() != null && !data.getOwnerName().isBlank()
                 ? data.getOwnerName()
                 : "Unknown";
         String world = data.getWorldName() != null ? data.getWorldName() : "Onbekend";
         String coords = (int) Math.floor(data.getX()) + ", " + (int) Math.floor(data.getY()) + ", " + (int) Math.floor(data.getZ());
-
-        String headOwner = getHeadOwnerForType(typeName);
-        String animalDisplay = formatMaterialFromEntityType(typeName);
+        String animalDisplay = formatMaterialFromEntityType(data.getEntityType().name());
         String displayName = (coOwnerView ? "&d" : "&b") + animalDisplay;
 
         List<String> lore = new ArrayList<>();
@@ -675,19 +625,7 @@ public class GuiManager {
         lore.add("");
         lore.add(loaded ? "&aKlik om te openen" : "&cDit dier is momenteel niet geladen");
 
-        ItemStack item;
-        if (!headOwner.isBlank()) {
-            item = plugin.getHarvestManager().createPersistentHeadItem(
-                    "COMMON",
-                    typeName,
-                    animalDisplay,
-                    headOwner,
-                    ""
-            );
-        } else {
-            item = new ItemStack(Material.WHEAT);
-        }
-
+        ItemStack item = new ItemStack(getEntityIcon(data.getEntityType()));
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(ColorUtil.colorize(displayName));
@@ -704,21 +642,29 @@ public class GuiManager {
         return item;
     }
 
-    private String getHeadOwnerForType(String typeName) {
-        return switch (typeName) {
-            case "COW" -> "MHF_Cow";
-            case "PIG" -> "MHF_Pig";
-            case "CHICKEN" -> "MHF_Chicken";
-            case "SHEEP" -> "MHF_Sheep";
-            case "MUSHROOMCOW", "MUSHROOM_COW" -> "MHF_MushroomCow";
-            default -> "";
+    private Material getEntityIcon(EntityType entityType) {
+        if (entityType == null) {
+            return Material.WHEAT;
+        }
+
+        try {
+            return Material.valueOf(entityType.name() + "_SPAWN_EGG");
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        return switch (entityType) {
+            case COW, MUSHROOM_COW -> Material.HAY_BLOCK;
+            case PIG -> Material.CARROT;
+            case CHICKEN -> Material.EGG;
+            case SHEEP -> Material.WHITE_WOOL;
+            default -> Material.WHEAT;
         };
     }
 
     private ItemStack createTabItem(boolean selected, String name, Material material) {
         List<String> lore = new ArrayList<>();
         lore.add(selected ? "&aGeselecteerd" : "&7Klik om te openen");
-        return createItem(material.name(), material, name, lore);
+        return createSimpleItem(material, name, lore);
     }
 
     private ItemStack createOwnerItem(AnimalData data, AnimalProfile profile, GuiSettings gui) {
@@ -940,6 +886,27 @@ public class GuiManager {
         }
 
         return item;
+    }
+
+    private ItemStack createSimpleItem(Material material, String name, List<String> lore) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) {
+            return item;
+        }
+
+        meta.setDisplayName(ColorUtil.colorize(name));
+        meta.setLore(colorizeList(lore));
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private void fillInventory(Inventory inventory, ItemStack item) {
+        for (int i = 0; i < inventory.getSize(); i++) {
+            inventory.setItem(i, item);
+        }
     }
 
     private List<String> applyPlaceholders(List<String> input, String... replacements) {

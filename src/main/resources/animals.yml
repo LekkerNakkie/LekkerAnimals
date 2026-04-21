@@ -5,7 +5,16 @@
 hologram:
   enabled: true
   update-interval-ticks: 10
+
+  # Modes:
+  # LOOK_AT  = only visible when the player is actually looking at the animal
+  # DISTANCE = visible when a player is within show-distance
+  # ALWAYS   = always visible
+  visibility-mode: "LOOK_AT"
+
+  # Only used when visibility-mode: DISTANCE
   show-distance: 12.0
+
   format: "&b{animal} &8• &7Lvl &b{level} &8• &c❤ &b{hunger}&8/&7{max_hunger}"
 
 # --------------------------------------------------------------------
@@ -142,10 +151,8 @@ animals:
           min: 60
           max: 75
         LEGENDARY:
-          type: "RANGE"
+          type: "FIXED"
           fixed: 100.0
-          min: 75
-          max: 90
 
   PIG:
     enabled: true

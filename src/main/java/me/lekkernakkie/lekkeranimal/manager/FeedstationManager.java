@@ -41,12 +41,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class FeedstationManager {
 
     private final LekkerAnimal plugin;
     private final Map<UUID, AnimalFeederData> feeders = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastFeedTimes = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastAttractionTimes = new ConcurrentHashMap<>();
     private final Map<UUID, TextDisplay> holograms = new ConcurrentHashMap<>();
 
     private final NamespacedKey hologramKey;
@@ -88,6 +90,7 @@ public class FeedstationManager {
 
         holograms.clear();
         lastFeedTimes.clear();
+        lastAttractionTimes.clear();
     }
 
     public void cleanupAllOldArmorStands() {
@@ -118,6 +121,7 @@ public class FeedstationManager {
         feeders.put(data.getFeederUuid(), data);
         cleanupLegacyArmorStandsNearFeeder(data);
         refreshHologram(data);
+        updateHologramVisibility(data);
     }
 
     public void unregisterFeeder(UUID feederUuid) {
@@ -128,13 +132,13 @@ public class FeedstationManager {
         AnimalFeederData feeder = feeders.remove(feederUuid);
         lastFeedTimes.remove(feederUuid);
 
+        if (feeder != null) {
+            cleanupLegacyArmorStandsNearFeeder(feeder);
+        }
+
         TextDisplay display = holograms.remove(feederUuid);
         if (display != null && display.isValid()) {
             display.remove();
-        }
-
-        if (feeder != null) {
-            cleanupLegacyArmorStandsNearFeeder(feeder);
         }
     }
 
@@ -279,6 +283,7 @@ public class FeedstationManager {
         }
 
         refreshHologram(feeder);
+        updateHologramVisibility(feeder);
     }
 
     public boolean isStorageScreen(FeedstationMenuHolder holder) {
@@ -398,6 +403,7 @@ public class FeedstationManager {
 
         feeder.setTier(nextTier);
         refreshHologram(feeder);
+        updateHologramVisibility(feeder);
 
         FeedstationSettings.TierSettings tierSettings = settings.getTierSettings(nextTier);
         plugin.getConfigManager().getLangSettings().send(player, "feedstation.upgrade-success", Map.of(
@@ -508,7 +514,7 @@ public class FeedstationManager {
             return;
         }
 
-        applyAttraction(eatingLocation, tierSettings, targets);
+        applyAttraction(eatingLocation, settings, tierSettings, targets);
 
         if (now - lastFeed < intervalMillis) {
             return;
@@ -637,19 +643,32 @@ public class FeedstationManager {
     }
 
     private void applyAttraction(Location feederLocation,
+                                 FeedstationSettings settings,
                                  FeedstationSettings.TierSettings tierSettings,
                                  List<FeederAnimalTarget> targets) {
-        FeedstationSettings settings = plugin.getConfigManager().getFeedstationSettings();
+        if (!settings.isWalkingAiEnabled()) {
+            return;
+        }
 
         for (FeederAnimalTarget target : targets) {
             LivingEntity entity = target.entity();
+            AnimalData data = target.data();
+            AnimalProfile profile = target.profile();
 
             if (!(entity instanceof Mob mob)) {
                 continue;
             }
 
+            if (!entity.isValid() || entity.isDead()) {
+                continue;
+            }
+
+            if (!isHungryEnoughForWalkingAi(data, profile, settings)) {
+                continue;
+            }
+
             double distance = entity.getLocation().distance(feederLocation);
-            if (distance <= Math.max(1.2D, tierSettings.eatDistance())) {
+            if (distance <= Math.max(settings.getWalkingAiMinDistanceToStart(), tierSettings.eatDistance())) {
                 continue;
             }
 
@@ -657,23 +676,59 @@ public class FeedstationManager {
                 continue;
             }
 
-            boolean moved = mob.getPathfinder().moveTo(feederLocation.clone(), tierSettings.attractionSpeed());
+            long now = plugin.getServer().getCurrentTick();
+            long lastAttraction = lastAttractionTimes.getOrDefault(entity.getUniqueId(), Long.MIN_VALUE);
+            if (now - lastAttraction < settings.getWalkingAiRepathIntervalTicks()) {
+                continue;
+            }
 
-            if (moved) {
-                FeedstationSettings.ParticleSection particleSection = settings.getAttractionParticles();
-                if (particleSection.enabled()) {
-                    entity.getWorld().spawnParticle(
-                            particleSection.particle(),
-                            entity.getLocation().add(0.0D, 0.5D, 0.0D),
-                            particleSection.count(),
-                            particleSection.spreadX(),
-                            particleSection.spreadY(),
-                            particleSection.spreadZ(),
-                            particleSection.extra()
-                    );
-                }
+            Location targetLocation = createWalkTarget(feederLocation, settings.getWalkingAiRandomTargetRadius());
+            boolean moved = mob.getPathfinder().moveTo(targetLocation, tierSettings.attractionSpeed());
+
+            if (!moved) {
+                continue;
+            }
+
+            lastAttractionTimes.put(entity.getUniqueId(), now);
+
+            FeedstationSettings.ParticleSection particleSection = settings.getAttractionParticles();
+            if (particleSection.enabled()) {
+                entity.getWorld().spawnParticle(
+                        particleSection.particle(),
+                        entity.getLocation().add(0.0D, 0.5D, 0.0D),
+                        particleSection.count(),
+                        particleSection.spreadX(),
+                        particleSection.spreadY(),
+                        particleSection.spreadZ(),
+                        particleSection.extra()
+                );
             }
         }
+    }
+
+    private boolean isHungryEnoughForWalkingAi(AnimalData data,
+                                               AnimalProfile profile,
+                                               FeedstationSettings settings) {
+        int maxHunger = Math.max(1, profile.getMaxHunger());
+        double currentPercent = (data.getHunger() * 100.0D) / maxHunger;
+        return currentPercent <= settings.getWalkingAiHungerThresholdPercent();
+    }
+
+    private Location createWalkTarget(Location feederLocation, double radius) {
+        Location base = feederLocation.clone().add(0.5D, 0.0D, 0.5D);
+
+        if (radius <= 0.0D) {
+            return base;
+        }
+
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        double angle = random.nextDouble(0.0D, Math.PI * 2D);
+        double distance = random.nextDouble(0.2D, radius);
+
+        double offsetX = Math.cos(angle) * distance;
+        double offsetZ = Math.sin(angle) * distance;
+
+        return base.clone().add(offsetX, 0.0D, offsetZ);
     }
 
     private ItemStack findMatchingFood(AnimalFeederData feeder, AnimalProfile profile) {
@@ -893,6 +948,8 @@ public class FeedstationManager {
                             .replace("{storage_slots}", String.valueOf(tierSettings.storageSlots()))
                             .replace("{hologram_status}", hologramStatus)
                             .replace("{hologram_visible_radius_blocks}", trimDouble(settings.getHologramVisibleRadiusBlocks()))
+                            .replace("{walking_ai_repath_interval}", String.valueOf(settings.getWalkingAiRepathIntervalTicks()))
+                            .replace("{walking_ai_hunger_threshold_percent}", trimDouble(settings.getWalkingAiHungerThresholdPercent()))
             ));
         }
 

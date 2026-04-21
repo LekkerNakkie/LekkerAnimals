@@ -85,6 +85,12 @@ public class FeedstationSettings {
     private final boolean skipFullAnimals;
     private final boolean prioritizeLowestHunger;
 
+    private final boolean walkingAiEnabled;
+    private final long walkingAiRepathIntervalTicks;
+    private final double walkingAiHungerThresholdPercent;
+    private final double walkingAiRandomTargetRadius;
+    private final double walkingAiMinDistanceToStart;
+
     private final ParticleSection idleParticles;
     private final ParticleSection feedingParticles;
     private final ParticleSection attractionParticles;
@@ -168,6 +174,12 @@ public class FeedstationSettings {
         this.skipFullAnimals = config.getBoolean("feeding.skip-full-animals", true);
         this.prioritizeLowestHunger = config.getBoolean("feeding.prioritize-lowest-hunger", true);
 
+        this.walkingAiEnabled = config.getBoolean("walking-ai.enabled", true);
+        this.walkingAiRepathIntervalTicks = Math.max(10L, config.getLong("walking-ai.repath-interval-ticks", 60L));
+        this.walkingAiHungerThresholdPercent = clampPercent(config.getDouble("walking-ai.hunger-threshold-percent", 85.0D));
+        this.walkingAiRandomTargetRadius = Math.max(0.0D, config.getDouble("walking-ai.random-target-radius", 1.2D));
+        this.walkingAiMinDistanceToStart = Math.max(0.5D, config.getDouble("walking-ai.min-distance-to-start", 2.0D));
+
         this.idleParticles = loadParticleSection(config.getConfigurationSection("particles.idle"), Particle.HAPPY_VILLAGER);
         this.feedingParticles = loadParticleSection(config.getConfigurationSection("particles.feeding"), Particle.HEART);
         this.attractionParticles = loadParticleSection(config.getConfigurationSection("particles.attraction"), Particle.END_ROD);
@@ -220,6 +232,10 @@ public class FeedstationSettings {
 
     private int clampStorageSlots(int slots) {
         return Math.max(1, Math.min(54, slots));
+    }
+
+    private double clampPercent(double value) {
+        return Math.max(0.0D, Math.min(100.0D, value));
     }
 
     private Map<FeederTier, FeederTier> loadUpgradeChain(ConfigurationSection section) {
@@ -534,6 +550,26 @@ public class FeedstationSettings {
 
     public boolean isPrioritizeLowestHunger() {
         return prioritizeLowestHunger;
+    }
+
+    public boolean isWalkingAiEnabled() {
+        return walkingAiEnabled;
+    }
+
+    public long getWalkingAiRepathIntervalTicks() {
+        return walkingAiRepathIntervalTicks;
+    }
+
+    public double getWalkingAiHungerThresholdPercent() {
+        return walkingAiHungerThresholdPercent;
+    }
+
+    public double getWalkingAiRandomTargetRadius() {
+        return walkingAiRandomTargetRadius;
+    }
+
+    public double getWalkingAiMinDistanceToStart() {
+        return walkingAiMinDistanceToStart;
     }
 
     public ParticleSection getIdleParticles() {

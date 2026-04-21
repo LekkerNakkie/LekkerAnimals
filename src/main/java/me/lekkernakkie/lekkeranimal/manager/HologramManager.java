@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Collection;
+import java.util.Locale;
 
 public class HologramManager {
 
@@ -32,7 +33,6 @@ public class HologramManager {
         }
 
         long interval = Math.max(1L, cfg.getLong("hologram.update-interval-ticks", 10L));
-
         this.task = plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 20L, interval);
     }
 
@@ -81,12 +81,7 @@ public class HologramManager {
             return;
         }
 
-        if (isPlayerNearby(entity, cfg.getDouble("hologram.show-distance", 12.0))) {
-            entity.setCustomName(buildName(data, profile, cfg));
-            entity.setCustomNameVisible(true);
-        } else {
-            entity.setCustomNameVisible(false);
-        }
+        applyVisibility(entity, data, profile, cfg);
     }
 
     private void tick() {
@@ -111,10 +106,33 @@ public class HologramManager {
                 continue;
             }
 
-            if (isPlayerNearby(entity, cfg.getDouble("hologram.show-distance", 12.0))) {
-                entity.setCustomName(buildName(data, profile, cfg));
-                entity.setCustomNameVisible(true);
-            } else {
+            applyVisibility(entity, data, profile, cfg);
+        }
+    }
+
+    private void applyVisibility(Entity entity, AnimalData data, AnimalProfile profile, FileConfiguration cfg) {
+        HologramVisibilityMode mode = HologramVisibilityMode.fromString(
+                cfg.getString("hologram.visibility-mode", "LOOK_AT")
+        );
+
+        String name = buildName(data, profile, cfg);
+        entity.setCustomName(name);
+
+        switch (mode) {
+            case ALWAYS -> entity.setCustomNameVisible(true);
+
+            case DISTANCE -> {
+                double distance = cfg.getDouble("hologram.show-distance", 12.0);
+                entity.setCustomNameVisible(isPlayerNearby(entity, distance));
+            }
+
+            case LOOK_AT -> {
+                /*
+                 * Vanilla behavior:
+                 * - custom name is set
+                 * - customNameVisible = false
+                 * Then the player only sees it when actually looking at the entity.
+                 */
                 entity.setCustomNameVisible(false);
             }
         }
@@ -156,6 +174,24 @@ public class HologramManager {
             if (entity != null && entity.isValid()) {
                 entity.setCustomName(null);
                 entity.setCustomNameVisible(false);
+            }
+        }
+    }
+
+    private enum HologramVisibilityMode {
+        LOOK_AT,
+        DISTANCE,
+        ALWAYS;
+
+        public static HologramVisibilityMode fromString(String input) {
+            if (input == null || input.isBlank()) {
+                return LOOK_AT;
+            }
+
+            try {
+                return HologramVisibilityMode.valueOf(input.trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ex) {
+                return LOOK_AT;
             }
         }
     }

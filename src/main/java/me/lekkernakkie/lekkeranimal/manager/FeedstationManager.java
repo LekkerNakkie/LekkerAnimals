@@ -9,22 +9,28 @@ import me.lekkernakkie.lekkeranimal.data.AnimalProfile;
 import me.lekkernakkie.lekkeranimal.data.FeedingReward;
 import me.lekkernakkie.lekkeranimal.gui.FeedstationMenuHolder;
 import me.lekkernakkie.lekkeranimal.util.ColorUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
@@ -41,16 +47,23 @@ public class FeedstationManager {
     private final LekkerAnimal plugin;
     private final Map<UUID, AnimalFeederData> feeders = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastFeedTimes = new ConcurrentHashMap<>();
-    private final Map<UUID, List<ArmorStand>> holograms = new ConcurrentHashMap<>();
+    private final Map<UUID, TextDisplay> holograms = new ConcurrentHashMap<>();
+
+    private final NamespacedKey hologramKey;
+    private final NamespacedKey feederUuidKey;
 
     private BukkitTask task;
 
     public FeedstationManager(LekkerAnimal plugin) {
         this.plugin = plugin;
+        this.hologramKey = new NamespacedKey(plugin, "feedstation_hologram");
+        this.feederUuidKey = new NamespacedKey(plugin, "feedstation_hologram_feeder_uuid");
     }
 
     public void start() {
         stop();
+
+        cleanupAllOldArmorStands();
 
         FeedstationSettings settings = plugin.getConfigManager().getFeedstationSettings();
         if (settings == null || !settings.isEnabled()) {
@@ -67,16 +80,34 @@ public class FeedstationManager {
             task = null;
         }
 
-        for (List<ArmorStand> stands : holograms.values()) {
-            for (ArmorStand stand : stands) {
-                if (stand != null && stand.isValid()) {
-                    stand.remove();
-                }
+        for (TextDisplay display : holograms.values()) {
+            if (display != null && display.isValid()) {
+                display.remove();
             }
         }
 
         holograms.clear();
         lastFeedTimes.clear();
+    }
+
+    public void cleanupAllOldArmorStands() {
+        for (World world : Bukkit.getWorlds()) {
+            for (Entity entity : world.getEntities()) {
+                if (!(entity instanceof ArmorStand stand)) {
+                    continue;
+                }
+
+                if (!stand.isInvisible()) {
+                    continue;
+                }
+
+                if (!stand.isMarker()) {
+                    continue;
+                }
+
+                stand.remove();
+            }
+        }
     }
 
     public void registerFeeder(AnimalFeederData data) {
@@ -85,6 +116,7 @@ public class FeedstationManager {
         }
 
         feeders.put(data.getFeederUuid(), data);
+        cleanupLegacyArmorStandsNearFeeder(data);
         refreshHologram(data);
     }
 
@@ -93,16 +125,16 @@ public class FeedstationManager {
             return;
         }
 
-        feeders.remove(feederUuid);
+        AnimalFeederData feeder = feeders.remove(feederUuid);
         lastFeedTimes.remove(feederUuid);
 
-        List<ArmorStand> stands = holograms.remove(feederUuid);
-        if (stands != null) {
-            for (ArmorStand stand : stands) {
-                if (stand != null && stand.isValid()) {
-                    stand.remove();
-                }
-            }
+        TextDisplay display = holograms.remove(feederUuid);
+        if (display != null && display.isValid()) {
+            display.remove();
+        }
+
+        if (feeder != null) {
+            cleanupLegacyArmorStandsNearFeeder(feeder);
         }
     }
 
@@ -258,7 +290,8 @@ public class FeedstationManager {
             return false;
         }
 
-        FeedstationSettings.TierSettings tierSettings = plugin.getConfigManager().getFeedstationSettings().getTierSettings(feeder.getTier());
+        FeedstationSettings.TierSettings tierSettings =
+                plugin.getConfigManager().getFeedstationSettings().getTierSettings(feeder.getTier());
         int allowedSlots = tierSettings != null ? tierSettings.storageSlots() : 0;
         return slot < allowedSlots;
     }
@@ -326,7 +359,11 @@ public class FeedstationManager {
             }
         }, 0L, 5L);
 
-        plugin.getServer().getScheduler().runTaskLater(plugin, previewTask::cancel, settings.getRadiusPreviewDurationTicks());
+        plugin.getServer().getScheduler().runTaskLater(
+                plugin,
+                previewTask::cancel,
+                settings.getRadiusPreviewDurationTicks()
+        );
     }
 
     public boolean tryUpgrade(Player player, AnimalFeederData feeder) {
@@ -463,7 +500,8 @@ public class FeedstationManager {
         long intervalMillis = tierSettings.feedIntervalSeconds() * 1000L;
         long lastFeed = lastFeedTimes.getOrDefault(feeder.getFeederUuid(), 0L);
 
-        List<FeederAnimalTarget> targets = collectTargets(feeder, world, feederLocation, tierSettings.radius());
+        List<FeederAnimalTarget> targets =
+                collectTargets(feeder, world, feederLocation, tierSettings.radius());
 
         if (targets.isEmpty()) {
             return;
@@ -525,7 +563,9 @@ public class FeedstationManager {
 
             if (settings.isConsumeOneItemPerFeed()) {
                 matchingFood.setAmount(matchingFood.getAmount() - 1);
-                feeder.getStoredFood().removeIf(stack -> stack == null || stack.getType().isAir() || stack.getAmount() <= 0);
+                feeder.getStoredFood().removeIf(stack ->
+                        stack == null || stack.getType().isAir() || stack.getAmount() <= 0
+                );
             }
 
             plugin.getHologramManager().refresh(entity);
@@ -578,7 +618,8 @@ public class FeedstationManager {
                 continue;
             }
 
-            AnimalProfile profile = plugin.getConfigManager().getAnimalsSettings().getProfile(entity.getType());
+            AnimalProfile profile =
+                    plugin.getConfigManager().getAnimalsSettings().getProfile(entity.getType());
             if (profile == null || !profile.isEnabled()) {
                 continue;
             }
@@ -614,9 +655,7 @@ public class FeedstationManager {
                 continue;
             }
 
-            Location walkTarget = feederLocation.clone();
-
-            boolean moved = mob.getPathfinder().moveTo(walkTarget, tierSettings.attractionSpeed());
+            boolean moved = mob.getPathfinder().moveTo(feederLocation.clone(), tierSettings.attractionSpeed());
 
             if (moved) {
                 FeedstationSettings.ParticleSection particleSection = settings.getAttractionParticles();
@@ -697,7 +736,7 @@ public class FeedstationManager {
         FeedstationSettings settings = plugin.getConfigManager().getFeedstationSettings();
 
         if (!settings.isHologramEnabled() || !feeder.isHologramEnabled()) {
-            unregisterHologram(feeder.getFeederUuid());
+            unregisterDisplay(feeder.getFeederUuid());
             return;
         }
 
@@ -711,9 +750,12 @@ public class FeedstationManager {
             return;
         }
 
+        cleanupLegacyArmorStandsNearFeeder(feeder);
+
         Location base = feeder.getLocation(world).clone().add(0.5D, settings.getHologramOffsetY(), 0.5D);
         String tierDisplay = tierSettings.display();
-        int nearbyAnimals = collectTargets(feeder, world, feeder.getLocation(world), tierSettings.radius()).size();
+        int nearbyAnimals =
+                collectTargets(feeder, world, feeder.getLocation(world), tierSettings.radius()).size();
         int maxAnimals = tierSettings.maxAnimals();
 
         List<String> renderedLines = new ArrayList<>();
@@ -727,61 +769,64 @@ public class FeedstationManager {
             ));
         }
 
-        List<ArmorStand> stands = holograms.computeIfAbsent(feeder.getFeederUuid(), key -> new ArrayList<>());
+        String text = String.join("\n", renderedLines);
+        TextDisplay display = holograms.get(feeder.getFeederUuid());
 
-        while (stands.size() > renderedLines.size()) {
-            ArmorStand removed = stands.remove(stands.size() - 1);
-            if (removed != null && removed.isValid()) {
-                removed.remove();
-            }
-        }
-
-        double lineOffset = 0.25D;
-
-        for (int i = 0; i < renderedLines.size(); i++) {
-            Location lineLocation = base.clone().add(0.0D, (renderedLines.size() - 1 - i) * lineOffset, 0.0D);
-            ArmorStand stand;
-
-            if (i < stands.size()) {
-                stand = stands.get(i);
-                if (stand == null || !stand.isValid()) {
-                    stand = createHologramStand(lineLocation, renderedLines.get(i));
-                    stands.set(i, stand);
-                } else {
-                    stand.teleport(lineLocation);
-                    stand.setCustomName(renderedLines.get(i));
-                }
-            } else {
-                stand = createHologramStand(lineLocation, renderedLines.get(i));
-                stands.add(stand);
-            }
+        if (display == null || !display.isValid()) {
+            display = createTextDisplay(base, feeder.getFeederUuid(), text);
+            holograms.put(feeder.getFeederUuid(), display);
+        } else {
+            display.teleport(base);
+            display.text(toComponent(text));
         }
     }
 
-    private ArmorStand createHologramStand(Location location, String line) {
-        return location.getWorld().spawn(location, ArmorStand.class, stand -> {
-            stand.setVisible(false);
-            stand.setGravity(false);
-            stand.setCanPickupItems(false);
-            stand.setMarker(true);
-            stand.setSmall(true);
-            stand.setCustomNameVisible(true);
-            stand.setCustomName(line);
-            stand.setSilent(true);
-            stand.setInvulnerable(true);
+    private TextDisplay createTextDisplay(Location location, UUID feederUuid, String text) {
+        return location.getWorld().spawn(location, TextDisplay.class, display -> {
+            display.text(toComponent(text));
+            display.setBillboard(Display.Billboard.CENTER);
+            display.setSeeThrough(true);
+            display.setShadowed(false);
+            display.setDefaultBackground(false);
+            display.setPersistent(false);
+            display.getPersistentDataContainer().set(hologramKey, PersistentDataType.BYTE, (byte) 1);
+            display.getPersistentDataContainer().set(feederUuidKey, PersistentDataType.STRING, feederUuid.toString());
         });
     }
 
-    private void unregisterHologram(UUID feederUuid) {
-        List<ArmorStand> stands = holograms.remove(feederUuid);
-        if (stands == null) {
+    private void unregisterDisplay(UUID feederUuid) {
+        TextDisplay display = holograms.remove(feederUuid);
+        if (display != null && display.isValid()) {
+            display.remove();
+        }
+    }
+
+    private void cleanupLegacyArmorStandsNearFeeder(AnimalFeederData feeder) {
+        World world = plugin.getServer().getWorld(feeder.getWorldName());
+        if (world == null) {
             return;
         }
 
-        for (ArmorStand stand : stands) {
-            if (stand != null && stand.isValid()) {
-                stand.remove();
+        Location center = feeder.getLocation(world).clone().add(
+                0.5D,
+                plugin.getConfigManager().getFeedstationSettings().getHologramOffsetY(),
+                0.5D
+        );
+
+        for (Entity entity : world.getNearbyEntities(center, 1.5D, 2.5D, 1.5D)) {
+            if (!(entity instanceof ArmorStand stand)) {
+                continue;
             }
+
+            if (!stand.isInvisible()) {
+                continue;
+            }
+
+            if (!stand.isMarker()) {
+                continue;
+            }
+
+            stand.remove();
         }
     }
 
@@ -925,6 +970,10 @@ public class FeedstationManager {
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         item.setItemMeta(meta);
         return item;
+    }
+
+    private Component toComponent(String text) {
+        return LegacyComponentSerializer.legacySection().deserialize(ColorUtil.colorize(text));
     }
 
     private String trimDouble(double value) {
